@@ -432,7 +432,6 @@ B) ---------------- github ----------------
 
 1) create repesetory 
 
-
 2) this commande : tell git where is your repository is located 
     > git remote add origin https://github.com/username/repo-name.git
 
