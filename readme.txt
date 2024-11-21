@@ -1,5 +1,3 @@
-dddddddkofkeviejrijvioerjoi
-
 1) install laravel :
     composer create-project laravel/laravel example-app
 
@@ -371,15 +369,38 @@ dddddddkofkeviejrijvioerjoi
 
 ----------------- git & github -----------------------
 
-1) start tracking project 
-    - git init
-2) .gitignore File : is used what foleder we should not put in github public
+A) :  git 
 
-3) save this version of code : (like waiting room befor offecial saved)
-    -> git add . / git add index.html
-    we . is all project / or we can spicify file like: index.html
-4)
+1) this commande : start tracking project 
+    > git init
+2) this File : ).gitignore) : is used what foleder we should not put in github public
 
+3) this commande : save this version of code :  ) it is like ) waiting room befor offecial saved
+    > git add . / git add index.html
+    we (.) is all project / or we can spicify file like: index.html
+
+4) this commande : use to save your change in git ( offecial ) 
+    > git commit -m "Initial commit"
+    "Initial commit" is what we change for example : ux/ux change colors // reminde you what you change
+    - we used to make make this part of project is part of history 
+
+5) this is for status of file what we changed
+    > git status
+
+
+B) :   github
+
+1) create repesetory 
+
+
+2) this commande : tell git where is your repository is located 
+    > git remote add origin https://github.com/username/repo-name.git
+
+3) this commande : rename your current branch to "main"
+    > git branch -M main
+
+4) this 
+    > git push -u origin main
 
 
 
