@@ -145,7 +145,7 @@
         - and add : middleware(['auth:sanctum,admin,teacher'])
     
     4) goto : routes/auth.php
-    for logout add this : 
+    for logout add this :
     Route::middleware(['auth:sanctum,admin,teacher'])->group(function () {
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth')->name('logout');
     });
