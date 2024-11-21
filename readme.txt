@@ -389,9 +389,15 @@ A) ----------------- git -------------------
 
 6) to know the all the change with note like : "Initial commit" / date and author
     > git log 
+    > git log --oneline
 
-7) how to restore prevoius history of code if we delete file of runing project :
-    > git chekout main
+7) If you are currently on another branch and want to return to the main branch, run:
+    > git checkout main
+
+8) 
+    > git revert <commit-hash> 
+    exple run this : git log --oneline / then run this : git revert 8a0f052
+
 
 A) ----------------- git -------------------
 
