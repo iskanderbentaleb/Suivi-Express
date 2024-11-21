@@ -394,14 +394,37 @@ A) ----------------- git -------------------
 7) If you are currently on another branch and want to return to the main branch, run:
     > git checkout main
 
-8) 
-    > git revert <commit-hash> 
-    exple run this : git log --oneline / then run this : git revert 8a0f052
+-------------- danger --------------
+8) this is git give progress of your project and change it by <commit-id> of change 
+    > git revert <commit-id> 
+    exple run this : git log --oneline / then run this : git revert 8a0f052 / then we save what we want
 
+9) we have also this commade to reset change and start from beging
+    > git reset --hard <commit-id> 
+-------------- danger --------------
 
-A) ----------------- git -------------------
+10) Branchs : 
+    helpful copy the original code of main and we edit it wethout toutching the main intel we validate 
+    - to create new Branch :
+        > git branch contact-form
+    - switch to it :
+        > git checkout contact-form
 
+    - after updating brache code ( and we done update )
+        - we save the : 
+                > git add . 
+        - and we validate :
+                > git commit -m "add contact form"
+    
+    - we go back to the main brach (original) and merge the new branch with offecial
+        > git merge contact-form
+    
+    after add it on the main we can delete the contact-form brach by this comande :
+        > git branch -d contact-form
 
+-----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
 
 
 
