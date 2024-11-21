@@ -1,3 +1,5 @@
+dddddddkofkeviejrijvioerjoi
+
 1) install laravel :
     composer create-project laravel/laravel example-app
 
@@ -360,3 +362,25 @@
 // backend/vendor/laravel/framework/src/Illuminate/Auth/Middleware/RedirectIfAuthenticated.php
 
 ------------------ when we login multiple times -------------------
+
+
+
+
+
+
+
+----------------- git & github -----------------------
+
+1) start tracking project 
+    - git init
+2) .gitignore File : is used what foleder we should not put in github public
+
+3) save this version of code : (like waiting room befor offecial saved)
+    -> git add . / git add index.html
+    we . is all project / or we can spicify file like: index.html
+4)
+
+
+
+
+
