@@ -30,7 +30,7 @@ export default function AuthenticationPage() {
 
 
   const form = useForm({
-    initialValues: { email: 'adminxxxx@gmail.com', password: 'admin@gmail.com' },
+    initialValues: { email: 'agent@gmail.com', password: 'agent@gmail.com' },
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'email is required'),
       password: (value) => (value.length < 8 ? 'password is required' : null),
@@ -60,6 +60,7 @@ export default function AuthenticationPage() {
 
         // console.log('stutus = ' + status)
         const { role } = data.user;
+        localStorage.setItem('role', role);
         setAuthenticated(true);
         setToken(data.token);
         setRefreshToken(data.refresh_token)
@@ -67,7 +68,7 @@ export default function AuthenticationPage() {
 
         if (role === 'admin') {
           navigate(ADMIN_DASHBOARD_ROUTE);
-        } else if (role === 'seller') {
+        } else if (role === 'agent') {
           navigate(AGENT_DASHBOARD_ROUTE);
         }
 
@@ -87,7 +88,7 @@ export default function AuthenticationPage() {
         const role =  window.localStorage.getItem('role') ;
         if (role === 'admin'){
           navigate(ADMIN_DASHBOARD_ROUTE);
-        }else if(role === 'seller') {
+        }else if(role === 'agent') {
           navigate(AGENT_DASHBOARD_ROUTE);
         }
     }

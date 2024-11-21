@@ -285,81 +285,87 @@
 
 
 
-
-// ------------------------  language in laravel 11 ----------------------------
-
-1) run this commande :
-    ->  php artisan lang:publish
-    // in will create folder :
-    
-    /lang
-        /en
-            auth.php
-            messages.php
-            ....
-        /fr
-            auth.php
-            messages.php
-            ...
- 
-2) add middleware : 
-    -> php artisan make:middleware SetLocale
+32)------------------------  language in laravel 11 ----------------------------
 
 
-3) inside middleware add this code :
-    // ---------------
-     public function handle(Request $request, Closure $next): Response
-    {
-        // Check if the request has a locale parameter
-        $locale = $request->header('X-Locale', $request->query('locale', config('app.locale')));
-
-        // Validate the locale
-        if (!in_array($locale, ['en', 'fr'])) {
-            return response()->json(['error' => 'Unsupported locale'], 400);
-        }
-
-        // Set the locale
-        App::setLocale($locale);
-
-        return $next($request);
-    }
-    // -----------------
+        1) run this commande :
+            ->  php artisan lang:publish
+            // in will create folder :
+            
+            /lang
+                /en
+                    auth.php
+                    messages.php
+                    ....
+                /fr
+                    auth.php
+                    messages.php
+                    ...
+        
+        2) add middleware : 
+            -> php artisan make:middleware SetLocale
 
 
-4) confgure middleware : in => bootstrap -> app.php
-    $middleware->alias([
-        ....
-        ...
-        'locale' => \App\Http\Middleware\SetLocale::class,
-    ])
+        3) inside middleware add this code :
+            // ---------------
+            public function handle(Request $request, Closure $next): Response
+            {
+                // Check if the request has a locale parameter
+                $locale = $request->header('X-Locale', $request->query('locale', config('app.locale')));
+
+                // Validate the locale
+                if (!in_array($locale, ['en', 'fr'])) {
+                    return response()->json(['error' => 'Unsupported locale'], 400);
+                }
+
+                // Set the locale
+                App::setLocale($locale);
+
+                return $next($request);
+            }
+            // -----------------
 
 
-5) add midlware to group of routes :
-
-    // set laguages // put paramerter of like : /login?locale=fr
-    
-    Route::middleware(['locale'])->group(function () {
-
-        Route::get('/greeting', function () {
-            return response()->json(['message' => __('messages.welcome')]);
-        });
-
-        Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-            ->middleware('guest')
-            ->name('login');
-    });
-
-// and you can add middleware in all routes of app 
-
-// ------------------------  language in laravel 11 ----------------------------
+        4) confgure middleware : in => bootstrap -> app.php
+            $middleware->alias([
+                ....
+                ...
+                'locale' => \App\Http\Middleware\SetLocale::class,
+            ])
 
 
------------------- when we login multiple times he go to '/' -------------------
+        5) add midlware to group of routes :
 
-// remove respoce '/' after login -----> remove redirection
-// backend/vendor/laravel/framework/src/Illuminate/Auth/Middleware/RedirectIfAuthenticated.php
+            // set laguages // put paramerter of like : /login?locale=fr
+            
+            Route::middleware(['locale'])->group(function () {
 
------------------- when we login multiple times -------------------
+                Route::get('/greeting', function () {
+                    return response()->json(['message' => __('messages.welcome')]);
+                });
+
+                Route::post('/login', [AuthenticatedSessionController::class, 'store'])
+                    ->middleware('guest')
+                    ->name('login');
+            });
+
+        // and you can add middleware in all routes of app 
+32)------------------------  language in laravel 11 ----------------------------
+
+
+
+
+
+
+
+33) ------------------ when we login multiple times he go to '/' -------------------
+
+    // remove respoce '/' after login -----> remove redirection
+    // backend/vendor/laravel/framework/src/Illuminate/Auth/Middleware/RedirectIfAuthenticated.php
+
+33) ------------------ when we login multiple times he go to '/' -------------------
+
+
 
 
 
@@ -438,7 +444,7 @@ B) ---------------- github ----------------
 3) this commande : rename your current branch to "main"
     > git branch -M main
 
-4) this 
+4) this share the code on github :
     > git push -u origin main
 
 B) ---------------- github ----------------
