@@ -369,7 +369,7 @@
 
 ----------------- git & github -----------------------
 
-A) :  git 
+A) ----------------- git ------------------- 
 
 1) this commande : start tracking project 
     > git init
@@ -384,11 +384,21 @@ A) :  git
     "Initial commit" is what we change for example : ux/ux change colors // reminde you what you change
     - we used to make make this part of project is part of history 
 
-5) this is for status of file what we changed
+5) this is for status of file what we changed of know
     > git status
 
+6) to know the all the change with note like : "Initial commit" / date and author
+    > git log 
 
-B) :   github
+7) 
+
+A) ----------------- git -------------------
+
+
+
+
+
+B) ---------------- github ----------------
 
 1) create repesetory 
 
@@ -402,6 +412,4 @@ B) :   github
 4) this 
     > git push -u origin main
 
-
-
-
+B) ---------------- github ----------------
