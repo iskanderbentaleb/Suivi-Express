@@ -198,4 +198,6 @@ class AuthenticatedSessionController extends Controller
             'message' => 'Logout succeeded'
         ], 200);
     }
+
+
 }
