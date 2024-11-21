@@ -390,7 +390,8 @@ A) ----------------- git -------------------
 6) to know the all the change with note like : "Initial commit" / date and author
     > git log 
 
-7) 
+7) how to restore prevoius history of code if we delete file of runing project :
+    > git chekout main
 
 A) ----------------- git -------------------
 
