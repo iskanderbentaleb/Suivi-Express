@@ -45,15 +45,15 @@ export default function Navbar() {
         <UnstyledButton className={classes.user} style={{ borderBottom: '1px solid #e0e0e0', paddingBottom: '10px' }}>
           <Group>
               <Avatar
-                  src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-8.png"
+                  src="https://avatars.githubusercontent.com/u/61707068?s=400&u=8fcaf3d042c60986a6ab62ada33522d5bd69eb8f&v=4"
                   radius="xl"
               />
               <div style={{ flex: 1 }}>
                   <Text size="sm" fw={500}>
-                      Harriette Spoonlicker
+                      Iskander Bentaleb
                   </Text>
                   <Text c="dimmed" size="sm">
-                      hspoonlicker@outlook.com
+                      IskanderBoss1999@gmail.com
                   </Text>
               </div>
           </Group>

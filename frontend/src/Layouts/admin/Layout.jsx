@@ -10,7 +10,7 @@ function Layout() {
         <div>
             <AppShell
                 header={{ height: 50 }}
-                navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+                navbar={{ width: 340, breakpoint: 'sm', collapsed: { mobile: !opened } }}
                 padding="md"
             >
                 <AppShell.Header style={{ background:'#1f2132' , display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50 }}>
