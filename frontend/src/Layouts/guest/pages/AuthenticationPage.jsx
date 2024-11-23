@@ -30,7 +30,7 @@ export default function AuthenticationPage() {
 
 
   const form = useForm({
-    initialValues: { email: 'agent@gmail.com', password: 'agent@gmail.com' },
+    initialValues: { email: 'admin@gmail.com', password: 'admin@gmail.com' },
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'email is required'),
       password: (value) => (value.length < 8 ? 'password is required' : null),
