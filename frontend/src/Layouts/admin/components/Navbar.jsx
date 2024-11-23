@@ -1,25 +1,20 @@
 import { useState } from 'react';
 import {
-  Icon2fa,
-  IconBellRinging,
-  IconDatabaseImport,
-  IconFingerprint,
-  IconKey,
+  IconLayoutDashboard,
+  IconBrandWechat,
+  IconPackage,
   IconLogout,
-  IconReceipt2,
   IconSettings,
+  IconUsers,
 } from '@tabler/icons-react';
-import { Code, Group } from '@mantine/core';
-import { MantineLogo } from '@mantinex/mantine-logo';
+import { Group , UnstyledButton , Text , Avatar } from '@mantine/core';
 import classes from './styles/Navbar.module.css';
 
 const data = [
-  { link: '', label: 'Notifications', icon: IconBellRinging },
-  { link: '', label: 'Billing', icon: IconReceipt2 },
-  { link: '', label: 'Security', icon: IconFingerprint },
-  { link: '', label: 'SSH Keys', icon: IconKey },
-  { link: '', label: 'Databases', icon: IconDatabaseImport },
-  { link: '', label: 'Authentication', icon: Icon2fa },
+  { link: '', label: 'Dashboard', icon: IconLayoutDashboard },
+  { link: '', label: 'Notifications', icon: IconBrandWechat },
+  { link: '', label: 'Orders', icon: IconPackage },
+  { link: '', label: 'Users', icon:   IconUsers },
   { link: '', label: 'Other Settings', icon: IconSettings },
 ];
 
@@ -46,8 +41,24 @@ export default function Navbar() {
     <nav className={classes.navbar}>
       <div className={classes.navbarMain}>
         <Group className={classes.header} justify="space-between">
-          <MantineLogo size={28} />
-          <Code fw={700}>v3.1.2</Code>
+        
+        <UnstyledButton className={classes.user} style={{ borderBottom: '1px solid #e0e0e0', paddingBottom: '10px' }}>
+          <Group>
+              <Avatar
+                  src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-8.png"
+                  radius="xl"
+              />
+              <div style={{ flex: 1 }}>
+                  <Text size="sm" fw={500}>
+                      Harriette Spoonlicker
+                  </Text>
+                  <Text c="dimmed" size="sm">
+                      hspoonlicker@outlook.com
+                  </Text>
+              </div>
+          </Group>
+      </UnstyledButton>
+
         </Group>
         {links}
       </div>
