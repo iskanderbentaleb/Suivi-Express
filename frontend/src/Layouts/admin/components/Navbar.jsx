@@ -7,34 +7,57 @@ import {
   IconSettings,
   IconUsers,
 } from '@tabler/icons-react';
+import { ADMIN_DASHBOARD_ROUTE , ADMIN_NOTIFICATIONS_ROUTE , ADMIN_ORDERS_ROUTE } from '../../../Router/index';
+import { Link } from 'react-router-dom';
 import { Group , UnstyledButton , Text , Avatar } from '@mantine/core';
 import classes from './styles/Navbar.module.css';
-
-const data = [
-  { link: '', label: 'Dashboard', icon: IconLayoutDashboard },
-  { link: '', label: 'Notifications', icon: IconBrandWechat },
-  { link: '', label: 'Orders', icon: IconPackage },
-  { link: '', label: 'Users', icon:   IconUsers },
-  { link: '', label: 'Other Settings', icon: IconSettings },
-];
+import { useUserContext } from '../../../context/userContext';
+import { useNavigate } from 'react-router-dom';
+import { LOGIN_ROUTE } from '../../../Router';
+import { notifications } from '@mantine/notifications';
 
 export default function Navbar() {
   const [active, setActive] = useState('Billing');
 
+  const data = [
+    { link: ADMIN_DASHBOARD_ROUTE , label: 'Dashboard', icon: IconLayoutDashboard },
+    { link: ADMIN_NOTIFICATIONS_ROUTE , label: 'Notifications', icon: IconBrandWechat },
+    { link: ADMIN_ORDERS_ROUTE , label: 'Orders', icon: IconPackage },
+    { link: '', label: 'Users', icon:   IconUsers },
+    { link: '', label: 'Other Settings', icon: IconSettings },
+  ];
+
+
+  const { logout } = useUserContext() ;
+
+  const navigate = useNavigate()
+
+  const handleLogout = async (event) => {
+    event.preventDefault()
+    try {
+      const { status } = await logout()
+      if(status === 200){
+        return navigate(LOGIN_ROUTE)
+      }
+    } catch (reason) {
+      notifications.show({ message: reason.response.data.message , color: 'red' });
+    }
+  
+  }
+
+  
+
   const links = data.map((item) => (
-    <a
-      className={classes.link}
-      data-active={item.label === active || undefined}
-      href={item.link}
-      key={item.label}
-      onClick={(event) => {
-        event.preventDefault();
-        setActive(item.label);
-      }}
-    >
-      <item.icon className={classes.linkIcon} stroke={1.5} />
-      <span>{item.label}</span>
-    </a>
+    <Link
+        className={classes.link}
+        data-active={item.label === active || undefined}
+        to={item.link}
+        key={item.label}
+        onClick={() => setActive(item.label)}
+      >
+        <item.icon className={classes.linkIcon} stroke={1.5} />
+        <span>{item.label}</span>
+    </Link>
   ));
 
   return (
@@ -64,7 +87,7 @@ export default function Navbar() {
       </div>
 
       <div className={classes.footer}>
-        <a href="#" className={classes.link} onClick={(event) => event.preventDefault()}>
+        <a href="#" className={classes.link} onClick={handleLogout}>
           <IconLogout color='red' className={classes.linkIcon} stroke={1.5} />
           <span>Logout</span>
         </a>

@@ -5,12 +5,18 @@ import LayoutAdmin from '../Layouts/admin/Layout'
 import AuthenticationPage from '../Layouts/guest/pages/AuthenticationPage'
 import Error404 from '../Layouts/pages_general/pages/Error404'
 import Dashboard from '../Layouts/admin/pages/Dashboard'
+import Notifications from '../Layouts/admin/pages/Notifications'
+import Orders from '../Layouts/admin/pages/Orders'
+
 
 
 export const LOGIN_ROUTE = '/'
 
 
-export const ADMIN_DASHBOARD_ROUTE = '/admin'
+export const ADMIN_ROUTE = '/admin'
+export const ADMIN_DASHBOARD_ROUTE = ADMIN_ROUTE + '/dashboard'
+export const ADMIN_NOTIFICATIONS_ROUTE = ADMIN_ROUTE + '/notifications/'
+export const ADMIN_ORDERS_ROUTE = ADMIN_ROUTE + '/orders/'
 
 
 
@@ -42,6 +48,14 @@ export const router = createBrowserRouter([
             {
                 path: ADMIN_DASHBOARD_ROUTE,
                 element:<Dashboard/>
+            },
+            {
+                path: ADMIN_NOTIFICATIONS_ROUTE,
+                element:<Notifications/>
+            },
+            {
+                path: ADMIN_ORDERS_ROUTE,
+                element:<Orders/>
             },
         ]
     },

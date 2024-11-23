@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,5 +19,3 @@ Route::middleware(['auth:sanctum' , 'ability:agent'])->prefix('agent')->group(st
     });
 });
 
-
-Route::post('/user/logout', [AuthenticatedSessionController::class, 'destroy']);
