@@ -4,6 +4,7 @@ import { guestApi } from './../services/api/guest/guestApi';
 // inisial values context
 export const UserStateContext = createContext({
     DahboardOpend: false , // this for the admin , seller dashborad when screen is small so we can close it 
+    setDahboardOpend : ()=>{},
     user: '' ,
     setUser : ()=>{},
     logout: ()=>{},
@@ -21,6 +22,7 @@ export const UserStateContext = createContext({
 export default function UserContext({children}){
 
     // tretment context values
+    const [DahboardOpend, setDahboardOpend] = useState(false);
     const [user, setUser] = useState(undefined);
     const [authenticated, _setauthenticated] = useState('true' === window.localStorage.getItem('AUTH'));
 
@@ -72,7 +74,7 @@ export default function UserContext({children}){
     // share context with All App
     return (
         <>
-           <UserStateContext.Provider value={{user, setUser , logout , login ,  authenticated , setAuthenticated , setToken , setRefreshToken , setTokenSetTime , setLocale}}>
+           <UserStateContext.Provider value={{DahboardOpend , setDahboardOpend , user, setUser , logout , login ,  authenticated , setAuthenticated , setToken , setRefreshToken , setTokenSetTime , setLocale}}>
                 {children}
            </UserStateContext.Provider>
         </>

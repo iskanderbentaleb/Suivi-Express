@@ -7,7 +7,7 @@ import {
   IconSettings,
   IconUsers,
 } from '@tabler/icons-react';
-import { ADMIN_DASHBOARD_ROUTE , ADMIN_NOTIFICATIONS_ROUTE , ADMIN_ORDERS_ROUTE } from '../../../Router/index';
+import { ADMIN_DASHBOARD_ROUTE , ADMIN_NOTIFICATIONS_ROUTE , ADMIN_ORDERS_ROUTE , ADMIN_USERS_ROUTE , ADMIN_SETTING_ROUTE } from '../../../Router/index';
 import { Link } from 'react-router-dom';
 import { Group , UnstyledButton , Text , Avatar } from '@mantine/core';
 import classes from './styles/Navbar.module.css';
@@ -16,15 +16,20 @@ import { useNavigate } from 'react-router-dom';
 import { LOGIN_ROUTE } from '../../../Router';
 import { notifications } from '@mantine/notifications';
 
+
 export default function Navbar() {
+
+
+  const {DahboardOpend, setDahboardOpend , user } = useUserContext();
+
   const [active, setActive] = useState('Billing');
 
   const data = [
     { link: ADMIN_DASHBOARD_ROUTE , label: 'Dashboard', icon: IconLayoutDashboard },
     { link: ADMIN_NOTIFICATIONS_ROUTE , label: 'Notifications', icon: IconBrandWechat },
     { link: ADMIN_ORDERS_ROUTE , label: 'Orders', icon: IconPackage },
-    { link: '', label: 'Users', icon:   IconUsers },
-    { link: '', label: 'Other Settings', icon: IconSettings },
+    { link: ADMIN_USERS_ROUTE, label: 'Users', icon:   IconUsers },
+    { link: ADMIN_SETTING_ROUTE, label: 'Other Settings', icon: IconSettings },
   ];
 
 
@@ -48,12 +53,15 @@ export default function Navbar() {
   
 
   const links = data.map((item) => (
-    <Link
+      <Link
         className={classes.link}
         data-active={item.label === active || undefined}
         to={item.link}
         key={item.label}
-        onClick={() => setActive(item.label)}
+        onClick={() => {
+          setActive(item.label);
+          setDahboardOpend(false);
+        }}
       >
         <item.icon className={classes.linkIcon} stroke={1.5} />
         <span>{item.label}</span>

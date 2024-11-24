@@ -1,6 +1,5 @@
 import { Outlet , useNavigate } from "react-router-dom";
 import { AppShell, Group , Burger ,  Grid , Loader, Center} from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { useUserContext } from "../../context/userContext";
 import Navbar from './components/Navbar';
 import { useEffect, useState } from "react";
@@ -8,8 +7,7 @@ import { LOGIN_ROUTE } from "../../Router";
 import { guestApi } from "../../Services/Api/guest/guestApi";
 
 function Layout() {
-    const [opened, { toggle }] = useDisclosure();
-    const { authenticated, setAuthenticated, setToken, setRefreshToken, setTokenSetTime, setUser } = useUserContext();
+    const {DahboardOpend, setDahboardOpend ,  authenticated, setAuthenticated, setToken, setRefreshToken, setTokenSetTime, setUser } = useUserContext();
     const [Loaded, setLoaded] = useState(false);
     const navigate = useNavigate();
   
@@ -130,15 +128,19 @@ function Layout() {
         <div>
             <AppShell
                 header={{ height: 50 }}
-                navbar={{ width: 340, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+                navbar={{ width: 340, breakpoint: 'sm', collapsed: { mobile: !DahboardOpend } }}
                 padding="md"
             >
-                <AppShell.Header style={{ background:'#1f2132' , display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50 }}>
+                <AppShell.Header style={{ background:'#1a1f2e' , display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50 }}>
                     <Group h="100%" px="md" style={{ position: 'absolute', left: 0 }}>
-                        <Burger color="white" opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+                        <Burger color="white" 
+                        opened={DahboardOpend}
+                        onClick={() => setDahboardOpend(!DahboardOpend)}
+                        hiddenFrom="sm" 
+                        size="sm" />
                     </Group>
                     <div style={{ color: 'white' }}>
-                        E-commerce Call Center
+                        E-Commerce Call Center
                     </div>
                 </AppShell.Header>
 

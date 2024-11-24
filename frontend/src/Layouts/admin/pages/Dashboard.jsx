@@ -1,107 +1,62 @@
-import { IconPencil, IconTrash } from '@tabler/icons-react';
-import { ActionIcon, Anchor, Avatar, Badge, Group, Table, Text } from '@mantine/core';
+import {
+  IconArrowDownRight,
+  IconArrowUpRight,
+  IconCoin,
+  IconDiscount2,
+  IconReceipt2,
+  IconUserPlus,
+} from '@tabler/icons-react';
+import { Group, Paper, SimpleGrid, Text } from '@mantine/core';
+import classes from './../styles/dashboard.module.css';
 
-const data = [
-  {
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-1.png',
-    name: 'Robert Wolfkisser',
-    job: 'Engineer',
-    email: 'rob_wolf@gmail.com',
-    phone: '+44 (452) 886 09 12',
-  },
-  {
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-7.png',
-    name: 'Jill Jailbreaker',
-    job: 'Engineer',
-    email: 'jj@breaker.com',
-    phone: '+44 (934) 777 12 76',
-  },
-  {
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-2.png',
-    name: 'Henry Silkeater',
-    job: 'Designer',
-    email: 'henry@silkeater.io',
-    phone: '+44 (901) 384 88 34',
-  },
-  {
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-3.png',
-    name: 'Bill Horsefighter',
-    job: 'Designer',
-    email: 'bhorsefighter@gmail.com',
-    phone: '+44 (667) 341 45 22',
-  },
-  {
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-10.png',
-    name: 'Jeremy Footviewer',
-    job: 'Manager',
-    email: 'jeremy@foot.dev',
-    phone: '+44 (881) 245 65 65',
-  },
-];
-
-const jobColors = {
-  engineer: 'blue',
-  manager: 'cyan',
-  designer: 'pink',
+const icons = {
+  user: IconUserPlus,
+  discount: IconDiscount2,
+  receipt: IconReceipt2,
+  coin: IconCoin,
 };
 
+const data = [
+  { title: 'Revenue', icon: 'receipt', value: '13,456', diff: 34 },
+  { title: 'Profit', icon: 'coin', value: '4,145', diff: -13 },
+  { title: 'Coupons usage', icon: 'discount', value: '745', diff: 18 },
+  { title: 'New customers', icon: 'user', value: '188', diff: -30 },
+];
+
 export default function Dashboard() {
-  const rows = data.map((item) => (
-    <Table.Tr key={item.name}>
-      <Table.Td>
-        <Group gap="sm">
-          <Avatar size={30} src={item.avatar} radius={30} />
-          <Text fz="sm" fw={500}>
-            {item.name}
+  const stats = data.map((stat) => {
+    const Icon = icons[stat.icon];
+    const DiffIcon = stat.diff > 0 ? IconArrowUpRight : IconArrowDownRight;
+
+    return (
+      <Paper withBorder p="md" radius="md" key={stat.title}>
+        <Group justify="space-between">
+          <Text size="xs" c="dimmed" className={classes.title}>
+            {stat.title}
+          </Text>
+          <Icon className={classes.icon} size={22} stroke={1.5} />
+        </Group>
+
+        <Group align="flex-end" gap="xs" mt={25}>
+          <Text className={classes.value}>{stat.value}</Text>
+          <Text c={stat.diff > 0 ? 'teal' : 'red'} fz="sm" fw={500} className={classes.diff}>
+            <span>{stat.diff}%</span>
+            <DiffIcon size={16} stroke={1.5} />
           </Text>
         </Group>
-      </Table.Td>
 
-      <Table.Td>
-        <Badge color={jobColors[item.job.toLowerCase()]} variant="light">
-          {item.job}
-        </Badge>
-      </Table.Td>
-      <Table.Td>
-        <Anchor component="button" size="sm">
-          {item.email}
-        </Anchor>
-      </Table.Td>
-      <Table.Td>
-        <Text fz="sm">{item.phone}</Text>
-      </Table.Td>
-      <Table.Td>
-        <Group gap={0} justify="flex-end">
-          <ActionIcon variant="subtle" color="gray">
-            <IconPencil size={16} stroke={1.5} />
-          </ActionIcon>
-          <ActionIcon variant="subtle" color="red">
-            <IconTrash size={16} stroke={1.5} />
-          </ActionIcon>
-        </Group>
-      </Table.Td>
-    </Table.Tr>
-  ));
-
+        <Text fz="xs" c="dimmed" mt={7}>
+          Compared to previous month
+        </Text>
+      </Paper>
+    );
+  });
   return (
-    <Table.ScrollContainer minWidth={800}>
-      <Table verticalSpacing="sm">
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Employee</Table.Th>
-            <Table.Th>Job title</Table.Th>
-            <Table.Th>Email</Table.Th>
-            <Table.Th>Phone</Table.Th>
-            <Table.Th />
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
-      </Table>
-    </Table.ScrollContainer>
+    <>
+      Dashboard
+      <div className={classes.root}>
+      <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>{stats}</SimpleGrid>
+    </div>
+    </>
   );
 }
