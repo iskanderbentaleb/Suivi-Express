@@ -27,27 +27,37 @@ class NewPasswordController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->string('password')),
-                    'remember_token' => Str::random(60),
-                ])->save();
+        // Loop through all password brokers in config/auth.php
+        foreach (config('auth.passwords') as $broker => $settings) {
+            $provider = config("auth.providers.{$settings['provider']}.model");
 
-                event(new PasswordReset($user));
+            // Attempt to find the user by email in each provider
+            if ($provider && $provider::where('email', $request->email)->exists()) {
+                $status = Password::broker($broker)->reset(
+                    $request->only('email', 'password', 'password_confirmation', 'token'),
+                    function ($user) use ($request) {
+                        $user->forceFill([
+                            'password' => Hash::make($request->string('password')),
+                            'remember_token' => Str::random(60),
+                        ])->save();
+
+                        event(new PasswordReset($user));
+                    }
+                );
+
+                if ($status == Password::PASSWORD_RESET) {
+                    return response()->json(['status' => __($status)]);
+                } else {
+                    throw ValidationException::withMessages([
+                        'email' => [__($status)],
+                    ]);
+                }
             }
-        );
-
-        if ($status != Password::PASSWORD_RESET) {
-            throw ValidationException::withMessages([
-                'email' => [__($status)],
-            ]);
         }
 
-        return response()->json(['status' => __($status)]);
+        // If no user is found with the given email or token
+        throw ValidationException::withMessages([
+            'email' => [__('We can\'t find a user with that email address.')],
+        ]);
     }
 }
