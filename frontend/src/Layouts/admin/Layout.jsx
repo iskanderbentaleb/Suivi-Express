@@ -148,7 +148,7 @@ function Layout() {
                     <Navbar/>
                 </AppShell.Navbar>
                 
-                <AppShell.Main>
+                <AppShell.Main style={{background:'#f8f9fa'}}>
                     <Grid>
                         <Grid.Col span={12}>
                             <Outlet/>

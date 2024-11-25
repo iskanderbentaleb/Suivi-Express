@@ -20,7 +20,7 @@ import { notifications } from '@mantine/notifications';
 export default function Navbar() {
 
 
-  const {DahboardOpend, setDahboardOpend , user } = useUserContext();
+  const {setDahboardOpend , user } = useUserContext();
 
   const [active, setActive] = useState('Billing');
 
@@ -28,7 +28,7 @@ export default function Navbar() {
     { link: ADMIN_DASHBOARD_ROUTE , label: 'Dashboard', icon: IconLayoutDashboard },
     { link: ADMIN_NOTIFICATIONS_ROUTE , label: 'Notifications', icon: IconBrandWechat },
     { link: ADMIN_ORDERS_ROUTE , label: 'Orders', icon: IconPackage },
-    { link: ADMIN_USERS_ROUTE, label: 'Users', icon:   IconUsers },
+    { link: ADMIN_USERS_ROUTE, label: 'Confirmation Agents', icon:   IconUsers },
     { link: ADMIN_SETTING_ROUTE, label: 'Other Settings', icon: IconSettings },
   ];
 
@@ -71,7 +71,7 @@ export default function Navbar() {
   return (
     <nav className={classes.navbar}>
       <div className={classes.navbarMain}>
-        <Group className={classes.header} justify="space-between">
+        <Group className={classes.header}  justify="space-between">
         
         <UnstyledButton className={classes.user} style={{ borderBottom: '1px solid #e0e0e0', paddingBottom: '10px' }}>
           <Group>
@@ -80,12 +80,8 @@ export default function Navbar() {
                   radius="xl"
               />
               <div style={{ flex: 1 }}>
-                  <Text size="sm" fw={500}>
-                      Iskander Bentaleb
-                  </Text>
-                  <Text c="dimmed" size="sm">
-                      IskanderBoss1999@gmail.com
-                  </Text>
+                  <Text size="sm" fw={500}>{user.name}</Text>
+                  <Text c="dimmed" size="sm">{user.email}</Text>
               </div>
           </Group>
       </UnstyledButton>

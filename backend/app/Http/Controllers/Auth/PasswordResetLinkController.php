@@ -21,19 +21,30 @@ class PasswordResetLinkController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        // Loop through all password brokers in config/auth.php
+        foreach (config('auth.passwords') as $broker => $settings) {
+            $provider = config("auth.providers.{$settings['provider']}.model");
 
-        if ($status != Password::RESET_LINK_SENT) {
-            throw ValidationException::withMessages([
-                'email' => [__($status)],
-            ]);
+            // Attempt to find the user by email in each provider
+            if ($provider && $provider::where('email', $request->email)->exists()) {
+                $status = Password::broker($broker)->sendResetLink(
+                    $request->only('email')
+                );
+
+                if ($status === Password::RESET_LINK_SENT) {
+                    return response()->json(['status' => __($status)]);
+                } else {
+                    throw ValidationException::withMessages([
+                        'email' => [__($status)],
+                    ]);
+                }
+            }
         }
 
-        return response()->json(['status' => __($status)]);
+        // If no user is found in any provider
+        throw ValidationException::withMessages([
+            'email' => [__('We can\'t find a user with that email address.')],
+        ]);
     }
+
 }
