@@ -27,19 +27,20 @@ export const ADMIN_SETTING_ROUTE = ADMIN_ROUTE + '/setting/'
 export const AGENT_DASHBOARD_ROUTE = '/agent'
 
 
-export const router = createBrowserRouter([
+export const router = createBrowserRouter(
+    [
 
     // shared with all => shared with guest Layouts
     {
         element:<Layout/>,
         children:[
             {
-                path:'*',
-                element:<Error404/>
-            },
-            {
                 path: LOGIN_ROUTE,
                 element:<AuthenticationPage/>
+            },
+            {
+                path:'*',
+                element:<Error404/>
             },
         ]
     },
@@ -74,5 +75,16 @@ export const router = createBrowserRouter([
 
 
 
-
-])
+    ]
+    , 
+    {
+        future: {
+            v7_relativeSplatPath: true,          // Changes in relative route resolution within splat routes
+            v7_fetcherPersist: true,             // Persistence behavior of fetchers
+            v7_normalizeFormMethod: true,        // Normalizes formMethod casing to uppercase
+            v7_partialHydration: true,           // Changes in RouterProvider hydration behavior
+            v7_skipActionErrorRevalidation: true, // Changes revalidation after 4xx/5xx action responses
+            v7_startTransition: false,           // Uses startTransition for state updates
+    },
+    }
+)

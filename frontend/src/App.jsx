@@ -27,10 +27,12 @@ export const theme = {
 };
 
 
+
+
 function App() {
   return (
     <>
-    <MantineProvider theme={theme} withGlobalStyles withNormalizeCSS>
+    <MantineProvider theme={theme} withGlobalStyles withNormalizeCSS withCSSVariables>
         <UserContext>
           <RouterProvider router={router}/>
           <Notifications />

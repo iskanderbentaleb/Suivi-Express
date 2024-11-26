@@ -1,65 +1,32 @@
-import { Anchor, Group, Progress, Table, Text } from '@mantine/core';
+import {Group, Progress, Table, Text } from '@mantine/core';
 import classes from './../styles/Users.module.css';
 
 const data = [
   {
-    title: 'Foundation',
-    author: 'Isaac Asimov',
-    year: 1951,
-    reviews: { positive: 2223, negative: 259 },
-  },
-  {
-    title: 'Frankenstein',
-    author: 'Mary Shelley',
-    year: 1818,
-    reviews: { positive: 5677, negative: 1265 },
-  },
-  {
-    title: 'Solaris',
-    author: 'Stanislaw Lem',
-    year: 1961,
-    reviews: { positive: 3487, negative: 1845 },
-  },
-  {
-    title: 'Dune',
-    author: 'Frank Herbert',
-    year: 1965,
-    reviews: { positive: 8576, negative: 663 },
-  },
-  {
-    title: 'The Left Hand of Darkness',
-    author: 'Ursula K. Le Guin',
-    year: 1969,
-    reviews: { positive: 6631, negative: 993 },
-  },
-  {
-    title: 'A Scanner Darkly',
-    author: 'Philip K Dick',
-    year: 1977,
-    reviews: { positive: 8124, negative: 1847 },
+    id:1 ,
+    name: 'Iskander Bentaleb',
+    email: 'IskanderBoss1999@gmail.com',
+    reviews: { livré: 2223, echec: 259 },
   },
 ];
 
 export default function Users() {
   const rows = data.map((row) => {
-    const totalReviews = row.reviews.negative + row.reviews.positive;
-    const positiveReviews = (row.reviews.positive / totalReviews) * 100;
-    const negativeReviews = (row.reviews.negative / totalReviews) * 100;
+    const totalReviews = row.reviews.livré + row.reviews.echec;
+    const positiveReviews = (row.reviews.livré / totalReviews) * 100;
+    const negativeReviews = (row.reviews.echec / totalReviews) * 100;
 
     return (
-      <Table.Tr key={row.title}>
+      <Table.Tr key={row.id}>
+        
         <Table.Td>
-          <Anchor component="button" fz="sm">
-            {row.title}
-          </Anchor>
+          {row.name}
         </Table.Td>
-        <Table.Td>{row.year}</Table.Td>
+
         <Table.Td>
-          <Anchor component="button" fz="sm">
-            {row.author}
-          </Anchor>
+          {row.email}
         </Table.Td>
-        <Table.Td>{Intl.NumberFormat().format(totalReviews)}</Table.Td>
+
         <Table.Td>
           <Group justify="space-between">
             <Text fz="xs" c="teal" fw={700}>
@@ -83,6 +50,7 @@ export default function Users() {
             />
           </Progress.Root>
         </Table.Td>
+
       </Table.Tr>
     );
   });
@@ -90,15 +58,13 @@ export default function Users() {
   return (
     <>
       Users
-      <Table.ScrollContainer minWidth={800} >
-        <Table verticalSpacing="md">
+      <Table.ScrollContainer minWidth={800}>
+        <Table verticalSpacing="xs" withTableBorder withColumnBorders >
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Book title</Table.Th>
-              <Table.Th>Year</Table.Th>
-              <Table.Th>Author</Table.Th>
-              <Table.Th>Reviews</Table.Th>
-              <Table.Th>Reviews distribution</Table.Th>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Email</Table.Th>
+              <Table.Th>Delevevey Rate</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>{rows}</Table.Tbody>
