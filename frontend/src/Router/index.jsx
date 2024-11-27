@@ -7,8 +7,8 @@ import Error404 from '../Layouts/pages_general/pages/Error404'
 import Dashboard from '../Layouts/admin/pages/Dashboard'
 import Notifications from '../Layouts/admin/pages/Notifications'
 import Orders from '../Layouts/admin/pages/Orders'
-import Users from '../Layouts/admin/pages/Users'
 import Setting from '../Layouts/admin/pages/Setting'
+import Agents from '../Layouts/admin/pages/Agents'
 
 
 
@@ -64,7 +64,7 @@ export const router = createBrowserRouter(
             },
             {
                 path: ADMIN_USERS_ROUTE,
-                element:<Users/>
+                element:<Agents/>
             },
             {
                 path: ADMIN_SETTING_ROUTE,

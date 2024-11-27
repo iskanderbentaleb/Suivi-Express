@@ -20,7 +20,7 @@ import { notifications } from '@mantine/notifications';
 export default function Navbar() {
 
 
-  const {setDahboardOpend , user } = useUserContext();
+  const {setDahboardOpend  ,DahboardOpend , user } = useUserContext();
 
   const [active, setActive] = useState('Billing');
 
@@ -56,12 +56,12 @@ export default function Navbar() {
       <Link
         className={classes.link}
         data-active={item.label === active || undefined}
+        onClick={() => {
+          setDahboardOpend(!DahboardOpend)
+          setActive(item.label);
+        }}
         to={item.link}
         key={item.label}
-        onClick={() => {
-          setActive(item.label);
-          setDahboardOpend(false);
-        }}
       >
         <item.icon className={classes.linkIcon} stroke={1.5} />
         <span>{item.label}</span>
