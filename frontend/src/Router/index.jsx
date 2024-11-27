@@ -3,6 +3,9 @@ import Layout from '../Layouts/guest/Layout'
 import LayoutAdmin from '../Layouts/admin/Layout'
 
 import AuthenticationPage from '../Layouts/guest/pages/AuthenticationPage'
+import ForgotPasswordPage from '../Layouts/guest/pages/ForgotPasswordPage'
+import ResetPasswordPage from '../Layouts/guest/pages/ResetPasswordPage'
+
 import Error404 from '../Layouts/pages_general/pages/Error404'
 import Dashboard from '../Layouts/admin/pages/Dashboard'
 import Notifications from '../Layouts/admin/pages/Notifications'
@@ -13,6 +16,8 @@ import Agents from '../Layouts/admin/pages/Agents'
 
 
 export const LOGIN_ROUTE = '/'
+export const FORGOT_PASSWORD_ROUTE = '/forgot-password'
+export const RESET_PASSWORD_ROUTE = '/password-reset'
 
 
 export const ADMIN_ROUTE = '/admin'
@@ -37,6 +42,14 @@ export const router = createBrowserRouter(
             {
                 path: LOGIN_ROUTE,
                 element:<AuthenticationPage/>
+            },
+            {
+                path: FORGOT_PASSWORD_ROUTE,
+                element:<ForgotPasswordPage/>
+            },
+            {
+                path: `${RESET_PASSWORD_ROUTE}/:token` ,
+                element:<ResetPasswordPage/>
             },
             {
                 path:'*',

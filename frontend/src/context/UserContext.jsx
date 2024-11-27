@@ -9,6 +9,8 @@ export const UserStateContext = createContext({
     setUser : ()=>{},
     logout: ()=>{},
     login: ()=>{},
+    forgot_password: ()=>{},
+    reset_password: ()=>{},
     setLanguage: ()=>{},
     authenticated: false ,
     setAuthenticated: ()=>{},
@@ -48,7 +50,16 @@ export default function UserContext({children}){
         await guestApi.getCsrfToken()
         return await guestApi.login(email,password)
     }
-
+    
+    const forgot_password = async (email) => {
+        await guestApi.getCsrfToken()
+        return await guestApi.forgot_password(email)
+    }
+    
+    const reset_password = async (token , email , password , password_confirmation ) => {
+        await guestApi.getCsrfToken()
+        return await guestApi.reset_password(token , email , password , password_confirmation)
+    }
 
     const logout =  async () => {
         await guestApi.getCsrfToken()
@@ -74,7 +85,7 @@ export default function UserContext({children}){
     // share context with All App
     return (
         <>
-           <UserStateContext.Provider value={{DahboardOpend , setDahboardOpend , user, setUser , logout , login ,  authenticated , setAuthenticated , setToken , setRefreshToken , setTokenSetTime , setLocale}}>
+           <UserStateContext.Provider value={{DahboardOpend , setDahboardOpend , user, setUser , logout , login , forgot_password , reset_password ,  authenticated , setAuthenticated , setToken , setRefreshToken , setTokenSetTime , setLocale}}>
                 {children}
            </UserStateContext.Provider>
         </>

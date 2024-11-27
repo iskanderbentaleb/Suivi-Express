@@ -1,5 +1,4 @@
 import {
-  TextInput,
   PasswordInput,
   Anchor,
   Paper,
@@ -13,37 +12,39 @@ import {
 import classes from './../styles/Authentication.module.css';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
 import { useUserContext } from "../../../context/userContext";
-import { ADMIN_DASHBOARD_ROUTE, AGENT_DASHBOARD_ROUTE, FORGOT_PASSWORD_ROUTE } from '../../../Router';
+import { ADMIN_DASHBOARD_ROUTE, AGENT_DASHBOARD_ROUTE, LOGIN_ROUTE } from '../../../Router';
 import { useEffect, useState } from 'react';
 
 
 
-export default function AuthenticationPage() {
+export default function ResetPasswordPage() {
 
   const navigate = useNavigate();
+  const location = useLocation(); 
 
-  const {login , authenticated , setAuthenticated , setToken , setRefreshToken , setTokenSetTime } = useUserContext() ;
+  const { reset_password , authenticated } = useUserContext() ;
   const [isLoading, setIsLoading] = useState(false); // State to manage loading state
 
 
   const form = useForm({
-    initialValues: { email: 'iskanderboss1999@gmail.com', password: 'iskanderboss1999@gmail.com' },
+    initialValues: { password: 'iskanderboss1999@gmail.com', password_confirmation: 'iskanderboss1999@gmail.com' },
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'email is required'),
-      password: (value) => (value.length < 8 ? 'password is required' : null),
+      password: (value) => (value.length < 8 ? 'Password must be at least 8 characters.' : null),
+      password_confirmation: (value, values) =>
+        value !== values.password ? 'Passwords do not match.' : null,
     },
   });
 
 
 
   const handleError = (errors) => {
-    if (errors.email) {
-      notifications.show({message: 'Email is required. Please enter your email.', color: 'red',});
-    } else if (errors.password) {
+    if (errors.password) {
       notifications.show({message: 'Password is required. Please enter your password.',color: 'red',});
+    }else if(errors.password_confirmation){
+      notifications.show({message: 'Password confermation is required. Please enter your password.',color: 'red',});
     }
   };
 
@@ -51,26 +52,19 @@ export default function AuthenticationPage() {
 
 
   // Submit handler
-  const handleSubmit = async ({ email, password }) => {
+  const handleSubmit = async ({password,password_confirmation}) => {
     setIsLoading(true); // Set loading state to true
     try {
-      const { status , data } = await login(email, password); // get it from Context Api
+      
+      const queryParams = new URLSearchParams(location.search);
+
+      const token = location.pathname.split('/')[2]; // Extract the token from the URL path
+      const email = queryParams.get('email'); // Extract the email from the query parameters
+      
+      const {status , data} = await reset_password( token , email , password , password_confirmation ); 
       if (status === 200) {
-
-        // console.log('stutus = ' + status)
-        const { role } = data.user;
-        localStorage.setItem('role', role);
-        setAuthenticated(true);
-        setToken(data.token);
-        setRefreshToken(data.refresh_token)
-        setTokenSetTime(Date.now() + (25 * 60 * 1000)) // set time for now + 25 min
-
-        if (role === 'admin') {
-          navigate(ADMIN_DASHBOARD_ROUTE);
-        } else if (role === 'agent') {
-          navigate(AGENT_DASHBOARD_ROUTE);
-        }
-
+          notifications.show({message: data.status, color: 'green'});
+          navigate(LOGIN_ROUTE);
       }
     } catch (reason) {
       notifications.show({ message: reason.response.data.message , color: 'red' });
@@ -100,21 +94,12 @@ export default function AuthenticationPage() {
     <Container size={520} my={100}>
       <Title ta="center" className={classes.title}>
         
-        {'Welcome Back !'}
+        {'Reset your password'}
 
       </Title>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
           
-
-          <TextInput
-            withAsterisk
-            mt="sm"
-            label={'email'}
-            placeholder={'email'}
-            {...form.getInputProps('email')}
-          />
-
 
           <PasswordInput
             withAsterisk
@@ -124,13 +109,21 @@ export default function AuthenticationPage() {
             mt="md"
           />
 
+          <PasswordInput
+            withAsterisk
+            label={'password confirmation'}
+            placeholder={'password confirmation'}
+            {...form.getInputProps('password_confirmation')}
+            mt="md"
+          />
+
 
           <Group justify="space-between" mt="lg">
             <Anchor
             onClick={()=>{
-              navigate(FORGOT_PASSWORD_ROUTE);
+              navigate(LOGIN_ROUTE);
             }}
-            size="sm">Forgot password ?</Anchor>
+            size="sm">Login ?</Anchor>
           </Group>
           
           {isLoading ? 
@@ -139,7 +132,7 @@ export default function AuthenticationPage() {
             </Button>
           :
             <Button type="submit" mt="xl" fullWidth>
-              submit
+              Change Password
             </Button>
           }
           

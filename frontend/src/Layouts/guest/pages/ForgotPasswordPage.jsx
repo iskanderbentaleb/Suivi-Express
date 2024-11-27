@@ -16,24 +16,23 @@ import { notifications } from '@mantine/notifications';
 import { useNavigate } from "react-router-dom";
 
 import { useUserContext } from "../../../context/userContext";
-import { ADMIN_DASHBOARD_ROUTE, AGENT_DASHBOARD_ROUTE, FORGOT_PASSWORD_ROUTE } from '../../../Router';
+import { ADMIN_DASHBOARD_ROUTE, AGENT_DASHBOARD_ROUTE, LOGIN_ROUTE } from '../../../Router';
 import { useEffect, useState } from 'react';
 
 
 
-export default function AuthenticationPage() {
+export default function ForgotPasswordPage() {
 
   const navigate = useNavigate();
 
-  const {login , authenticated , setAuthenticated , setToken , setRefreshToken , setTokenSetTime } = useUserContext() ;
+  const {forgot_password , authenticated } = useUserContext() ;
   const [isLoading, setIsLoading] = useState(false); // State to manage loading state
 
 
   const form = useForm({
-    initialValues: { email: 'iskanderboss1999@gmail.com', password: 'iskanderboss1999@gmail.com' },
+    initialValues: { email: 'iskanderboss1999@gmail.com'},
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'email is required'),
-      password: (value) => (value.length < 8 ? 'password is required' : null),
     },
   });
 
@@ -42,8 +41,6 @@ export default function AuthenticationPage() {
   const handleError = (errors) => {
     if (errors.email) {
       notifications.show({message: 'Email is required. Please enter your email.', color: 'red',});
-    } else if (errors.password) {
-      notifications.show({message: 'Password is required. Please enter your password.',color: 'red',});
     }
   };
 
@@ -51,31 +48,26 @@ export default function AuthenticationPage() {
 
 
   // Submit handler
-  const handleSubmit = async ({ email, password }) => {
+  const handleSubmit = async ({ email }) => {
     setIsLoading(true); // Set loading state to true
     try {
-      const { status , data } = await login(email, password); // get it from Context Api
+      const { status, data } = await forgot_password(email); // API call
       if (status === 200) {
-
-        // console.log('stutus = ' + status)
-        const { role } = data.user;
-        localStorage.setItem('role', role);
-        setAuthenticated(true);
-        setToken(data.token);
-        setRefreshToken(data.refresh_token)
-        setTokenSetTime(Date.now() + (25 * 60 * 1000)) // set time for now + 25 min
-
-        if (role === 'admin') {
-          navigate(ADMIN_DASHBOARD_ROUTE);
-        } else if (role === 'agent') {
-          navigate(AGENT_DASHBOARD_ROUTE);
-        }
-
+        // Show success notification
+        notifications.show({ 
+          message: data.status, // Adjusted to match response structure
+          color: 'green' 
+        });
       }
-    } catch (reason) {
-      notifications.show({ message: reason.response.data.message , color: 'red' });
+    } catch (error) {
+      // Handle error and show notification
+      const errorMessage = error.response?.data?.message || "An unexpected error occurred";
+      notifications.show({ 
+        message: errorMessage, 
+        color: 'red' 
+      });
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false); // Reset loading state
     }
   };
 
@@ -99,9 +91,7 @@ export default function AuthenticationPage() {
   return (
     <Container size={520} my={100}>
       <Title ta="center" className={classes.title}>
-        
-        {'Welcome Back !'}
-
+        {'Forgot Password'}
       </Title>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
@@ -116,21 +106,12 @@ export default function AuthenticationPage() {
           />
 
 
-          <PasswordInput
-            withAsterisk
-            label={'password'}
-            placeholder={'password'}
-            {...form.getInputProps('password')}
-            mt="md"
-          />
-
-
           <Group justify="space-between" mt="lg">
             <Anchor
             onClick={()=>{
-              navigate(FORGOT_PASSWORD_ROUTE);
+              navigate(LOGIN_ROUTE);
             }}
-            size="sm">Forgot password ?</Anchor>
+            size="sm">Login ?</Anchor>
           </Group>
           
           {isLoading ? 

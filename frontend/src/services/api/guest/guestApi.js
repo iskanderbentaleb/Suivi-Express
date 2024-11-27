@@ -12,8 +12,13 @@ const guestApi = {
         return await axiosClient.post('/refresh-token' , {refresh_token : refreshToken , expired_token : expiredToken} );
     },
     login: async (email, password) => {
-        // send request to get session and put in the browser
         return await axiosClient.post('/login', {email, password});
+    },
+    forgot_password: async (email) => {
+        return await axiosClient.post('/forgot-password', {email});
+    },
+    reset_password: async (token , email , password , password_confirmation) => {
+        return await axiosClient.post('/reset-password', {token , email , password , password_confirmation});
     },
     logout: async () => {
         // send request to get destroy session
