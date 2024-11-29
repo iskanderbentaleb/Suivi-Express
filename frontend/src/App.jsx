@@ -5,6 +5,7 @@ import UserContext from "./context/UserContext"
 import '@mantine/core/styles.css';
 import { Notifications } from '@mantine/notifications'
 import '@mantine/notifications/styles.css';
+import { ModalsProvider } from '@mantine/modals';
 
 export const theme = {
   colorScheme: 'light', // You can switch to dark if needed
@@ -53,8 +54,10 @@ export default function App() {
     <>
     <MantineProvider theme={theme}  withGlobalStyles withNormalizeCSS>
         <UserContext>
-          <RouterProvider router={router}/>
-          <Notifications />
+          <ModalsProvider>
+            <RouterProvider router={router}/>
+            <Notifications />
+          </ModalsProvider>
         </UserContext>
      </MantineProvider>
     </>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AgentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -8,6 +9,7 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
     Route::get('/', function (Request $request) {
         return $request->user();
     });
+    Route::apiResources(['agents' => AgentController::class]);
 });
 
 
