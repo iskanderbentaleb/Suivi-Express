@@ -19,7 +19,7 @@ import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useState } from 'react';
-import { agents } from './../../../services/api/admin/agents';
+import { agents } from '../../../../services/api/admin/agents';
 
 
 
@@ -67,7 +67,15 @@ export default function Agents() {
 
 
 
-
+  // --------------- search agents --------------------
+  const handleSearch = (values) => {
+    const trimmedSearch = values.search.trim().toLowerCase();
+    if (trimmedSearch !== search) {
+      setSearch(trimmedSearch);
+      setActivePage(1);
+    }
+  };
+  // --------------- search agents --------------------
 
 
 
@@ -78,10 +86,9 @@ export default function Agents() {
     try {
       const { data } = await agents.index(page, search);
       setElements(data.data);
+      setTotalPages(data.meta.last_page || 1); // Update total pages
       setLoading(false);
-      setTotalPages(data.meta.last_page);
     } catch (error) {
-      // console.error('Error fetching data:', error);
       setLoading(false);
       notifications.show({ message: 'Error fetching data:' + error , color: 'red' });
     }
@@ -90,10 +97,30 @@ export default function Agents() {
 
 
 
-
-
-
-
+  // 
+  const handleDelete = async (id) => {
+    try {
+      const response = await agents.delete(id);
+  
+      // Adjust pagination or fetch agents based on current conditions
+      if (elements.length === 1 && activePage > 1) {
+        setActivePage(activePage - 1);
+      } else if (elements.length === 1 && activePage === 1) {
+        feetchAgents(1); // Refresh the first page
+        setActivePage(1);
+      } else {
+        setElements(elements.filter(el => el.id !== id)); // Remove the deleted element from the list
+      }
+  
+      // Show success notification
+      notifications.show({ message: response.data.message, color: 'green' });
+    } catch (error) {
+      // Show error notification
+      notifications.show({ message: error.response?.data?.message || 'An error occurred', color: 'red' });
+    }
+  };
+  
+  
 
 
 
@@ -144,11 +171,11 @@ export default function Agents() {
 
         <Table.Td>
           <Group gap={0} justify="flex-end">
-            <ActionIcon variant="subtle" color="gray" onClick={()=>{handleUpdate(element.id)}}>
+            <ActionIcon variant="subtle" color="gray" >
               <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
             </ActionIcon>
-            <ActionIcon variant="subtle" color="red" onClick={() => DeleteCategory(element.id)}>
-              <IconTrash style={{ width: '16px', height: '16px' }} stroke={1.5} />
+            <ActionIcon variant="subtle" color="red" >
+              <IconTrash style={{ width: '16px', height: '16px' }} stroke={1.5} onClick={()=>{ handleDelete(row.id) }} />
             </ActionIcon>
           </Group>
         </Table.Td>
@@ -211,20 +238,23 @@ export default function Agents() {
 
           <div></div>
           {/* Search Section */}
+          
           <Paper style={styleCard}>
-            <TextInput
-              size="sm"
-              radius="md"
-              placeholder="Search for agents..."
-              rightSectionWidth={42}
-              leftSection={<IconSearch size={18} stroke={1.5} />}
-              {...form.getInputProps('search')}
-              rightSection={
-                <ActionIcon size={28} radius="xl" variant="filled" type="submit">
-                  <IconArrowRight size={18} stroke={1.5} />
-                </ActionIcon>
-              }
-            />
+            <form style={{ width: '100%' }} onSubmit={form.onSubmit(handleSearch)}>
+              <TextInput
+                size="sm"
+                radius="md"
+                placeholder="Search for agents..."
+                rightSectionWidth={42}
+                leftSection={<IconSearch size={18} stroke={1.5} />}
+                {...form.getInputProps('search')}
+                rightSection={
+                  <ActionIcon size={28} radius="xl" variant="filled" type="submit">
+                    <IconArrowRight size={18} stroke={1.5} />
+                  </ActionIcon>
+                }
+              />
+            </form>
           </Paper>
           
         </SimpleGrid>
@@ -246,7 +276,7 @@ export default function Agents() {
                     </Table.Tbody>
                   </Table>
                 </Table.ScrollContainer>
-              ) : (
+              ) : elements.length > 0 ? (
               <>
               <Table.ScrollContainer style={styleCard} minWidth={800}>
                   <Table striped highlightOnHover verticalSpacing="xs">
@@ -264,17 +294,63 @@ export default function Agents() {
                   </Table>
                 </Table.ScrollContainer>
               </>
-              )
+              ): (
+          ( (search.length > 0 && elements.length === 0) || (search.length === 0 && elements.length === 0)) && (
+              <>
+                <Table.ScrollContainer style={styleCard} minWidth={800}>
+                  <Table striped highlightOnHover verticalSpacing="xs">
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Name</Table.Th>
+                        <Table.Th>Total Orders</Table.Th>
+                        <Table.Th>Email</Table.Th>
+                        <Table.Th>Orders Percentage</Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+                  </Table>
+                  <div 
+                    style={{ 
+                      backgroundColor: '#dfdddd4c', 
+                      height: '500px', 
+                      display: 'flex', 
+                      justifyContent: 'center', 
+                      alignItems: 'center',
+                      borderRadius:'2px'
+                    }}
+                  >
+                    <Text 
+                      size="lg" 
+                      weight={500} 
+                      style={{ color: '#7d7d7d' }}
+                    >
+                      No results found. Try adjusting your search criteria.
+                    </Text>
+                  </div>
+                </Table.ScrollContainer>
+              </>
+            )
+          )
+              
             }
 
 
         {/* Pagination Section */}
-        <Paper style={styleCard}>
-          <Group position="center">
-            <Pagination total={10} size="sm" />
-          </Group>
-        </Paper>
-      </SimpleGrid>
+          <Paper style={{ padding: '20px', margin: '20px 0' }}>
+              <Group position="center">
+                <Pagination
+                  total={totalPages}
+                  page={activePage}
+                  onChange={setActivePage} // Update active page on click
+                  size="sm"
+                />
+              </Group>
+            </Paper>
+
+
+        </SimpleGrid>
+
+
+
     </>
   );
 }

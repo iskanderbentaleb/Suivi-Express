@@ -11,7 +11,7 @@ import Dashboard from '../Layouts/admin/pages/Dashboard'
 import Notifications from '../Layouts/admin/pages/Notifications'
 import Orders from '../Layouts/admin/pages/Orders'
 import Setting from '../Layouts/admin/pages/Setting'
-import Agents from '../Layouts/admin/pages/Agents'
+import Agents from '../Layouts/admin/pages/agents/index'
 
 
 
@@ -24,7 +24,7 @@ export const ADMIN_ROUTE = '/admin'
 export const ADMIN_DASHBOARD_ROUTE = ADMIN_ROUTE + '/dashboard'
 export const ADMIN_NOTIFICATIONS_ROUTE = ADMIN_ROUTE + '/notifications/'
 export const ADMIN_ORDERS_ROUTE = ADMIN_ROUTE + '/orders/'
-export const ADMIN_USERS_ROUTE = ADMIN_ROUTE + '/users/'
+export const ADMIN_USERS_ROUTE = ADMIN_ROUTE + '/agents/'
 export const ADMIN_SETTING_ROUTE = ADMIN_ROUTE + '/setting/'
 
 

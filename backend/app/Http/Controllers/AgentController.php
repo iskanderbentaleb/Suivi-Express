@@ -14,8 +14,8 @@ class AgentController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search', '');
-        $sort = $request->query('sort', 'name'); // Default sort by name
-        $direction = $request->query('direction', 'asc'); // Default sort direction ascending
+        $sort = $request->query('sort', 'created_at'); // Default sort by name
+        $direction = $request->query('direction', 'desc'); // Default sort direction ascending
 
         // Validate sort parameter (optional but recommended)
         $validSortFields = ['name', 'email'];
@@ -71,6 +71,10 @@ class AgentController extends Controller
      */
     public function destroy(Agent $agent)
     {
-        //
+        $agent->delete();
+        return response()->json([
+            'agent' => $agent ,
+            'message' => __('Agent Deleted successfully!'),
+        ]);
     }
 }

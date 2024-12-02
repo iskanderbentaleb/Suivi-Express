@@ -22,11 +22,12 @@ class DatabaseSeeder extends Seeder
         //     'password' => 'admin@gmail.com'
         // ]);
 
-        Agent::factory()->create([
-            'name' => 'Test User',
-            'email' => 'agent@gmail.com',
-            'password' => 'agent@gmail.com'
-        ]);
+        // Agent::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'agent@gmail.com',
+        //     'password' => 'agent@gmail.com'
+        // ]);
+        Agent::factory(50)->create();
 
     }
 }
