@@ -25,7 +25,7 @@ export default function UserContext({children}){
 
     // tretment context values
     const [DahboardOpend, setDahboardOpend] = useState(false);
-    const [user, setUser] = useState(undefined);
+    const [user, setUser] = useState({});
     const [authenticated, _setauthenticated] = useState('true' === window.localStorage.getItem('AUTH'));
 
     const setTokenSetTime = (time) => {

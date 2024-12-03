@@ -40,7 +40,7 @@ export default function Navbar() {
   const handleLogout = async (event) => {
     event.preventDefault()
     try {
-      const { status } = await logout()
+      const { status } = await logout();
       if(status === 200){
         return navigate(LOGIN_ROUTE)
       }

@@ -36,7 +36,7 @@ export default function Agents() {
 
 
 
-  const form = useForm({
+  const formSearch = useForm({
     initialValues: { search: '' },
   });
 
@@ -49,55 +49,171 @@ export default function Agents() {
   };
 
 
-  const CreateUserModal = () => modals.openConfirmModal({
-    title: 'Please confirm your action',
-    centered: true,
-    children: (
-      <Text size="sm">
-        This action is so important that you are required to confirm it with a modal. Please click
-        one of these buttons to proceed.
-      </Text>
-    ),
-    labels: { confirm: 'Confirm', cancel: 'Cancel' },
-    onCancel: () => console.log('Cancel'),
-    onConfirm: () => console.log('Confirmed'),
-  });
+
+
+
+  // ------------------ create New Agent ----------------------
+  
+  const CreateAgentForm = ({ closeModal }) => {
+    const formCreate = useForm({
+      initialValues: {
+        name: '',
+        email: '',
+        password: '',
+        passwordConfirmation: '',
+      },
+      validate: {
+        name: (value) =>
+          value.length < 3 ? 'Name must have at least 3 letters' : null,
+        email: (value) =>
+          /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
+        password: (value) =>
+          value.length < 6 ? 'Password must be at least 6 characters' : null,
+        passwordConfirmation: (value, values) =>
+          value !== values.password ? 'Passwords do not match' : null,
+      },
+    });
+  
+    const handleSubmit = async (values) => {
+      try {
+        console.log('Submitting form:', values);
+        notifications.show({
+          message: 'Agent created successfully!',
+          color: 'green',
+        });
+        formCreate.reset();
+        closeModal(); // Close modal on success
+      } catch (error) {
+        notifications.show({
+          message: 'Failed to create agent. Please try again.',
+          color: 'red',
+        });
+      }
+    };
+  
+    const handleError = (errors) => {
+      // console.log('Validation errors:', errors);
+      notifications.show({
+        message: 'Please fix the validation errors before submitting.',
+        color: 'red',
+      });
+    };
+  
+    return (
+      <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
+        <TextInput
+          label="Name"
+          withAsterisk
+          mt="sm"
+          placeholder="example"
+          data-autofocus
+          {...formCreate.getInputProps('name')}
+        />
+        <TextInput
+          label="Email"
+          withAsterisk
+          mt="sm"
+          placeholder="example@example.com"
+          {...formCreate.getInputProps('email')}
+        />
+        <TextInput
+          label="Password"
+          withAsterisk
+          type="password"
+          mt="sm"
+          placeholder="Enter password"
+          {...formCreate.getInputProps('password')}
+        />
+        <TextInput
+          label="Password Confirmation"
+          withAsterisk
+          type="password"
+          mt="sm"
+          placeholder="Confirm password"
+          {...formCreate.getInputProps('passwordConfirmation')}
+        />
+        <Button type="submit" fullWidth mt="md">
+          Submit
+        </Button>
+        <Button
+          fullWidth
+          mt="md"
+          variant="outline"
+          onClick={closeModal}
+        >
+          Cancel
+        </Button>
+      </form>
+    );
+  };
+  
+  const CreateAgentModal = () => {
+    modals.open({
+      title: 'Create New Agent',
+      centered: true,
+      children: (
+        <CreateAgentForm closeModal={() => modals.closeAll()} />
+      ),
+    });
+  };
+  
+  // ------------------ create New Agent ----------------------
+
+
 
 
 
 
 
   // --------------- search agents --------------------
-  const handleSearch = (values) => {
-    const trimmedSearch = values.search.trim().toLowerCase();
-    if (trimmedSearch !== search) {
-      setSearch(trimmedSearch);
-      setActivePage(1);
-    }
-  };
+    const handleSearch = (values) => {
+      const trimmedSearch = values.search.trim().toLowerCase();
+      if (trimmedSearch !== search) {
+        setSearch(trimmedSearch);
+        setActivePage(1);
+      }
+    };
   // --------------- search agents --------------------
 
 
 
 
     // ------------------- feetch agents -------------------
-  const feetchAgents = async (page = 1) => {
-    setLoading(true);
-    try {
-      const { data } = await agents.index(page, search);
-      setElements(data.data);
-      setTotalPages(data.meta.last_page || 1); // Update total pages
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      notifications.show({ message: 'Error fetching data:' + error , color: 'red' });
-    }
-  };
+    const feetchAgents = async (page = 1) => {
+      setLoading(true);
+      try {
+        const { data } = await agents.index(page, search);
+        setElements(data.data);
+        setTotalPages(data.meta.last_page || 1); // Update total pages
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        notifications.show({ message: 'Error fetching data:' + error , color: 'red' });
+      }
+    };
   // ------------------- feetch agents -------------------
 
 
 
-  // 
+
+  // --------------------- delete actions --------------------- 
+  const DeleteAgentModal = (id) => modals.openConfirmModal({
+    title: 'Confirm Deletion',
+    centered: true,
+    children: (
+      <Text size="sm">
+        Are you sure you want to delete this agent? <br />
+        NOTE : This action cannot be undone.
+      </Text>
+    ),
+    labels: { confirm: 'Confirm', cancel: 'Cancel' },
+    onCancel: () => console.log('Cancel'),
+    onConfirm: () => {
+      handleDelete(id);
+    },
+  });
+  
+
   const handleDelete = async (id) => {
     try {
       const response = await agents.delete(id);
@@ -119,7 +235,7 @@ export default function Agents() {
       notifications.show({ message: error.response?.data?.message || 'An error occurred', color: 'red' });
     }
   };
-  
+  // --------------------- delete actions --------------------- 
   
 
 
@@ -136,7 +252,8 @@ export default function Agents() {
 
 
 
-  const rows = elements.map((row) => {
+  //---------------- data of agent ---------------------
+    const rows = elements.map((row) => {
     const totalOrders = row.Orders.retour + row.Orders.livré;
     const livréOrders = (row.Orders.livré / totalOrders) * 100;
     const retourOrders = (row.Orders.retour / totalOrders) * 100;
@@ -174,8 +291,8 @@ export default function Agents() {
             <ActionIcon variant="subtle" color="gray" >
               <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
             </ActionIcon>
-            <ActionIcon variant="subtle" color="red" >
-              <IconTrash style={{ width: '16px', height: '16px' }} stroke={1.5} onClick={()=>{ handleDelete(row.id) }} />
+            <ActionIcon variant="subtle" color="red" onClick={()=>{ DeleteAgentModal(row.id) }}>
+              <IconTrash style={{ width: '16px', height: '16px' }} stroke={1.5}  />
             </ActionIcon>
           </Group>
         </Table.Td>
@@ -183,10 +300,12 @@ export default function Agents() {
       </Table.Tr>
     );
   });
+  //---------------- data of agent ---------------------
 
 
 
 
+  // -------------- before load data from api -----------------
   const renderSkeletons = () =>
     Array.from({ length: 5 }).map((_, index) => (
       <Table.Tr key={index}>
@@ -213,7 +332,8 @@ export default function Agents() {
           </Group>
         </Table.Td>
       </Table.Tr>
-    ));
+  ));
+  // -------------- before load data from api -----------------
 
 
   return (
@@ -227,7 +347,7 @@ export default function Agents() {
           
           <Paper style={styleCard}>
             <Flex gap="sm" align="center">
-              <Button onClick={CreateUserModal} fullWidth variant="filled" color="blue" >
+              <Button onClick={CreateAgentModal} fullWidth variant="filled" color="blue" >
                 Add New Agent
               </Button>
               <Button fullWidth variant="outline">
@@ -240,14 +360,14 @@ export default function Agents() {
           {/* Search Section */}
           
           <Paper style={styleCard}>
-            <form style={{ width: '100%' }} onSubmit={form.onSubmit(handleSearch)}>
+            <form style={{ width: '100%' }} onSubmit={formSearch.onSubmit(handleSearch)}>
               <TextInput
                 size="sm"
                 radius="md"
                 placeholder="Search for agents..."
                 rightSectionWidth={42}
                 leftSection={<IconSearch size={18} stroke={1.5} />}
-                {...form.getInputProps('search')}
+                {...formSearch.getInputProps('search')}
                 rightSection={
                   <ActionIcon size={28} radius="xl" variant="filled" type="submit">
                     <IconArrowRight size={18} stroke={1.5} />
