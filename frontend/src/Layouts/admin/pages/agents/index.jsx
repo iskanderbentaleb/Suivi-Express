@@ -13,6 +13,8 @@ import {
   Pagination,
   Paper,
   Skeleton,
+  PasswordInput,
+  ComboboxSearch,
 } from '@mantine/core';
 import { IconSearch, IconArrowRight, IconTrash, IconPencil } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
@@ -31,6 +33,7 @@ export default function Agents() {
   const [elements, setElements] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
+  const [Rerender, setRerender] = useState(false);
 
 
 
@@ -52,15 +55,121 @@ export default function Agents() {
 
 
 
-  // ------------------ create New Agent ----------------------
+
+  // ------------------ update Agent : id ----------------------
+  const UpdateAgentForm = ({ closeModal , id }) => {
+
+    const Agent = elements.find((element) => element.id === id);
+
+    const formCreate = useForm({
+      initialValues: {
+        name: Agent.name,
+        email: Agent.email
+      },
+      validate: {
+        name: (value) =>
+          value.length < 3 ? 'Name must have at least 3 letters' : null,
+        email: (value) =>
+          /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
+      },
+    });
   
+    const handleSubmit = async (values) => {
+      try {
+        // Make API call to create the agent
+        const { data } = await agents.update(id , values);
+    
+        console.log(data);
+        setRerender(!Rerender);
+        // Show success notification
+        notifications.show({
+          message: 'Agent updated successfully!',
+          color: 'green',
+        });
+    
+        // Reset form and close modal on success
+        formCreate.reset();
+        closeModal();
+      } catch (error) {
+        // Log the error for debugging
+        console.error('Error updating agent:', error);
+    
+        // Display failure notification
+        notifications.show({
+          message: error?.response?.data?.message || 'Failed to update agent. Please try again.',
+          color: 'red',
+        });
+      }
+    };
+    
+  
+    const handleError = (errors) => {
+      // console.log('Validation errors:', errors);
+      notifications.show({
+        message: 'Please fix the validation errors before submitting.',
+        color: 'red',
+      });
+    };
+  
+    return (
+      <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
+        
+        <TextInput
+          label="Name"
+          withAsterisk
+          mt="sm"
+          placeholder="example"
+          data-autofocus
+          {...formCreate.getInputProps('name')}
+        />
+
+        <TextInput
+          label="Email"
+          withAsterisk
+          mt="sm"
+          placeholder="example@example.com"
+          {...formCreate.getInputProps('email')}
+        />
+
+        <Button type="submit" fullWidth mt="md">
+          Update
+        </Button>
+
+        <Button
+          fullWidth
+          mt="md"
+          variant="outline"
+          onClick={closeModal}
+        >
+          Cancel
+        </Button>
+      </form>
+    );
+  };
+  
+  const UpdateAgentModal = (id) => {
+    modals.open({
+      title: 'Update Agent',
+      centered: true,
+      children: (
+        <UpdateAgentForm id={id} closeModal={() => modals.closeAll()} />
+      ),
+    });
+  };
+  // ------------------ update Agent : id ----------------------
+
+
+
+
+
+  // ------------------ create New Agent ----------------------
   const CreateAgentForm = ({ closeModal }) => {
     const formCreate = useForm({
       initialValues: {
-        name: '',
-        email: '',
-        password: '',
-        passwordConfirmation: '',
+        name: 'test 1',
+        email: 'test1@gmail.com',
+        password: 'test1@gmail.com',
+        password_confirmation: 'test1@gmail.com',
       },
       validate: {
         name: (value) =>
@@ -69,27 +178,39 @@ export default function Agents() {
           /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
         password: (value) =>
           value.length < 6 ? 'Password must be at least 6 characters' : null,
-        passwordConfirmation: (value, values) =>
+        password_confirmation: (value, values) =>
           value !== values.password ? 'Passwords do not match' : null,
       },
     });
   
     const handleSubmit = async (values) => {
       try {
-        console.log('Submitting form:', values);
+        // Make API call to create the agent
+        const { data } = await agents.post(values);
+    
+        console.log(data);
+        setRerender(!Rerender);
+        // Show success notification
         notifications.show({
           message: 'Agent created successfully!',
           color: 'green',
         });
+    
+        // Reset form and close modal on success
         formCreate.reset();
-        closeModal(); // Close modal on success
+        closeModal();
       } catch (error) {
+        // Log the error for debugging
+        console.error('Error creating agent:', error);
+    
+        // Display failure notification
         notifications.show({
-          message: 'Failed to create agent. Please try again.',
+          message: error?.response?.data?.message || 'Failed to create agent. Please try again.',
           color: 'red',
         });
       }
     };
+    
   
     const handleError = (errors) => {
       // console.log('Validation errors:', errors);
@@ -116,7 +237,7 @@ export default function Agents() {
           placeholder="example@example.com"
           {...formCreate.getInputProps('email')}
         />
-        <TextInput
+        <PasswordInput
           label="Password"
           withAsterisk
           type="password"
@@ -124,13 +245,13 @@ export default function Agents() {
           placeholder="Enter password"
           {...formCreate.getInputProps('password')}
         />
-        <TextInput
+        <PasswordInput
           label="Password Confirmation"
           withAsterisk
           type="password"
           mt="sm"
           placeholder="Confirm password"
-          {...formCreate.getInputProps('passwordConfirmation')}
+          {...formCreate.getInputProps('password_confirmation')}
         />
         <Button type="submit" fullWidth mt="md">
           Submit
@@ -156,7 +277,6 @@ export default function Agents() {
       ),
     });
   };
-  
   // ------------------ create New Agent ----------------------
 
 
@@ -183,6 +303,7 @@ export default function Agents() {
       setLoading(true);
       try {
         const { data } = await agents.index(page, search);
+        // console.log(data.data)
         setElements(data.data);
         setTotalPages(data.meta.last_page || 1); // Update total pages
         setLoading(false);
@@ -246,7 +367,7 @@ export default function Agents() {
   // ------------- when page mounted , or activePag , search changed -------------
   useEffect(() => {
     feetchAgents(activePage);
-  }, [activePage, search]);
+  }, [activePage, search , Rerender]);
   // ------------- when page mounted , or activePag , search changed -------------
 
 
@@ -288,7 +409,7 @@ export default function Agents() {
 
         <Table.Td>
           <Group gap={0} justify="flex-end">
-            <ActionIcon variant="subtle" color="gray" >
+            <ActionIcon variant="subtle" color="gray" onClick={()=>{ UpdateAgentModal(row.id) }}>
               <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
             </ActionIcon>
             <ActionIcon variant="subtle" color="red" onClick={()=>{ DeleteAgentModal(row.id) }}>

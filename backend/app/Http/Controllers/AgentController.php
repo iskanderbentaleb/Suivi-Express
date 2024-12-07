@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAgentRequest;
+use App\Http\Requests\UpdateAgentRequest;
 use App\Http\Resources\AgentResource;
 use App\Models\Agent;
 use Illuminate\Http\Request;
@@ -45,9 +47,15 @@ class AgentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreAgentRequest $request)
     {
-        //
+        // Create Agent in database
+        $category = Agent::create($request->validated());
+
+        return response()->json([
+            'message' => __('Agent created successfully'),
+            'agent' => $category,
+        ], 201);
     }
 
     /**
@@ -61,9 +69,15 @@ class AgentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Agent $agent)
+    public function update(UpdateAgentRequest $request, Agent $agent)
     {
-        //
+        // Update agent in database
+        $agent->update($request->validated());
+
+        return response()->json([
+            'message' => __(key: 'agent updated successfully'),
+            'agent' => $agent,
+        ]);
     }
 
     /**
