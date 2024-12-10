@@ -166,10 +166,10 @@ export default function Agents() {
   const CreateAgentForm = ({ closeModal }) => {
     const formCreate = useForm({
       initialValues: {
-        name: 'test 1',
-        email: 'test1@gmail.com',
-        password: 'test1@gmail.com',
-        password_confirmation: 'test1@gmail.com',
+        name: '',
+        email: '',
+        password: '',
+        password_confirmation: '',
       },
       validate: {
         name: (value) =>
@@ -298,7 +298,7 @@ export default function Agents() {
 
 
 
-    // ------------------- feetch agents -------------------
+  // ------------------- feetch agents -------------------
     const feetchAgents = async (page = 1) => {
       setLoading(true);
       try {
@@ -576,7 +576,7 @@ export default function Agents() {
 
 
         {/* Pagination Section */}
-          <Paper style={{ padding: '20px', margin: '20px 0' }}>
+          <Paper style={styleCard}>
               <Group position="center">
                 <Pagination
                   total={totalPages}

@@ -35,6 +35,7 @@ export default function Navbar() {
 
   const { logout } = useUserContext() ;
 
+
   const navigate = useNavigate()
 
   const handleLogout = async (event) => {

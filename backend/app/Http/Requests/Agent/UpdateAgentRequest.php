@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Agent;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreAgentRequest extends FormRequest
+class UpdateAgentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,10 +21,11 @@ class StoreAgentRequest extends FormRequest
      */
     public function rules(): array
     {
+        $agent = $this->route('agent'); // Get the agent ID from the route
+
         return [
             'name' => 'required|string|min:2|max:30',
-            'email' => 'required|string|email|max:255|unique:agents,email', // Ensure 'email' is unique in the 'agent' table
-            'password' => 'required|string|min:6|confirmed', // Require a password with confirmation
+            'email' => 'required|string|email|max:255|unique:agents,email,' . $agent->id,
         ];
     }
 }

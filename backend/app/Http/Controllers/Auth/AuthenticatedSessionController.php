@@ -66,7 +66,6 @@ class AuthenticatedSessionController extends Controller
 
 
 
-
     /**
      * Handle a refresh token request.
      */

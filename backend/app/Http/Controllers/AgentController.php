@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreAgentRequest;
-use App\Http\Requests\UpdateAgentRequest;
+use App\Http\Requests\Agent\StoreAgentRequest;
+use App\Http\Requests\Agent\UpdateAgentRequest;
 use App\Http\Resources\AgentResource;
 use App\Models\Agent;
 use Illuminate\Http\Request;
