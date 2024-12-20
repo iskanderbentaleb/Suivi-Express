@@ -30,7 +30,7 @@ class Order extends Model
     /**
      * Get the user who created the order.
      */
-    public function creator()
+    public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
     }

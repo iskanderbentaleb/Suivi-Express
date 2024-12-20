@@ -13,8 +13,7 @@ import {
   Pagination,
   Paper,
   Skeleton,
-  PasswordInput,
-  ComboboxSearch,
+  PasswordInput
 } from '@mantine/core';
 import { IconSearch, IconArrowRight, IconTrash, IconPencil } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
@@ -27,7 +26,7 @@ import { agents } from '../../../../services/api/admin/agents';
 
 
 
-export default function Agents() {
+export default function Index() {
   const [activePage, setActivePage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [elements, setElements] = useState([]);
@@ -464,22 +463,23 @@ export default function Agents() {
       </Text>
       <SimpleGrid cols={{ base: 1, sm: 1 }} spacing="lg">
         {/* Actions Section */}
-        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
           
           <Paper style={styleCard}>
             <Flex gap="sm" align="center">
               <Button onClick={CreateAgentModal} fullWidth variant="filled" color="blue" >
-                Add New Agent
+                Add Agent
               </Button>
               <Button fullWidth variant="outline">
-                Export Data
+                Export
               </Button>
             </Flex>
           </Paper>
 
-          <div></div>
-          {/* Search Section */}
-          
+
+
+
+          {/* Search Section */}          
           <Paper style={styleCard}>
             <form style={{ width: '100%' }} onSubmit={formSearch.onSubmit(handleSearch)}>
               <TextInput

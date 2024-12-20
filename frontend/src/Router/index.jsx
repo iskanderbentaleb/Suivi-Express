@@ -9,7 +9,7 @@ import ResetPasswordPage from '../Layouts/guest/pages/ResetPasswordPage'
 import Error404 from '../Layouts/pages_general/pages/Error404'
 import Dashboard from '../Layouts/admin/pages/Dashboard'
 import Notifications from '../Layouts/admin/pages/Notifications'
-import Orders from '../Layouts/admin/pages/Orders'
+import Orders from '../Layouts/admin/pages/Orders/index'
 import Setting from '../Layouts/admin/pages/Setting'
 import Agents from '../Layouts/admin/pages/agents/index'
 

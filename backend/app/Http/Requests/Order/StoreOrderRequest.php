@@ -11,7 +11,7 @@ class StoreOrderRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,18 @@ class StoreOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'deleveryCompany' => ['required', 'integer', 'exists:delivery_companies,id'], // Must be an existing delivery company ID
+            'tracking' => ['required', 'string', 'unique:orders,tracking'], // Unique tracking string
+            'external_id' => ['required', 'string', 'unique:orders,external_id'], // Unique external ID
+            'client_name' => ['required', 'string', 'min:3'], // At least 3 characters
+            'client_lastname' => ['nullable', 'string', 'min:3'], // Nullable but at least 3 characters if provided
+            'phone' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[\d\s+-]+$/', // Allows digits, spaces, '+' and '-'
+            ],
+            'affected_to' => ['required', 'integer', 'exists:agents,id'], // Must be an existing agent ID
         ];
     }
 }

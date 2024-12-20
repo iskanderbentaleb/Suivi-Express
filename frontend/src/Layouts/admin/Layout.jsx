@@ -58,9 +58,11 @@ function Layout() {
             if (status !== 401) {
                 return status;
             }
+            logout();
             return 401; // Default to 401 if refresh failed
         } catch (error) {
             console.error('Error refreshing token:', error);
+            logout();
             return 401;
         }
     };
@@ -102,12 +104,12 @@ function Layout() {
     return (
         <AppShell
             header={{ height: 50 }}
-            navbar={{ width: 340, breakpoint: 'sm', collapsed: {mobile: !DahboardOpend}  }}
+            navbar={{ width: 340, breakpoint: 'xl', collapsed: {mobile: !DahboardOpend}  }}
             padding="md"
         >
             <AppShell.Header style={{ background:'#141724ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Group h="100%" px="md" style={{ position: 'absolute', left: 0 }}>
-                    <Burger color="white" opened={DahboardOpend} onClick={() => setDahboardOpend(!DahboardOpend)} hiddenFrom="sm" size="sm" />
+                    <Burger color="white" opened={DahboardOpend} onClick={() => setDahboardOpend(!DahboardOpend)} hiddenFrom="xl" size="sm" />
                 </Group>
                 <Text size="xl" fw={900} style={{color:'white'}}>
                     {'SHIP-_-MATE'}

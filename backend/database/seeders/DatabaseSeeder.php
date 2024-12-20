@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Agent;
+use App\Models\Order;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -27,7 +28,9 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'agent@gmail.com',
         //     'password' => 'agent@gmail.com'
         // ]);
-        Agent::factory(50)->create();
 
+        // Agent::factory(50)->create();
+
+        // Order::factory()->count(20)->create();
     }
 }

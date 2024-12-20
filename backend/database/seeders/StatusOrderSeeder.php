@@ -15,16 +15,16 @@ class StatusOrderSeeder extends Seeder
     {
         $statuses = [
             ['status' => 'En préparation', 'colorHex' => '#4CAF50'], // Green
-            ['status' => 'Vers Wilaya/Transfert', 'colorHex' => '#4CAF50'], // Green
-            ['status' => 'Centre', 'colorHex' => '#4CAF50'], // Green
-            ['status' => 'En attente du client', 'colorHex' => '#2196F3'], // Blue
-            ['status' => 'Tentative échouée', 'colorHex' => '#FFD700'], // Yellow
+            ['status' => 'Vers Wilaya/Transfert', 'colorHex' => '#2196F3'], // Green
+            ['status' => 'Centre', 'colorHex' => '#4c889c'], // Green
+            ['status' => 'En attente du client', 'colorHex' => '#FF9800'], // Blue
+            ['status' => 'Tentative échouée', 'colorHex' => '#FFC107'], // Yellow
             ['status' => 'Livré', 'colorHex' => '#4CAF50'], // Green
-            ['status' => 'Sorti en livraison', 'colorHex' => '#2196F3'], // Blue
+            ['status' => 'Sorti en livraison', 'colorHex' => '#03A9F4'], // Blue
             ['status' => 'Retard', 'colorHex' => '#FF5722'], // Orange
             ['status' => 'Échec livraison', 'colorHex' => '#F44336'], // Red
+            ['status' => 'Retourné au vendeur', 'colorHex' => '#FFC107'], // yellow
         ];
-
         StatusOrder::insert($statuses);
     }
 }

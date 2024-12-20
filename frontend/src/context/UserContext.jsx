@@ -63,15 +63,7 @@ export default function UserContext({children}){
 
     const logout =  async () => {
         await guestApi.getCsrfToken()
-        const response  = await guestApi.logout()
-        setUser({})
-        setAuthenticated(false)
-        window.localStorage.removeItem('TokenSetTime') // remove local storage
-        window.localStorage.removeItem('RefreshToken') // remove local storage
-        window.localStorage.removeItem('AUTH') // remove local storage
-        window.localStorage.removeItem('Token') // remove local storage
-        window.localStorage.removeItem('role') // remove local storage
-        return response ;
+        return await guestApi.logout();
     }
 
 

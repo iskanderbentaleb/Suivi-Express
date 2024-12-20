@@ -171,7 +171,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): JsonResponse
     {
-        // Logout from the 'web' guard
         Auth::guard('web')->logout();
 
         $user = null;

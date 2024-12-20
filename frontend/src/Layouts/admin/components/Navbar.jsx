@@ -33,7 +33,7 @@ export default function Navbar() {
   ];
 
 
-  const { logout } = useUserContext() ;
+  const { logout , setUser , setAuthenticated} = useUserContext() ;
 
 
   const navigate = useNavigate()
@@ -42,8 +42,15 @@ export default function Navbar() {
     event.preventDefault()
     try {
       const { status } = await logout();
-      if(status === 200){
-        return navigate(LOGIN_ROUTE)
+      if ( status === 200 ) {
+          setUser({})
+          setAuthenticated(false)
+          window.localStorage.removeItem('TokenSetTime') // remove local storage
+          window.localStorage.removeItem('RefreshToken') // remove local storage
+          window.localStorage.removeItem('AUTH') // remove local storage
+          window.localStorage.removeItem('Token') // remove local storage
+          window.localStorage.removeItem('role') // remove local storage
+          return navigate(LOGIN_ROUTE)
       }
     } catch (reason) {
       notifications.show({ message: reason.response.data.message , color: 'red' });
