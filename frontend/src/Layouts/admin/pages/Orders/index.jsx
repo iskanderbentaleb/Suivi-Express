@@ -16,8 +16,12 @@ import {
     Select,
     NativeSelect,
     Timeline,
+    Avatar,
+    Textarea,
+    Loader,
+    Center,
   } from '@mantine/core';
-  import { IconSearch, IconArrowRight, IconTrash, IconPencil, IconCheck, IconCopy, IconPhoneCall, IconGitBranch, IconGitCommit, IconGitPullRequest, IconMessageDots} from '@tabler/icons-react';
+  import { IconSearch, IconArrowRight, IconTrash, IconPencil, IconCheck, IconCopy, IconPhoneCall, IconGitBranch, IconGitCommit, IconGitPullRequest, IconMessageDots, IconHistory, IconList, IconPackage} from '@tabler/icons-react';
   import { useForm } from '@mantine/form';
   import { modals } from '@mantine/modals';
   import { notifications } from '@mantine/notifications';
@@ -44,6 +48,7 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
     const [totalPages, setTotalPages] = useState(1);
     const [search, setSearch] = useState('');
     const [Rerender, setRerender] = useState(false);
+    const [TaskOrder, setTaskOrder] = useState(true); // true = orders / false=tasks
   
   
   
@@ -66,7 +71,23 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
   
 
 
+
+    //------------- filter between task today , and all order -------------
+    const changeOrderTask = () =>{
+      setTaskOrder(!TaskOrder);
+      if(TaskOrder){
+        feetchTaskToday(); // feetch task today orders
+      }else{
+        feetchOrders(); // feetch orders
+      }
+    }
+    //------------- filter between task today , and all order -------------
     
+
+
+
+
+
   
   
     // ------------------ update Agent : id ----------------------
@@ -535,6 +556,23 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
   
   
   
+    // ------------------- feetch task today -------------------
+    const feetchTaskToday = async (page = 1) => {
+      setLoading(true);
+      try {
+        const { data } = await orders.tasktoday(page, search);
+        // console.log(data.data)
+        setElements(data.data);
+        setTotalPages(data.meta.last_page || 1); // Update total pages
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        notifications.show({ message: 'Error fetching orders :' + error , color: 'red' });
+      }
+    };
+    // ------------------- feetch task today  -------------------
+    
+
   
     // ------------------- feetch agents -------------------
       const feetchOrders = async (page = 1) => {
@@ -547,7 +585,7 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
           setLoading(false);
         } catch (error) {
           setLoading(false);
-          notifications.show({ message: 'Error fetching data:' + error , color: 'red' });
+          notifications.show({ message: 'Error fetching orders :' + error , color: 'red' });
         }
       };
     // ------------------- feetch agents -------------------
@@ -647,205 +685,226 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
 
 
 
-    // ------------------ Call Model ----------------------
-      const CallModelComponent = ({ closeModal }) => {
-      
-        const [deleveryCompaniesElement, setdeleveryCompaniesElement] = useState([]);
-        const [agentsElement, setagentsElement] = useState([]);
-        
-        
-        const formCreate = useForm({
-          initialValues: {
-            deleveryCompany: '',
-            tracking: '',
-            external_id: '',
-            client_name: '',
-            client_lastname: '',
-            phone: '',
-            affected_to: '',
-          },
-          validate: {  
-            deleveryCompany: (value) =>
-              value.trim().length === 0 ? 'Delivery company is required' : null,
-  
-            tracking: (value) => 
-              value.trim().length === 0 ? 'Tracking is required' : null,
-              
-            external_id: (value) => 
-              value.trim().length === 0 ? 'External ID is required' : null,
-              
-            client_name: (value) =>
-              value.trim().length === 0 ? 'Client name is required' : 
-              value.trim().length < 3 ? 'Client name must have at least 3 characters' : null,
-        
-            client_lastname: (value) =>
-              value.trim().length > 0 && value.trim().length < 3 
-                ? 'Client last name must have at least 3 characters' 
-                : null, // Nullable, so no error if empty
-              
-            phone: (value) => 
-              value.trim().length === 0 
-                ? 'Phone number is required' 
-                : value.trim().length > 50 
-                ? 'Phone number must be 50 characters or less' 
-                : !/^[\d\s+-]+$/.test(value) 
-                ? 'Phone number contains invalid characters' 
-                : null,
-  
-            affected_to: (value) =>
-              value.trim().length === 0 ? 'Affected to is required' : null,
-          },
-        });
-        
-      
-  
-        const handleSubmit = async (values) => {
-          try {
-            // Make API call to create the agent
-            const { data } = await orders.post(values);
-        
-            console.log(data);
-            setRerender(!Rerender);
-            // Show success notification
-            notifications.show({
-              message: 'Order created successfully!',
-              color: 'green',
-            });
-        
-            // Reset form and close modal on success
-            formCreate.reset();
-            closeModal();
-          } catch (error) {
-            // Log the error for debugging
-            console.error('Error creating order:', error);
-        
-            // Display failure notification
-            notifications.show({
-              message: error?.response?.data?.message || 'Failed to create order. Please try again.',
-              color: 'red',
-            });
-          }
-        };
-        
-      
-        const handleError = (errors) => {
-          // console.log('Validation errors:', errors);
-          notifications.show({
-            message: 'Please fix the validation errors before submitting.',
-            color: 'red',
-          });
-        };
-  
-  
-  
-        const getDeleveryCompanies = async () => {
-          try {
-            const response = await deleveryCompanies.index();
-            const companies = response.data.map((company) => ({
-              value: company.id.toString(), // Use `id` as the value
-              label: company.name,         // Use `name` as the label
-            }));
-            setdeleveryCompaniesElement(companies);
-          } catch (error) {
-            notifications.show({ message: 'Error Delevery Companies data:' + error , color: 'red' });
-          }
-        };
-  
-        const getAgent = async (search = '' , page = 1) => {
-          try {
-            const response = await agents.index(page, search); // Pass search value
-            const data = response.data.data.map((agent) => ({
-              value: agent.id.toString(), // Use `id` as the value
-              label: agent.name,         // Use `name` as the label
-            }));
-            setagentsElement(data); // Update the `agentsElement` state
-          } catch (error) {
-            notifications.show({ message: 'Error fetching agents: ' + error, color: 'red' });
-          }
-        };
-  
-  
-        useEffect(() => {
-          getDeleveryCompanies();
-          getAgent('',1)
-        }, []);
-  
-  
-  
-      
-        return (
-          <>
-            <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
-              {/* Delivery Company */}
-              <Select
-                label="Delivery Company"
-                withAsterisk
-                placeholder="Select a Delivery Company"
-                checkIconPosition="right"
-                data={deleveryCompaniesElement}
-                searchable
-                mt="sm"
-                nothingFoundMessage="Nothing found..."
-                {...formCreate.getInputProps('deleveryCompany')}
-              />
+  // ------------------ Call Model ----------------------
+    const CallModelComponent = ({ closeModal, id }) => {
+      const [history, setHistory] = useState([]); // State for order history
+      const [loadingHistory, setLoadingHistory] = useState(false); // Loading state
 
-              {/* Submit Button */}
-              <Button type="submit" fullWidth mt="md">
-                Submit
-              </Button>
-  
-              {/* Cancel Button */}
-              <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
-                Cancel
-              </Button>
-            </form>
+      const [timer, setTimer] = useState(0); // Timer value in seconds
+      const [isRunning, setIsRunning] = useState(false); // Timer running state
 
-              <Timeline active={1} bulletSize={24} lineWidth={2}>
-                <Timeline.Item bullet={<IconGitBranch size={12} />} title="New branch">
-                  <Text c="dimmed" size="sm">You&apos;ve created new branch <Text variant="link" component="span" inherit>fix-notifications</Text> from master</Text>
-                  <Text size="xs" mt={4}>2 hours ago</Text>
-                </Timeline.Item>
+      const formCreate = useForm({
+        initialValues: {
+          status: '',
+          agent_note: '',
+        },
+        validate: {
+          status: (value) =>
+            value.trim().length === 0 ? 'Status is required' : null,
+          agent_note: (value) =>
+            value.trim().length < 5
+              ? 'Agent note must be at least 5 characters long'
+              : null,
+        },
+      });
 
-                <Timeline.Item bullet={<IconGitCommit size={12} />} title="Commits">
-                  <Text c="dimmed" size="sm">You&apos;ve pushed 23 commits to<Text variant="link" component="span" inherit>fix-notifications branch</Text></Text>
-                  <Text size="xs" mt={4}>52 minutes ago</Text>
-                </Timeline.Item>
-
-                <Timeline.Item title="Pull request" bullet={<IconGitPullRequest size={12} />} lineVariant="dashed">
-                  <Text c="dimmed" size="sm">You&apos;ve submitted a pull request<Text variant="link" component="span" inherit>Fix incorrect notification message (#187)</Text></Text>
-                  <Text size="xs" mt={4}>34 minutes ago</Text>
-                </Timeline.Item>
-
-                <Timeline.Item title="Code review" bullet={<IconMessageDots size={12} />}>
-                  <Text c="dimmed" size="sm"><Text variant="link" component="span" inherit>Robert Gluesticker</Text> left a code review on your pull request</Text>
-                  <Text size="xs" mt={4}>12 minutes ago</Text>
-                </Timeline.Item>
-              </Timeline>
-          </>
-        );
+      // Fetch history orders
+      const fetchHistory = async () => {
+        setLoadingHistory(true);
+        try {
+          const { data } = await orders.order_history(id);
+          setHistory(data.data); // Use the correct response structure
+        } catch (error) {
+          console.error('Error fetching order history:', error.message)
+        } finally {
+          setLoadingHistory(false);
+        }
       };
-      
-      const CallModal = () => {
-        modals.open({
-          title: 'Order History',
-          centered: true,
-          children: (
-            <CallModelComponent closeModal={() => modals.closeAll()} />
-          ),
-        });
+
+      // Timer Logic
+      useEffect(() => {
+        fetchHistory(); // Fetch history on component mount
+        let interval;
+        if (isRunning) {
+          interval = setInterval(() => setTimer((prev) => prev + 1), 1000);
+        }
+        return () => clearInterval(interval);
+      }, [isRunning]);
+
+      const handleStartPause = () => setIsRunning((prev) => !prev);
+      const handleReplay = () => {
+        setTimer(0);
+        setIsRunning(false);
       };
-    // ------------------ Call Model ----------------------
-    
+
+      const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const secs = (seconds % 60).toString().padStart(2, '0');
+        return `${mins}:${secs}`;
+      };
+
+      const handleSubmit = (values) => {
+        console.log('Form Values:', values);
+        console.log('Timer Value:', timer);
+        closeModal();
+      };
+
+      return (
+        <div>
+          {loadingHistory ? (
+            <Center style={{ height: '10vh' }}>
+              <Loader color="blue" type="bars" />
+            </Center>
+          ) : (
+            <>
+              <form onSubmit={formCreate.onSubmit(handleSubmit)} hidden>
+                {/* Timer */}
+                <div style={{ marginBottom: '16px' }}>
+                  <Text size="sm" weight={500}>
+                    Timer: {formatTime(timer)}
+                  </Text>
+                  <Group spacing="xs" mt="sm">
+                    <Button onClick={handleStartPause} variant="outline">
+                      {isRunning ? 'Pause' : 'Start'}
+                    </Button>
+                    <Button onClick={handleReplay} color="red" variant="outline">
+                      Replay
+                    </Button>
+                  </Group>
+                </div>
+
+                {/* Status */}
+                <NativeSelect
+                  label="Status"
+                  placeholder="Select status"
+                  withAsterisk
+                  data={[
+                    { value: 'pending', label: 'Pending' },
+                    { value: 'completed', label: 'Completed' },
+                    { value: 'failed', label: 'Failed' },
+                  ]}
+                  {...formCreate.getInputProps('status')}
+                />
+
+                {/* Agent Note */}
+                <Textarea
+                  label="Agent Note"
+                  placeholder="Add your note here..."
+                  withAsterisk
+                  mt="sm"
+                  {...formCreate.getInputProps('agent_note')}
+                />
+
+                {/* Submit Button */}
+                <Button type="submit" fullWidth mt="md">
+                  Submit
+                </Button>
+
+                {/* Cancel Button */}
+                <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
+                  Cancel
+                </Button>
+              </form>
+
+
+              {/* History Timeline */}
+              <div>
+                <Paper withBorder radius="md" shadow="sm" p="xl">
+                  {history.length === 0 ? (
+                    // Display this message if history is empty
+                    <Text color="dimmed" size="sm" align="center">
+                      No history yet.
+                    </Text>
+                  ) : (
+                    // Render the Timeline if there are history items
+                    <Timeline
+                      bulletSize={30}
+                      lineWidth={2}
+                      styles={{
+                        itemBullet: {
+                          backgroundColor: '#334ed5ff',
+                        },
+                      }}
+                    >
+                      {history.map((item) => (
+                        <Timeline.Item
+                          key={item.id}
+                          title={
+                            <Group spacing="sm">
+                              <Text weight={700} size="lg">
+                                {item.reason.reason || 'No reason provided'}
+                              </Text>
+                              <Text size="xs" color="dimmed">
+                                {item.created_at}
+                              </Text>
+                            </Group>
+                          }
+                        >
+                          <Group align="center" spacing="sm" mt="xs">
+                            <Avatar size={30} radius="xl" color="blue">
+                              {item.agent?.name?.charAt(0).toUpperCase()}
+                            </Avatar>
+                            <Text weight={500} size="md">
+                              {item.agent?.name || 'Unknown Agent'}
+                            </Text>
+                          </Group>
+
+                          <Text color="dimmed" size="sm" mt="xs">
+                            {item.note || 'No additional notes available'}
+                          </Text>
+                          <Text size="sm" mt="xs">
+                            <strong>Time Taken:</strong>{' '}
+                            <span
+                              style={{
+                                background: '#4c6ef5',
+                                padding: '4px 8px',
+                                borderRadius: '8px',
+                                color: '#fff',
+                              }}
+                            >
+                              {item.timetook || 'N/A'}
+                            </span>
+                          </Text>
+                        </Timeline.Item>
+                      ))}
+                    </Timeline>
+                  )}
+                </Paper>
+              </div>
+
+            </>
+          )
+          
+          }
+        </div>
+      );
+    };
+
+    const CallModal = (id) => {
+      modals.open({
+        title: 'Order History',
+        centered: true,
+        children: (
+          <CallModelComponent closeModal={() => modals.closeAll()} id={id} />
+        ),
+      });
+    };
+  // ------------------ Call Model ----------------------
+
 
 
   
   
-    // ------------- when page mounted , or activePag , search changed -------------
+    // ------------- when page mounted , or activePage , search changed -------------
     useEffect(() => {
       getStatusOrders();
-      feetchOrders(activePage);
+      if(TaskOrder){
+        feetchOrders(activePage); // feetch orders
+      }else{
+        feetchTaskToday(activePage); // feetch task today orders
+      }
     }, [activePage, search , Rerender]);
-    // ------------- when page mounted , or activePag , search changed -------------
+    // ------------- when page mounted , or activePage , search changed -------------
   
   
   
@@ -917,7 +976,7 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
           <Table.Td>
             <Group  style={{ flexWrap: 'nowrap' }}>
               <ActionIcon style={{background:'#dee2e6' , border: '0.1px dashed #222426'}} variant="subtle" color="gray" onClick={()=>{ CallModal(row.id) }}>
-                  <IconPhoneCall style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                  <IconHistory style={{ width: '16px', height: '16px' }} stroke={1.5} />
               </ActionIcon>
                     <NativeSelect
                       placeholder=""
@@ -934,7 +993,7 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
                           background: `${row.status.colorHex}1A`,
                           border: `1px solid ${row.status.colorHex}`,
                           color: row.status.colorHex,
-                          width: '180px',
+                          width: '200px',
                         },
                       })}
                     />
@@ -1068,7 +1127,7 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
         </Text>
         <SimpleGrid cols={{ base: 1, sm: 1 }} spacing="lg">
           {/* Actions Section */}
-          <SimpleGrid cols={{ base: 1, sm: 2 }} >
+          <SimpleGrid cols={{ base: 1, sm: 3 }} >
             
 
 
@@ -1084,6 +1143,26 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
                         <Button fullWidth variant="outline">
                           Export
                         </Button>
+                    </Flex>
+              </Paper>
+
+
+              <Paper style={styleCard}>
+                    <Flex gap="sm" align="center">
+                    {
+                      TaskOrder ? 
+                      <>
+                        <Button onClick={()=>{changeOrderTask()}} fullWidth leftSection={<IconList stroke={2} />} variant="outline" color="red" >
+                          Tasks
+                        </Button>
+                      </>
+                      :
+                      <>
+                        <Button onClick={()=>{changeOrderTask()}} fullWidth leftSection={<IconPackage stroke={2} />} variant="outline" color="blue" >
+                          Orders
+                        </Button>
+                      </>
+                    }
                     </Flex>
               </Paper>
 

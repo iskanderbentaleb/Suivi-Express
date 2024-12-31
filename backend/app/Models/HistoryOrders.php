@@ -15,6 +15,7 @@ class HistoryOrders extends Model
         'timetook',
         'reason_id',
         'agent_id',
+        'user_id_validator',
         'order_id',
     ];
 
@@ -28,6 +29,12 @@ class HistoryOrders extends Model
     public function agent()
     {
         return $this->belongsTo(Agent::class, 'agent_id');
+    }
+
+    // Relationship with admin (user) model
+    public function admin()
+    {
+        return $this->belongsTo(User::class, foreignKey: 'user_id_validator');
     }
 
     // Relationship with Order model

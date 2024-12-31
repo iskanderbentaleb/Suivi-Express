@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\HistoryOrdersResource;
+use App\Models\HistoryOrders;
 use App\Models\Order;
 use App\Http\Resources\OrderResource;
 use App\Http\Requests\Order\StoreOrderRequest;
@@ -19,7 +21,7 @@ class OrderController extends Controller
 
         // Build the query
         $query = Order::with(['status:id,status,colorHex', 'deliveryCompany:id,name,colorHex', 'affectedTo:id,name', 'createdBy:id,name'])
-            ->orderBy('id', 'desc');
+            ->orderBy('updated_at', 'desc');
 
         // Apply search filter if a search term exists
         if ($search) {
@@ -51,6 +53,89 @@ class OrderController extends Controller
         // Return the collection as a resource
         return OrderResource::collection($orders);
     }
+
+
+    public function tasktoday(Request $request)
+    {
+
+        // Retrieve the search query from request
+        $search = $request->input('search');
+
+        $today = now()->toDateString();
+
+        // Query to retrieve orders
+        $orders = Order::with([
+            'status:id,status,colorHex',
+            'deliveryCompany:id,name,colorHex',
+            'affectedTo:id,name',
+            'createdBy:id,name',
+        ])
+        // Exclude specific statuses
+        ->whereHas('status', function ($query) {
+            $query->whereNotIn('status', ['Retourné au vendeur', 'Livré']);
+        })
+
+        // Apply conditions
+        ->where(function ($query) use ($today) {
+
+            // Include orders with no history
+            $query->whereDoesntHave('historyOrders')
+
+                // Include orders with history
+                ->orWhereHas('historyOrders', function ($subQuery) use ($today) {
+                    $subQuery->whereIn('id', function ($query) {
+                        $query->selectRaw('MAX(id)')
+                            ->from('history_orders')
+                            ->groupBy('order_id');
+                    })
+                    ->Where(function ($subSubQuery) use ($today) {
+                        $subSubQuery->whereDate('updated_at', '!=', $today); // Include if updated on another day
+                    })
+                    ->orwhere(function ($subSubQuery) use ($today) {
+                        $subSubQuery->whereDate('updated_at', '=', $today) // If updated today
+                            ->whereNull('user_id_validator'); // Include if `user_id_validator` is null
+                    });
+                });
+        })
+
+        // Order by latest update
+        ->orderBy('updated_at', 'desc');
+
+
+
+        // Apply search filter if a search term exists
+        if ($search) {
+            $orders->where(function ($q) use ($search) {
+                $q->Where('tracking', 'like', "%{$search}%")
+                  ->orWhere('external_id', 'like', "%{$search}%")
+                  ->orWhere('client_name', 'like', "%{$search}%")
+                  ->orWhere('client_lastname', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('product_url', 'like', "%{$search}%")
+                  ->orWhereHas('status', function ($q) use ($search) {
+                      $q->where('status', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('deliveryCompany', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('affectedTo', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('createdBy', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+
+
+
+        $orders = $orders->paginate(10);
+
+        // Return the collection as a resource
+        return OrderResource::collection($orders);
+    }
+
 
     /**
      * Store a newly created resource in storage.
@@ -163,14 +248,13 @@ class OrderController extends Controller
 
 
 
-    public function getOrderHistory($orderId)
+    public function getOrderHistory(Order $order)
     {
-        // Fetch all history orders for the given order ID with related data
-        $historyOrders = HistoryOrders::with(['reason', 'agent', 'order'])
-            ->where('order_id', $orderId)
-            ->get();
+        $historyOrders = HistoryOrders::with(['reason', 'agent'])
+        ->where('order_id', $order->id)
+        ->orderBy('id', 'desc')
+        ->get();
 
-        // Check if there are history orders
         if ($historyOrders->isEmpty()) {
             return response()->json([
                 'message' => 'No history orders found for this order.',
@@ -178,11 +262,10 @@ class OrderController extends Controller
         }
 
         return response()->json([
-            'data' => $historyOrders,
+            'data' => HistoryOrdersResource::collection($historyOrders),
             'message' => 'History orders retrieved successfully.',
         ], 200);
     }
-
 
 
     /**

@@ -13,10 +13,13 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
         return $request->user();
     });
     Route::apiResources(['agents' => AgentController::class]);
+    Route::get('/orders/todaytask', [OrderController::class, 'tasktoday']);
     Route::apiResources(['orders' => OrderController::class]);
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus']);
+    Route::get('orders/{order}/history', [OrderController::class, 'getOrderHistory']);
     Route::get('delivery-companies', [DeliveryCompanyController::class, 'index']);
     Route::get('status-orders', [StatusOrderController::class, 'index']);
+
 });
 
 

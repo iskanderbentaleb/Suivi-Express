@@ -382,7 +382,7 @@ export default function Index() {
       <Table.Tr key={row.id}>
         <Table.Td>
           <Anchor component="button" fz="sm">
-            {row.name}
+          {row.id + ' / '} {row.name}
           </Anchor>
         </Table.Td>
         <Table.Td>{Intl.NumberFormat().format(totalOrders)}</Table.Td>
@@ -506,7 +506,7 @@ export default function Index() {
                   <Table striped highlightOnHover verticalSpacing="xs">
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th>Name</Table.Th>
+                        <Table.Th>Id/Name</Table.Th>
                         <Table.Th>Total Orders</Table.Th>
                         <Table.Th>Email</Table.Th>
                         <Table.Th>Orders Percentage</Table.Th>
@@ -523,7 +523,7 @@ export default function Index() {
                   <Table striped highlightOnHover verticalSpacing="xs">
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th>Name</Table.Th>
+                        <Table.Th>Id/Name</Table.Th>
                         <Table.Th>Total Orders</Table.Th>
                         <Table.Th>Email</Table.Th>
                         <Table.Th>Orders Percentage</Table.Th>
@@ -542,7 +542,7 @@ export default function Index() {
                   <Table striped highlightOnHover verticalSpacing="xs">
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th>Name</Table.Th>
+                        <Table.Th>Id/Name</Table.Th>
                         <Table.Th>Total Orders</Table.Th>
                         <Table.Th>Email</Table.Th>
                         <Table.Th>Orders Percentage</Table.Th>

@@ -4,6 +4,12 @@ const orders = {
     index : async (page , search = '') => {
         return await axiosClient.get(`/api/admin/orders?page=${page}&search=${search}`)
     },
+    tasktoday : async (page, search = '') => {
+        return await axiosClient.get(`/api/admin/orders/todaytask?page=${page}&search=${search}`)
+    },
+    order_history : async (order_id) => {
+        return await axiosClient.get(`/api/admin/orders/${order_id}/history`)
+    },
     post : async (payload) => {
         return await axiosClient.post(`/api/admin/orders/` , payload);
     },

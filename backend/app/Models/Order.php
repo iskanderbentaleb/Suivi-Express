@@ -51,6 +51,11 @@ class Order extends Model
         return $this->belongsTo(StatusOrder::class, 'status_id');
     }
 
+    public function historyOrders()
+    {
+        return $this->hasMany(HistoryOrders::class, 'order_id');
+    }
+
     /**
      * Get the delivery company associated with the order.
      */
@@ -58,4 +63,5 @@ class Order extends Model
     {
         return $this->belongsTo(DeliveryCompany::class, 'delivery_company_id');
     }
+
 }

@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id(); // Primary key
             $table->string('note')->nullable(); // Note column
             $table->time('timetook')->nullable(); // Time took column
-            $table->foreignId('reason_id')->nullable()->constrained('reasons')->onDelete('restrict'); // Foreign key for reasons
+            $table->foreignId('reason_id')->constrained('reasons')->onDelete('restrict'); // Foreign key for reasons
             $table->foreignId('agent_id')->nullable()->constrained('agents')->onDelete('restrict'); // Foreign key for agents
+            $table->foreignId('user_id_validator')->nullable()->constrained('users')->onDelete('restrict'); // Foreign key for agents
             $table->unsignedBigInteger('order_id'); // Foreign key for orders
             $table->timestamps(); // Timestamps for created_at and updated_at
 

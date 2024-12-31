@@ -12,7 +12,7 @@ class StatusOrderController extends Controller
      */
     public function index()
     {
-        $status_orders = StatusOrder::orderBy('id')->get();
+        $status_orders = StatusOrder::orderBy('status')->get();
         return response()->json($status_orders);
     }
 }
