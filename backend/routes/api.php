@@ -12,11 +12,16 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
     Route::get('/', function (Request $request) {
         return $request->user();
     });
+    Route::get('/agents/export', [AgentController::class, 'export']);
     Route::apiResources(['agents' => AgentController::class]);
-    Route::get('/orders/todaytask', [OrderController::class, 'tasktoday']);
-    Route::apiResources(['orders' => OrderController::class]);
+
+    Route::get('/orders/todaytask', action: [OrderController::class, 'tasktoday']);
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus']);
     Route::get('orders/{order}/history', [OrderController::class, 'getOrderHistory']);
+    Route::get('/orders/export', [OrderController::class, 'export']);
+    Route::post('/orders/import', [OrderController::class, 'import']);
+    Route::apiResources(['orders' => OrderController::class]);
+
     Route::get('delivery-companies', [DeliveryCompanyController::class, 'index']);
     Route::get('status-orders', [StatusOrderController::class, 'index']);
 

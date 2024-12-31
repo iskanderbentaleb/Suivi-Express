@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AgentsExport;
 use App\Http\Requests\Agent\StoreAgentRequest;
 use App\Http\Requests\Agent\UpdateAgentRequest;
 use App\Http\Resources\AgentResource;
 use App\Models\Agent;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+
 
 class AgentController extends Controller
 {
@@ -56,6 +59,13 @@ class AgentController extends Controller
 
         // Return paginated AgentResource collection
         return AgentResource::collection($agents);
+    }
+
+
+    // Export agents to Excel
+    public function export()
+    {
+        return Excel::download(new AgentsExport, 'agents.xlsx');
     }
 
 

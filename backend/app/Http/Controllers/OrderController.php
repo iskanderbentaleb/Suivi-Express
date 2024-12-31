@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\HistoryOrdersResource;
-use App\Models\HistoryOrders;
 use App\Models\Order;
+use Illuminate\Http\Request;
+use App\Exports\OrdersExport;
+use App\Imports\OrdersImport;
+use App\Models\HistoryOrders;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Resources\OrderResource;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\HistoryOrdersResource;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Http\Requests\Order\UpdateOrderRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
@@ -52,6 +55,24 @@ class OrderController extends Controller
 
         // Return the collection as a resource
         return OrderResource::collection($orders);
+    }
+
+    public function export()
+    {
+        return Excel::download(new OrdersExport, 'orders.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        // Validate the uploaded file
+        $request->validate([
+            'file' => 'required|mimes:xlsx,csv',
+        ]);
+
+        // Import the file
+        Excel::import(new OrdersImport, $request->file('file'));
+
+        return response()->json(['message' => 'Orders imported successfully.']);
     }
 
 

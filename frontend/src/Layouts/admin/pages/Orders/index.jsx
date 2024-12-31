@@ -590,7 +590,23 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
       };
     // ------------------- feetch agents -------------------
   
-  
+
+    // ------------------- export orders -------------------
+    const exportOrders = async () => {
+      try {
+          const response = await orders.exportOrders();
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'orders.xlsx');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+      } catch (error) {
+          console.error('Error exporting orders:', error);
+      }
+  };
+  // ------------------- export orders -------------------
   
   
     // --------------------- delete actions --------------------- 
@@ -1140,7 +1156,7 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
                         <Button fullWidth variant="outline" color='red'>
                           Import
                         </Button>
-                        <Button fullWidth variant="outline">
+                        <Button onClick={exportOrders} fullWidth variant="outline">
                           Export
                         </Button>
                     </Flex>

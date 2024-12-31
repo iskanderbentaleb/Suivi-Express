@@ -314,6 +314,26 @@ export default function Index() {
   // ------------------- feetch agents -------------------
 
 
+    // --------------------- export agents ---------------------  
+    const exportAgents = async () => {
+      try {
+          const response = await agents.exportAgent();
+          // Create a URL for the downloaded file
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'agents.xlsx');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+      } catch (error) {
+          console.error('Error exporting agents:', error);
+      }
+  };
+  // --------------------- export agents --------------------- 
+
+
+
 
 
   // --------------------- delete actions --------------------- 
@@ -356,7 +376,7 @@ export default function Index() {
     }
   };
   // --------------------- delete actions --------------------- 
-  
+   
 
 
 
@@ -368,7 +388,6 @@ export default function Index() {
     feetchAgents(activePage);
   }, [activePage, search , Rerender]);
   // ------------- when page mounted , or activePag , search changed -------------
-
 
 
 
@@ -470,7 +489,7 @@ export default function Index() {
               <Button onClick={CreateAgentModal} fullWidth variant="filled" color="blue" >
                 Add Agent
               </Button>
-              <Button fullWidth variant="outline">
+              <Button onClick={exportAgents} fullWidth variant="outline">
                 Export
               </Button>
             </Flex>

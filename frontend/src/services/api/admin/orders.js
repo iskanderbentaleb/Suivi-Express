@@ -10,6 +10,9 @@ const orders = {
     order_history : async (order_id) => {
         return await axiosClient.get(`/api/admin/orders/${order_id}/history`)
     },
+    exportOrders : async () => {
+        return await axiosClient.get(`/api/admin/orders/export`, {responseType: 'blob'})
+    },
     post : async (payload) => {
         return await axiosClient.post(`/api/admin/orders/` , payload);
     },
