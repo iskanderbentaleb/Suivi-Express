@@ -385,7 +385,7 @@ export default function Index() {
           {row.id + ' / '} {row.name}
           </Anchor>
         </Table.Td>
-        <Table.Td>{Intl.NumberFormat().format(totalOrders)}</Table.Td>
+        <Table.Td>{Intl.NumberFormat().format(row.Orders.orders_count)}</Table.Td>
         <Table.Td>
           <Anchor component="button" fz="sm">
             {row.email}
@@ -509,7 +509,7 @@ export default function Index() {
                         <Table.Th>Id/Name</Table.Th>
                         <Table.Th>Total Orders</Table.Th>
                         <Table.Th>Email</Table.Th>
-                        <Table.Th>Orders Percentage</Table.Th>
+                        <Table.Th>Delivery Rate</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
@@ -526,7 +526,7 @@ export default function Index() {
                         <Table.Th>Id/Name</Table.Th>
                         <Table.Th>Total Orders</Table.Th>
                         <Table.Th>Email</Table.Th>
-                        <Table.Th>Orders Percentage</Table.Th>
+                        <Table.Th>Delivery Rate</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody height={80}>
@@ -545,7 +545,7 @@ export default function Index() {
                         <Table.Th>Id/Name</Table.Th>
                         <Table.Th>Total Orders</Table.Th>
                         <Table.Th>Email</Table.Th>
-                        <Table.Th>Orders Percentage</Table.Th>
+                        <Table.Th>Delivery Rate</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                   </Table>

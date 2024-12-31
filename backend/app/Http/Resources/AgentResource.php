@@ -19,8 +19,9 @@ class AgentResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'Orders' => [
-                'livré' => 998,
-                'retour' => 98,
+                'livré' => $this->livré_count ?? 0,
+                'retour' => $this->retour_count ?? 0,
+                'orders_count' => $this->orders_count ?? 0,
             ],
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

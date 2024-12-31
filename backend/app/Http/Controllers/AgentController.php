@@ -16,19 +16,31 @@ class AgentController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search', '');
-        $sort = $request->query('sort', 'created_at'); // Default sort by name
-        $direction = $request->query('direction', 'desc'); // Default sort direction ascending
+        $sort = $request->query('sort', 'created_at'); // Default sort field
+        $direction = $request->query('direction', 'desc'); // Default sort direction
 
         // Validate sort parameter (optional but recommended)
-        $validSortFields = ['name', 'email'];
+        $validSortFields = ['name', 'email', 'created_at', 'updated_at']; // Add other valid fields if needed
         if (!in_array($sort, $validSortFields)) {
             return response()->json(['error' => 'Invalid sort field'], 400);
         }
 
         // Build the query for the Agent model
-        $query = Agent::query();
+        $query = Agent::withCount([
+            'orders as livré_count' => function ($q) {
+                $q->whereHas('status', function ($statusQuery) {
+                    $statusQuery->where('status', 'Livré');
+                });
+            },
+            'orders as retour_count' => function ($q) {
+                $q->whereHas('status', function ($statusQuery) {
+                    $statusQuery->where('status', 'Retourné au vendeur');
+                });
+            },
+            'orders as orders_count',
+        ]);
 
-        // Apply search condition only if a search term is provided
+        // Apply search condition if a search term is provided
         if (!empty($search)) {
             $query->where(function ($subQuery) use ($search) {
                 $subQuery->where('name', 'LIKE', "%$search%")
@@ -36,8 +48,11 @@ class AgentController extends Controller
             });
         }
 
-        // Apply sorting and pagination
-        $agents = $query->orderBy($sort, $direction)->paginate(10);
+        // Apply sorting
+        $query->orderBy($sort, $direction);
+
+        // Paginate the results
+        $agents = $query->paginate(10);
 
         // Return paginated AgentResource collection
         return AgentResource::collection($agents);
