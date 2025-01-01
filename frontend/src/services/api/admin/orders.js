@@ -13,6 +13,15 @@ const orders = {
     exportOrders : async () => {
         return await axiosClient.get(`/api/admin/orders/export`, {responseType: 'blob'})
     },
+    importOrders: async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return await axiosClient.post(`/api/admin/orders/import`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+    },
     post : async (payload) => {
         return await axiosClient.post(`/api/admin/orders/` , payload);
     },

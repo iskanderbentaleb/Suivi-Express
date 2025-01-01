@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
-use Illuminate\Http\Request;
 use App\Exports\OrdersExport;
+use App\Http\Resources\HistoryOrdersResource;
 use App\Imports\OrdersImport;
 use App\Models\HistoryOrders;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Models\Order;
 use App\Http\Resources\OrderResource;
-use Illuminate\Support\Facades\Validator;
-use App\Http\Resources\HistoryOrdersResource;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Http\Requests\Order\UpdateOrderRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log;
+
 
 class OrderController extends Controller
 {
@@ -62,19 +64,35 @@ class OrderController extends Controller
         return Excel::download(new OrdersExport, 'orders.xlsx');
     }
 
+
     public function import(Request $request)
     {
-        // Validate the uploaded file
         $request->validate([
-            'file' => 'required|mimes:xlsx,csv',
+            'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
-        // Import the file
-        Excel::import(new OrdersImport, $request->file('file'));
+        // Initialize an array to collect errors
+        $errors = [];
 
-        return response()->json(['message' => 'Orders imported successfully.']);
+        try {
+            // Import the file and pass the $errors array to collect issues
+            Excel::import(new OrdersImport($errors), $request->file('file'));
+
+            // If there are errors, return them to the user
+            if (!empty($errors)) {
+                return response()->json([
+                    'message' => 'Some rows were not imported due to errors.',
+                    'errors' => $errors,
+                ], 200); // 422 Unprocessable Entity
+            }
+
+            // If no errors, return success message
+            return response()->json(['message' => 'File imported successfully'], 200);
+        } catch (\Exception $e) {
+            Log::error('Failed to import file:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Failed to import file. ' . $e->getMessage()], 500);
+        }
     }
-
 
     public function tasktoday(Request $request)
     {

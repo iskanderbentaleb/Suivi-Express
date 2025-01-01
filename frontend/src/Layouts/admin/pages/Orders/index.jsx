@@ -20,8 +20,10 @@ import {
     Textarea,
     Loader,
     Center,
+    Alert,
+    List,
   } from '@mantine/core';
-  import { IconSearch, IconArrowRight, IconTrash, IconPencil, IconCheck, IconCopy, IconPhoneCall, IconGitBranch, IconGitCommit, IconGitPullRequest, IconMessageDots, IconHistory, IconList, IconPackage} from '@tabler/icons-react';
+  import { IconUpload, IconX , IconSearch, IconArrowRight, IconTrash, IconPencil, IconCheck, IconCopy, IconHistory, IconList, IconPackage, IconFileUpload} from '@tabler/icons-react';
   import { useForm } from '@mantine/form';
   import { modals } from '@mantine/modals';
   import { notifications } from '@mantine/notifications';
@@ -30,9 +32,9 @@ import {
   import { orders } from '../../../../services/api/admin/orders';
   import { deleveryCompanies } from '../../../../services/api/admin/deleveryCompanies';
   import { useUserContext } from "../../../../context/UserContext";
-import { statusOrders } from '../../../../services/api/admin/statusOrders';
-  
-  
+  import { statusOrders } from '../../../../services/api/admin/statusOrders';
+  import { Dropzone , MS_EXCEL_MIME_TYPE } from '@mantine/dropzone';
+  import '@mantine/dropzone/styles.css';
   
   
   
@@ -605,10 +607,181 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
       } catch (error) {
           console.error('Error exporting orders:', error);
       }
-  };
-  // ------------------- export orders -------------------
+    };
+    // ------------------- export orders -------------------
   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    // ------------------- import orders -------------------
+    const ImportOrdersForm = ({ closeModal }) => {
+      const [file, setFile] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState(null);
+      const [success, setSuccess] = useState(null);
+      const [errors, setErrors] = useState([]);
   
+      // API request function
+      const importOrders = async () => {
+          if (!file) {
+              setError('Please select a file to upload.');
+              return;
+          }
+  
+          const formData = new FormData();
+          formData.append('file', file);
+  
+          try {
+              setLoading(true);
+              setError(null);
+              setSuccess(null);
+  
+              const response = await orders.importOrders(file);
+              console.log(response.data);
+  
+              if (response.data.errors) {
+                  // If there are errors, display them
+                  setError(response.data.message);
+                  setErrors(response.data.errors); // Store the errors for detailed display
+              } else {
+                  // If no errors, show success message
+                  setSuccess(response.data.message || 'File imported successfully.');
+              }
+          } catch (err) {
+              setError(err.response?.data?.error || 'Failed to import orders. Please try again.');
+          } finally {
+              setLoading(false);
+              setFile(null);
+              setRerender(!Rerender);
+          }
+      };
+  
+      const handleDrop = (files) => {
+          if (files.length > 0) {
+              setFile(files[0]);
+              setError(null);
+          }
+      };
+  
+      const handleReject = () => {
+          setFile(null);
+          setError('Invalid file type. Please upload a valid Excel file (.xlsx).');
+      };
+  
+      return (
+          <>
+              <Dropzone
+                  onDrop={handleDrop}
+                  onReject={handleReject}
+                  accept={MS_EXCEL_MIME_TYPE}
+                  maxSize={5 * 1024 * 1024} // 5MB file size limit
+              >
+                  <Group justify="center" gap="xl" mih={220} style={{ pointerEvents: 'none' }}>
+                      <Dropzone.Accept>
+                          <IconUpload style={{ width: 52, height: 52, color: 'var(--mantine-color-blue-6)' }} stroke={1.5} />
+                      </Dropzone.Accept>
+                      <Dropzone.Reject>
+                          <IconX style={{ width: 52, height: 52, color: 'var(--mantine-color-red-6)' }} stroke={1.5} />
+                      </Dropzone.Reject>
+                      <Dropzone.Idle>
+                          <IconFileUpload style={{ width: 52, height: 52, color: 'var(--mantine-color-dimmed)' }} stroke={1.5} />
+                      </Dropzone.Idle>
+  
+                      <div>
+                          <Text size="sm" inline>
+                              Drag Excel (.xlsx) file here or click to select files
+                          </Text>
+                          <Text size="xs" color="dimmed">
+                              File size should not exceed 5MB
+                          </Text>
+                      </div>
+                  </Group>
+              </Dropzone>
+  
+              {/* Error and Success Alerts */}
+              {file !== null && (<Alert color="green" mt="md">File {file.name} has been successfully uploaded.</Alert>)}
+              {error && <Alert color="red" mt="md">{error}</Alert>}
+              {success && <Alert color="green" mt="md">{success}</Alert>}
+
+              {errors.length > 0 && (
+                <Alert color="red" mt="md">
+                    <List size="sm" spacing="xs"> {/* Make the list smaller and reduce spacing */}
+                        {errors.map((error, index) => (
+                            <List.Item key={index}>
+                                <Text size="sm">Row {error.row}:</Text> {/* Smaller text size */}
+                                {Object.entries(error.errors).map(([field, messages]) => (
+                                    <Text size="sm" key={field}> {/* Smaller text size */}
+                                        {field}: {messages.join(', ')}
+                                    </Text>
+                                ))}
+                            </List.Item>
+                        ))}
+                    </List>
+                </Alert>
+            )}
+  
+              {/* Submit and Cancel Buttons */}
+              <Button fullWidth mt="md" onClick={importOrders} disabled={loading}>
+                  {loading ? <Loader size="sm" /> : 'Submit'}
+              </Button>
+              <Button fullWidth mt="md" variant="outline" color='red' onClick={closeModal}>
+                  Download template
+              </Button>
+              <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
+                  Cancel
+              </Button>
+          </>
+      );
+    };
+  
+    const ImportOrdersModal = () => {
+        modals.open({
+            title: 'Import Orders',
+            centered: true,
+            children: <ImportOrdersForm closeModal={() => modals.closeAll()} />,
+        });
+    };
+    // ------------------- import orders -------------------
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // --------------------- delete actions --------------------- 
     const DeleteOrderModal = (id) => modals.openConfirmModal({
       title: 'Confirm Deletion',
@@ -1153,7 +1326,7 @@ import { statusOrders } from '../../../../services/api/admin/statusOrders';
                         <Button onClick={CreateOrderModal} fullWidth variant="filled" color="blue" >
                           Add Order
                         </Button>
-                        <Button fullWidth variant="outline" color='red'>
+                        <Button onClick={ImportOrdersModal} fullWidth variant="outline" color='red'>
                           Import
                         </Button>
                         <Button onClick={exportOrders} fullWidth variant="outline">
