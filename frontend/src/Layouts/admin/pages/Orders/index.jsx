@@ -158,7 +158,7 @@ import {
           tracking: (value) =>
             value.trim().length === 0 ? 'Tracking is required' : null,
           external_id: (value) =>
-            value.trim().length === 0 ? 'External ID is required' : null,
+            value.trim().length > 255 ? 'External ID must not exceed 255 characters' : null,
           client_name: (value) =>
             value.trim().length === 0
               ? 'Client name is required'
@@ -340,8 +340,8 @@ import {
           tracking: (value) => 
             value.trim().length === 0 ? 'Tracking is required' : null,
             
-          external_id: (value) => 
-            value.trim().length === 0 ? 'External ID is required' : null,
+          external_id: (value) =>
+            value.trim().length > 255 ? 'External ID must not exceed 255 characters' : null,
             
           client_name: (value) =>
             value.trim().length === 0 ? 'Client name is required' : 
@@ -612,20 +612,6 @@ import {
   
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
     // ------------------- import orders -------------------
     const ImportOrdersForm = ({ closeModal }) => {
       const [file, setFile] = useState(null);
@@ -659,13 +645,13 @@ import {
               } else {
                   // If no errors, show success message
                   setSuccess(response.data.message || 'File imported successfully.');
+                  setRerender(!Rerender);
               }
           } catch (err) {
               setError(err.response?.data?.error || 'Failed to import orders. Please try again.');
           } finally {
               setLoading(false);
               setFile(null);
-              setRerender(!Rerender);
           }
       };
   
@@ -680,6 +666,24 @@ import {
           setFile(null);
           setError('Invalid file type. Please upload a valid Excel file (.xlsx).');
       };
+
+
+      const exportOrdersTemplate = async () => {
+        try {
+            const response = await orders.exportOrdersTemplate();
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'order_template.xlsx');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Error exporting order template:', error);
+        }
+      };
+
+      
   
       return (
           <>
@@ -737,7 +741,7 @@ import {
               <Button fullWidth mt="md" onClick={importOrders} disabled={loading}>
                   {loading ? <Loader size="sm" /> : 'Submit'}
               </Button>
-              <Button fullWidth mt="md" variant="outline" color='red' onClick={closeModal}>
+              <Button onClick={exportOrdersTemplate} fullWidth mt="md" variant="outline" color='red'>
                   Download template
               </Button>
               <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
@@ -758,30 +762,6 @@ import {
 
 
   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // --------------------- delete actions --------------------- 
     const DeleteOrderModal = (id) => modals.openConfirmModal({
       title: 'Confirm Deletion',
@@ -1102,40 +1082,29 @@ import {
     const rows = elements.map((row) => {
       return (
         <Table.Tr key={row.id}>
-          
 
           <Table.Td>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {/* Badge for delivery company */}
-              <span
-                style={{
-                  background: row.delivery_company.colorHex,
-                  border: '0.5px solid black',
-                  padding: '2px 12px',
-                  borderRadius: '5px',
-                  color: 'black',
-                  display: 'flex',
-                  alignItems: 'center',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {row.delivery_company.name} 
-              </span>
-              <span
-                style={{
-                  background: '#dee2e6',
-                  border: '0.5px solid black',
-                  padding: '2px 12px',
-                  borderRadius: '5px',
-                  color: 'black',
-                  display: 'flex',
-                  alignItems: 'center',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-              {row.tracking}
-              </span>
+                <span
+                  style={{
+                    background: row.delivery_company.colorHex,
+                    border: '0.5px solid black',
+                    padding: '2px 12px',
+                    borderRadius: '5px',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {row.delivery_company.name} 
+                </span>
+            </div>
+          </Table.Td>          
 
+          <Table.Td>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              
               {/* Copy button */}
               <CopyButton value={row.tracking} timeout={2000}>
                 {({ copied, copy }) => (
@@ -1159,6 +1128,22 @@ import {
                   </Tooltip>
                 )}
               </CopyButton>
+              
+              {/* Badge for delivery company */}
+              <span
+                style={{
+                  background: '#dee2e6',
+                  border: '0.5px solid black',
+                  padding: '2px 12px',
+                  borderRadius: '5px',
+                  color: 'black',
+                  display: 'flex',
+                  alignItems: 'center',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {row.tracking}
+              </span>
             </div>
           </Table.Td>
 
@@ -1385,6 +1370,7 @@ import {
                     <Table striped highlightOnHover verticalSpacing="xs">
                       <Table.Thead>
                         <Table.Tr>
+                          <Table.Th>Delivery Company</Table.Th>
                           <Table.Th>Tracking</Table.Th>
                           <Table.Th>status</Table.Th>
                           <Table.Th>External Id</Table.Th>
@@ -1410,6 +1396,7 @@ import {
                         <Table striped highlightOnHover verticalSpacing="xs">
                             <Table.Thead>
                                 <Table.Tr>
+                                <Table.Th>Delivery Company</Table.Th>
                                 <Table.Th>Tracking</Table.Th>
                                 <Table.Th>status</Table.Th>
                                 <Table.Th>External Id</Table.Th>
@@ -1437,10 +1424,15 @@ import {
                         <Table striped highlightOnHover verticalSpacing="xs">
                         <Table.Thead>
                             <Table.Tr>
-                            <Table.Th>Name</Table.Th>
-                            <Table.Th>Total Orders</Table.Th>
-                            <Table.Th>Email</Table.Th>
-                            <Table.Th>Orders Percentage</Table.Th>
+                              <Table.Th>Delivery Company</Table.Th>
+                              <Table.Th>Tracking</Table.Th>
+                              <Table.Th>status</Table.Th>
+                              <Table.Th>External Id</Table.Th>
+                              <Table.Th>Name</Table.Th>
+                              <Table.Th>Lastname</Table.Th>
+                              <Table.Th>Phone</Table.Th>
+                              <Table.Th>creator</Table.Th>
+                              <Table.Th>Agent</Table.Th>
                             </Table.Tr>
                         </Table.Thead>
                         </Table>

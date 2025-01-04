@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\AgentsExport;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Agent\StoreAgentRequest;
 use App\Http\Requests\Agent\UpdateAgentRequest;
 use App\Http\Resources\AgentResource;

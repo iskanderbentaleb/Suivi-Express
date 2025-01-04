@@ -20,6 +20,7 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
     Route::get('orders/{order}/history', [OrderController::class, 'getOrderHistory']);
     Route::get('/orders/export', [OrderController::class, 'export']);
     Route::post('/orders/import', [OrderController::class, 'import']);
+    Route::get('/orders/download-template', [OrderController::class, 'downloadTemplate']);
     Route::apiResources(['orders' => OrderController::class]);
 
     Route::get('delivery-companies', [DeliveryCompanyController::class, 'index']);

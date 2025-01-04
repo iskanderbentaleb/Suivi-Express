@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Log;
 use App\Exports\OrdersExport;
+use App\Exports\TemplateExport;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\HistoryOrdersResource;
 use App\Imports\OrdersImport;
 use App\Models\HistoryOrders;
@@ -13,8 +16,7 @@ use App\Http\Requests\Order\UpdateOrderRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\Log;
-
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class OrderController extends Controller
 {
@@ -64,7 +66,6 @@ class OrderController extends Controller
         return Excel::download(new OrdersExport, 'orders.xlsx');
     }
 
-
     public function import(Request $request)
     {
         $request->validate([
@@ -93,6 +94,34 @@ class OrderController extends Controller
             return response()->json(['error' => 'Failed to import file. ' . $e->getMessage()], 500);
         }
     }
+
+    public function downloadTemplate(): BinaryFileResponse
+    {
+        $filePath = 'templates/order_template.xlsx'; // Updated path
+
+        try {
+            // Generate the file
+            Excel::store(new TemplateExport(), $filePath);
+
+            // Get the full path to the file
+            $fullPath = storage_path('app/private/' . $filePath);
+
+            // Check if the file exists
+            if (!file_exists($fullPath)) {
+                throw new \Exception('File not found after generation.');
+            }
+
+            // Serve the file for download and delete it afterward
+            return response()
+                ->download($fullPath, 'order_template.xlsx')
+                ->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            // Handle any errors that occur during file generation
+            \Log::error('Failed to generate the template file: ' . $e->getMessage());
+            abort(500, 'Failed to generate the template file. Please try again later.');
+        }
+    }
+
 
     public function tasktoday(Request $request)
     {

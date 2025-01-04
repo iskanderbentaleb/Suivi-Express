@@ -13,6 +13,9 @@ const orders = {
     exportOrders : async () => {
         return await axiosClient.get(`/api/admin/orders/export`, {responseType: 'blob'})
     },
+    exportOrdersTemplate : async () => {
+        return await axiosClient.get(`api/admin/orders/download-template`, {responseType: 'blob'})
+    },
     importOrders: async (file) => {
         const formData = new FormData();
         formData.append('file', file);

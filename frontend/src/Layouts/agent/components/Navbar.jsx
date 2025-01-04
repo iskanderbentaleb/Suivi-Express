@@ -5,9 +5,8 @@ import {
   IconPackage,
   IconLogout,
   IconSettings,
-  IconUsers,
 } from '@tabler/icons-react';
-import { ADMIN_DASHBOARD_ROUTE , ADMIN_NOTIFICATIONS_ROUTE , ADMIN_ORDERS_ROUTE , ADMIN_USERS_ROUTE , ADMIN_SETTING_ROUTE } from '../../../Router/index';
+import { AGENT_DASHBOARD_ROUTE, AGENT_NOTIFICATIONS_ROUTE, AGENT_ORDERS_ROUTE, AGENT_SETTING_ROUTE } from '../../../Router/index';
 import { Link } from 'react-router-dom';
 import { Group , UnstyledButton , Text , Avatar } from '@mantine/core';
 import classes from './styles/Navbar.module.css';
@@ -25,11 +24,10 @@ export default function Navbar() {
   const [active, setActive] = useState('Billing');
 
   const data = [
-    { link: ADMIN_DASHBOARD_ROUTE , label: 'Dashboard', icon: IconLayoutDashboard },
-    { link: ADMIN_NOTIFICATIONS_ROUTE , label: 'Notifications', icon: IconBrandWechat },
-    { link: ADMIN_ORDERS_ROUTE , label: 'Orders', icon: IconPackage },
-    { link: ADMIN_USERS_ROUTE, label: 'Confirmation Agents', icon:   IconUsers },
-    { link: ADMIN_SETTING_ROUTE, label: 'Other Settings', icon: IconSettings },
+    { link: AGENT_DASHBOARD_ROUTE , label: 'Dashboard', icon: IconLayoutDashboard },
+    { link: AGENT_NOTIFICATIONS_ROUTE , label: 'Notifications', icon: IconBrandWechat },
+    { link: AGENT_ORDERS_ROUTE , label: 'Orders', icon: IconPackage },
+    { link: AGENT_SETTING_ROUTE , label: 'Settings', icon: IconSettings },
   ];
 
 

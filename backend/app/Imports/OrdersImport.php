@@ -2,18 +2,17 @@
 
 namespace App\Imports;
 
-use App\Models\Order;
-use App\Models\User;
-use App\Models\Agent;
-use App\Models\StatusOrder;
-use App\Models\DeliveryCompany;
-use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\BeforeSheet;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use App\Models\{Order, Agent, StatusOrder, DeliveryCompany};
 
-class OrdersImport implements ToCollection, WithHeadingRow
+class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, WithEvents
 {
     protected $errors;
 
@@ -34,7 +33,7 @@ class OrdersImport implements ToCollection, WithHeadingRow
             // Validate the row
             $validator = Validator::make($row->toArray(), [
                 'tracking' => 'required|unique:orders,tracking',
-                'external_id' => 'required|unique:orders,external_id',
+                'external_id' => 'nullable|string|max:255',
                 'client_name' => 'required|string|max:255',
                 'client_lastname' => 'nullable|string|max:255',
                 'phone' => 'nullable|string|max:50',
@@ -86,5 +85,25 @@ class OrdersImport implements ToCollection, WithHeadingRow
                 ];
             }
         }
+    }
+
+    public function sheets(): array
+    {
+        return [
+            'Template' => $this, // Import only the 'Template' sheet
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            BeforeSheet::class => function (BeforeSheet $event) {
+                // Check the sheet name before processing
+                if ($event->getSheet()->getTitle() !== 'Template') {
+                    // Skip sheets that are not named 'Template'
+                    $event->getSheet()->disconnect();
+                }
+            },
+        ];
     }
 }

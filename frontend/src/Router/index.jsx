@@ -1,6 +1,7 @@
 import {createBrowserRouter} from 'react-router-dom'
 import Layout from '../Layouts/guest/Layout'
 import LayoutAdmin from '../Layouts/admin/Layout'
+import LayoutAgent from '../Layouts/agent/Layout'
 
 import AuthenticationPage from '../Layouts/guest/pages/AuthenticationPage'
 import ForgotPasswordPage from '../Layouts/guest/pages/ForgotPasswordPage'
@@ -29,7 +30,12 @@ export const ADMIN_SETTING_ROUTE = ADMIN_ROUTE + '/setting/'
 
 
 
-export const AGENT_DASHBOARD_ROUTE = '/agent'
+export const AGENT_ROUTE = '/agent'
+export const AGENT_DASHBOARD_ROUTE = AGENT_ROUTE + '/dashboard'
+export const AGENT_NOTIFICATIONS_ROUTE = AGENT_ROUTE + '/notifications/'
+export const AGENT_ORDERS_ROUTE = AGENT_ROUTE + '/orders/'
+export const AGENT_USERS_ROUTE = AGENT_ROUTE + '/agents/'
+export const AGENT_SETTING_ROUTE = AGENT_ROUTE + '/setting/'
 
 
 export const router = createBrowserRouter(
@@ -81,6 +87,30 @@ export const router = createBrowserRouter(
             },
             {
                 path: ADMIN_SETTING_ROUTE,
+                element:<Setting/>
+            },
+        ]
+    },
+
+
+    // shared agent layout pages
+    {
+        element:<LayoutAgent/>,
+        children:[
+            {
+                path: AGENT_DASHBOARD_ROUTE,
+                element:<Dashboard/>
+            },
+            {
+                path: AGENT_NOTIFICATIONS_ROUTE,
+                element:<Notifications/>
+            },
+            {
+                path: AGENT_ORDERS_ROUTE,
+                element:<Orders/>
+            },
+            {
+                path: AGENT_SETTING_ROUTE,
                 element:<Setting/>
             },
         ]

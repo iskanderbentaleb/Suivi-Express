@@ -24,7 +24,7 @@ class StoreOrderRequest extends FormRequest
         return [
             'deleveryCompany' => ['required', 'integer', 'exists:delivery_companies,id'], // Must be an existing delivery company ID
             'tracking' => ['required', 'string', 'unique:orders,tracking'], // Unique tracking string
-            'external_id' => ['required', 'string', 'unique:orders,external_id'], // Unique external ID
+            'external_id' => ['nullable', 'string', 'max:255'], // Nullable and max 255 characters
             'client_name' => ['required', 'string', 'min:3'], // At least 3 characters
             'client_lastname' => ['nullable', 'string', 'min:3'], // Nullable but at least 3 characters if provided
             'phone' => [
