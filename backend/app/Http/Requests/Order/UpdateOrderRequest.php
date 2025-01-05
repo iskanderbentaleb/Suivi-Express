@@ -32,7 +32,8 @@ class UpdateOrderRequest extends FormRequest
             'client_name' => ['required','string','min:3'], // At least 3 characters
             'client_lastname' => ['nullable','string','min:3'], // Nullable but at least 3 characters if provided
             'phone' => ['required','string','max:50','regex:/^[\d\s+-]+$/'], // Allows digits, spaces, '+' and '-'],
-            'affected_to' => ['required','integer','exists:agents,id'] // Must be an existing agent ID
+            'affected_to' => ['required','integer','exists:agents,id'], // Must be an existing agent ID
+            'product_url' => ['nullable', 'string', 'min:3'], // Nullable but at least 3 characters if provided
         ];
     }
 }

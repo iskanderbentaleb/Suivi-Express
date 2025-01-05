@@ -3,45 +3,61 @@ import Layout from '../Layouts/guest/Layout'
 import LayoutAdmin from '../Layouts/admin/Layout'
 import LayoutAgent from '../Layouts/agent/Layout'
 
+// ===================== SHARED PAGES =====================
 import AuthenticationPage from '../Layouts/guest/pages/AuthenticationPage'
 import ForgotPasswordPage from '../Layouts/guest/pages/ForgotPasswordPage'
 import ResetPasswordPage from '../Layouts/guest/pages/ResetPasswordPage'
-
 import Error404 from '../Layouts/pages_general/pages/Error404'
+// ===================== SHARED PAGES =====================
+
+// ===================== ADMIN PAGES =====================  
 import Dashboard from '../Layouts/admin/pages/Dashboard'
 import Notifications from '../Layouts/admin/pages/Notifications'
 import Orders from '../Layouts/admin/pages/Orders/index'
 import Setting from '../Layouts/admin/pages/Setting'
 import Agents from '../Layouts/admin/pages/agents/index'
+// ===================== ADMIN PAGES ===================== 
+
+// ===================== AGENT PAGES =====================
+import Dashboard_Agent from '../Layouts/agent/pages/Dashboard'
+import Notifications_Agent from '../Layouts/agent/pages/Notifications'
+import Orders_Agent from '../Layouts/agent/pages/Orders/index'
+import Setting_Agent from '../Layouts/agent/pages/Setting'
+// ===================== AGENT PAGES =====================
 
 
 
+
+// ===================== SHARED ROUTES =====================
 export const LOGIN_ROUTE = '/'
 export const FORGOT_PASSWORD_ROUTE = '/forgot-password'
 export const RESET_PASSWORD_ROUTE = '/password-reset'
+// ===================== SHARED ROUTES =====================
 
-
+// ===================== ADMIN ROUTES =====================
 export const ADMIN_ROUTE = '/admin'
 export const ADMIN_DASHBOARD_ROUTE = ADMIN_ROUTE + '/dashboard'
 export const ADMIN_NOTIFICATIONS_ROUTE = ADMIN_ROUTE + '/notifications/'
 export const ADMIN_ORDERS_ROUTE = ADMIN_ROUTE + '/orders/'
 export const ADMIN_USERS_ROUTE = ADMIN_ROUTE + '/agents/'
 export const ADMIN_SETTING_ROUTE = ADMIN_ROUTE + '/setting/'
+// ===================== ADMIN ROUTES =====================
 
-
-
+// ===================== AGENT ROUTES =====================
 export const AGENT_ROUTE = '/agent'
 export const AGENT_DASHBOARD_ROUTE = AGENT_ROUTE + '/dashboard'
 export const AGENT_NOTIFICATIONS_ROUTE = AGENT_ROUTE + '/notifications/'
 export const AGENT_ORDERS_ROUTE = AGENT_ROUTE + '/orders/'
 export const AGENT_USERS_ROUTE = AGENT_ROUTE + '/agents/'
 export const AGENT_SETTING_ROUTE = AGENT_ROUTE + '/setting/'
+// ===================== AGENT ROUTES =====================
+
 
 
 export const router = createBrowserRouter(
     [
 
-    // shared with all => shared with guest Layouts
+    // shared with all users
     {
         element:<Layout/>,
         children:[
@@ -65,7 +81,7 @@ export const router = createBrowserRouter(
     },
 
 
-    // shared Admin layout pages
+    // Admin pages
     {
         element:<LayoutAdmin/>,
         children:[
@@ -93,25 +109,25 @@ export const router = createBrowserRouter(
     },
 
 
-    // shared agent layout pages
+    // agent pages
     {
         element:<LayoutAgent/>,
         children:[
             {
                 path: AGENT_DASHBOARD_ROUTE,
-                element:<Dashboard/>
+                element:<Dashboard_Agent/>
             },
             {
                 path: AGENT_NOTIFICATIONS_ROUTE,
-                element:<Notifications/>
+                element:<Notifications_Agent/>
             },
             {
                 path: AGENT_ORDERS_ROUTE,
-                element:<Orders/>
+                element:<Orders_Agent/>
             },
             {
                 path: AGENT_SETTING_ROUTE,
-                element:<Setting/>
+                element:<Setting_Agent/>
             },
         ]
     },

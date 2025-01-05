@@ -23,7 +23,7 @@ import {
     Alert,
     List,
   } from '@mantine/core';
-  import { IconUpload, IconX , IconSearch, IconArrowRight, IconTrash, IconPencil, IconCheck, IconCopy, IconHistory, IconList, IconPackage, IconFileUpload, IconArchive, IconUnlink, IconLinkOff} from '@tabler/icons-react';
+  import { IconUpload, IconX , IconSearch, IconArrowRight, IconTrash, IconPencil, IconCheck, IconCopy, IconHistory, IconList, IconPackage, IconFileUpload} from '@tabler/icons-react';
   import { useForm } from '@mantine/form';
   import { modals } from '@mantine/modals';
   import { notifications } from '@mantine/notifications';
@@ -151,7 +151,6 @@ import {
           client_lastname: order?.client_lastname || '',
           phone: order?.phone || '',
           affected_to: order?.affected_to.id?.toString() || '',
-          product_url: order?.product_url || '',
         },
         validate: {
           deleveryCompany: (value) =>
@@ -180,12 +179,6 @@ import {
               : null,
           affected_to: (value) =>
             value.trim().length === 0 ? 'Affected to is required' : null,
-
-          product_url: (value) =>
-            value.trim().length > 0 && value.trim().length < 5 
-              ? 'Product url must have at least 3 characters' 
-              : null, // Nullable, so no error if empty
-            
         },
       });
     
@@ -295,14 +288,6 @@ import {
             nothingFoundMessage="Nothing found..."
             {...formCreate.getInputProps('affected_to')}
           />
-
-          {/* Product URL */}
-          <TextInput
-            label="Product URL"
-            mt="sm"
-            placeholder="Product URL"
-            {...formCreate.getInputProps('product_url')}
-          />
     
           {/* Submit Button */}
           <Button type="submit" fullWidth mt="md">
@@ -327,249 +312,7 @@ import {
     
     // ------------------ update Agent : id ----------------------
   
-  
-  
-  
-  
-    // ------------------ create New Order ----------------------
-    const CreateOrderForm = ({ closeModal }) => {
-      
-      const [deleveryCompaniesElement, setdeleveryCompaniesElement] = useState([]);
-      const [agentsElement, setagentsElement] = useState([]);
-      
-      
-      const formCreate = useForm({
-        initialValues: {
-          deleveryCompany: '',
-          tracking: '',
-          external_id: '',
-          client_name: '',
-          client_lastname: '',
-          phone: '',
-          affected_to: '',
-          product_url: '',
-        },
-        validate: {  
-          deleveryCompany: (value) =>
-            value.trim().length === 0 ? 'Delivery company is required' : null,
 
-          tracking: (value) => 
-            value.trim().length === 0 ? 'Tracking is required' : null,
-            
-          external_id: (value) =>
-            value.trim().length > 255 ? 'External ID must not exceed 255 characters' : null,
-            
-          client_name: (value) =>
-            value.trim().length === 0 ? 'Client name is required' : 
-            value.trim().length < 3 ? 'Client name must have at least 3 characters' : null,
-      
-          client_lastname: (value) =>
-            value.trim().length > 0 && value.trim().length < 3 
-              ? 'Client last name must have at least 3 characters' 
-              : null, // Nullable, so no error if empty
-            
-          phone: (value) => 
-            value.trim().length === 0 
-              ? 'Phone number is required' 
-              : value.trim().length > 50 
-              ? 'Phone number must be 50 characters or less' 
-              : !/^[\d\s+-]+$/.test(value) 
-              ? 'Phone number contains invalid characters' 
-              : null,
-
-          affected_to: (value) =>
-            value.trim().length === 0 ? 'Affected to is required' : null,
-
-          product_url: (value) =>
-            value.trim().length > 0 && value.trim().length < 5 
-              ? 'Product url must have at least 3 characters' 
-              : null, // Nullable, so no error if empty
-            
-        },
-      });
-      
-    
-
-      const handleSubmit = async (values) => {
-        try {
-          // Make API call to create the agent
-          const { data } = await orders.post(values);
-      
-          console.log(data);
-          setRerender(!Rerender);
-          // Show success notification
-          notifications.show({
-            message: 'Order created successfully!',
-            color: 'green',
-          });
-      
-          // Reset form and close modal on success
-          formCreate.reset();
-          closeModal();
-        } catch (error) {
-          // Log the error for debugging
-          console.error('Error creating order:', error);
-      
-          // Display failure notification
-          notifications.show({
-            message: error?.response?.data?.message || 'Failed to create order. Please try again.',
-            color: 'red',
-          });
-        }
-      };
-      
-    
-      const handleError = (errors) => {
-        // console.log('Validation errors:', errors);
-        notifications.show({
-          message: 'Please fix the validation errors before submitting.',
-          color: 'red',
-        });
-      };
-
-
-
-      const getDeleveryCompanies = async () => {
-        try {
-          const response = await deleveryCompanies.index();
-          const companies = response.data.map((company) => ({
-            value: company.id.toString(), // Use `id` as the value
-            label: company.name,         // Use `name` as the label
-          }));
-          setdeleveryCompaniesElement(companies);
-        } catch (error) {
-          notifications.show({ message: 'Error Delevery Companies data:' + error , color: 'red' });
-        }
-      };
-
-      const getAgent = async (search = '' , page = 1) => {
-        try {
-          const response = await agents.index(page, search); // Pass search value
-          const data = response.data.data.map((agent) => ({
-            value: agent.id.toString(), // Use `id` as the value
-            label: agent.name,         // Use `name` as the label
-          }));
-          setagentsElement(data); // Update the `agentsElement` state
-        } catch (error) {
-          notifications.show({ message: 'Error fetching agents: ' + error, color: 'red' });
-        }
-      };
-
-
-      useEffect(() => {
-        getDeleveryCompanies();
-        getAgent('',1)
-      }, []);
-
-
-
-    
-      return (
-          <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
-            {/* Delivery Company */}
-            <Select
-              label="Delivery Company"
-              withAsterisk
-              placeholder="Select a Delivery Company"
-              checkIconPosition="right"
-              data={deleveryCompaniesElement}
-              searchable
-              mt="sm"
-              nothingFoundMessage="Nothing found..."
-              {...formCreate.getInputProps('deleveryCompany')}
-            />
-
-            {/* Tracking */}
-            <TextInput
-              label="Tracking"
-              withAsterisk
-              mt="sm"
-              placeholder="YAL-TAXKXD"
-              {...formCreate.getInputProps('tracking')}
-            />
-
-            {/* External ID */}
-            <TextInput
-              label="External ID"
-              withAsterisk
-              mt="sm"
-              placeholder="web5010"
-              {...formCreate.getInputProps('external_id')}
-            />
-
-            {/* Client Name */}
-            <TextInput
-              label="Client Name"
-              withAsterisk
-              mt="sm"
-              placeholder="First Name"
-              {...formCreate.getInputProps('client_name')}
-            />
-
-            {/* Client Lastname */}
-            <TextInput
-              label="Client Lastname"
-              mt="sm"
-              placeholder="Last Name"
-              {...formCreate.getInputProps('client_lastname')}
-            />
-
-            {/* Client Phone */}
-            <TextInput
-              label="Client Phone"
-              withAsterisk
-              mt="sm"
-              placeholder="0501010011"
-              {...formCreate.getInputProps('phone')}
-            />
-
-            {/* Affected To */}
-            <Select
-              label="Affected To"
-              withAsterisk
-              placeholder="Select an Agent"
-              checkIconPosition="right"
-              data={agentsElement}
-              searchable
-              mt="sm"
-              onSearchChange={(search) => getAgent(search)} // Pass the search value
-              nothingFoundMessage="Nothing found..."
-              {...formCreate.getInputProps('affected_to')}
-            />
-            
-            {/* Product URL */}
-            <TextInput
-              label="Product URL"
-              mt="sm"
-              placeholder="Product URL"
-              {...formCreate.getInputProps('product_url')}
-            />
-
-
-            {/* Submit Button */}
-            <Button type="submit" fullWidth mt="md">
-              Submit
-            </Button>
-
-            {/* Cancel Button */}
-            <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
-              Cancel
-            </Button>
-          </form>
-      );
-    };
-    
-    const CreateOrderModal = () => {
-      modals.open({
-        title: 'Create New Order',
-        centered: true,
-        children: (
-          <CreateOrderForm closeModal={() => modals.closeAll()} />
-        ),
-      });
-    };
-    // ------------------ create New Order ----------------------
-  
   
   
   
@@ -641,155 +384,6 @@ import {
     };
     // ------------------- export orders -------------------
   
-
-
-    // ------------------- import orders -------------------
-    const ImportOrdersForm = ({ closeModal }) => {
-      const [file, setFile] = useState(null);
-      const [loading, setLoading] = useState(false);
-      const [error, setError] = useState(null);
-      const [success, setSuccess] = useState(null);
-      const [errors, setErrors] = useState([]);
-  
-      // API request function
-      const importOrders = async () => {
-          if (!file) {
-              setError('Please select a file to upload.');
-              return;
-          }
-  
-          const formData = new FormData();
-          formData.append('file', file);
-  
-          try {
-              setLoading(true);
-              setError(null);
-              setSuccess(null);
-  
-              const response = await orders.importOrders(file);
-              console.log(response.data);
-  
-              if (response.data.errors) {
-                  // If there are errors, display them
-                  setError(response.data.message);
-                  setErrors(response.data.errors); // Store the errors for detailed display
-              } else {
-                  // If no errors, show success message
-                  setSuccess(response.data.message || 'File imported successfully.');
-                  setRerender(!Rerender);
-              }
-          } catch (err) {
-              setError(err.response?.data?.error || 'Failed to import orders. Please try again.');
-          } finally {
-              setLoading(false);
-              setFile(null);
-          }
-      };
-  
-      const handleDrop = (files) => {
-          if (files.length > 0) {
-              setFile(files[0]);
-              setError(null);
-          }
-      };
-  
-      const handleReject = () => {
-          setFile(null);
-          setError('Invalid file type. Please upload a valid Excel file (.xlsx).');
-      };
-
-
-      const exportOrdersTemplate = async () => {
-        try {
-            const response = await orders.exportOrdersTemplate();
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'order_template.xlsx');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            console.error('Error exporting order template:', error);
-        }
-      };
-
-      
-  
-      return (
-          <>
-              <Dropzone
-                  onDrop={handleDrop}
-                  onReject={handleReject}
-                  accept={MS_EXCEL_MIME_TYPE}
-                  maxSize={5 * 1024 * 1024} // 5MB file size limit
-              >
-                  <Group justify="center" gap="xl" mih={220} style={{ pointerEvents: 'none' }}>
-                      <Dropzone.Accept>
-                          <IconUpload style={{ width: 52, height: 52, color: 'var(--mantine-color-blue-6)' }} stroke={1.5} />
-                      </Dropzone.Accept>
-                      <Dropzone.Reject>
-                          <IconX style={{ width: 52, height: 52, color: 'var(--mantine-color-red-6)' }} stroke={1.5} />
-                      </Dropzone.Reject>
-                      <Dropzone.Idle>
-                          <IconFileUpload style={{ width: 52, height: 52, color: 'var(--mantine-color-dimmed)' }} stroke={1.5} />
-                      </Dropzone.Idle>
-  
-                      <div>
-                          <Text size="sm" inline>
-                              Drag Excel (.xlsx) file here or click to select files
-                          </Text>
-                          <Text size="xs" color="dimmed">
-                              File size should not exceed 5MB
-                          </Text>
-                      </div>
-                  </Group>
-              </Dropzone>
-  
-              {/* Error and Success Alerts */}
-              {file !== null && (<Alert color="green" mt="md">File {file.name} has been successfully uploaded.</Alert>)}
-              {error && <Alert color="red" mt="md">{error}</Alert>}
-              {success && <Alert color="green" mt="md">{success}</Alert>}
-
-              {errors.length > 0 && (
-                <Alert color="red" mt="md">
-                    <List size="sm" spacing="xs"> {/* Make the list smaller and reduce spacing */}
-                        {errors.map((error, index) => (
-                            <List.Item key={index}>
-                                <Text size="sm">Row {error.row}:</Text> {/* Smaller text size */}
-                                {Object.entries(error.errors).map(([field, messages]) => (
-                                    <Text size="sm" key={field}> {/* Smaller text size */}
-                                        {field}: {messages.join(', ')}
-                                    </Text>
-                                ))}
-                            </List.Item>
-                        ))}
-                    </List>
-                </Alert>
-            )}
-  
-              {/* Submit and Cancel Buttons */}
-              <Button fullWidth mt="md" onClick={importOrders} disabled={loading}>
-                  {loading ? <Loader size="sm" /> : 'Submit'}
-              </Button>
-              <Button onClick={exportOrdersTemplate} fullWidth mt="md" variant="outline" color='red'>
-                  Download template
-              </Button>
-              <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
-                  Cancel
-              </Button>
-          </>
-      );
-    };
-  
-    const ImportOrdersModal = () => {
-        modals.open({
-            title: 'Import Orders',
-            centered: true,
-            children: <ImportOrdersForm closeModal={() => modals.closeAll()} />,
-        });
-    };
-    // ------------------- import orders -------------------
 
 
   
@@ -1253,22 +847,10 @@ import {
           </Table.Td>
 
           <Table.Td>
-            <Group gap={5} justify="flex-start" style={{ flexWrap: 'nowrap' }}>
-              
-              { row.product_url !== null ?
-                <ActionIcon color="gray" onClick={()=>{ window.open(row.product_url, '_blank'); }}>
-                  <IconUnlink style={{ width: '16px', height: '16px' }} stroke={1.5} />
-                </ActionIcon>
-                : 
-                <ActionIcon color='black'>
-                  <IconLinkOff style={{ width: '16px', height: '16px' }} stroke={1.5} />
-                </ActionIcon>
-              }
-              
+            <Group gap={0} justify="flex-end" style={{ flexWrap: 'nowrap' }}>
               <ActionIcon variant="subtle" color="gray" onClick={()=>{ UpdateOrderModal(row.id) }}>
                 <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
               </ActionIcon>
-
               { row.status.status === "En préparation" ?
                 <>
                   <ActionIcon variant="subtle" color="red" onClick={()=>{ DeleteOrderModal(row.id) }}>
@@ -1277,15 +859,7 @@ import {
                 </>
                 : null
               }
-              {/* archive button */}
-              { row.status.status === "Livré" || row.status.status === "Retourné au vendeur" ?
-                <>
-                  <ActionIcon variant="subtle" color="gray" onClick={()=>{  }}>
-                    <IconArchive style={{ width: '16px', height: '16px' }} stroke={1.5}  />
-                  </ActionIcon>
-                </>
-                : null
-              }
+
             </Group>
           </Table.Td>
         </Table.Tr>
@@ -1307,7 +881,7 @@ import {
           </Table.Td>
           <Table.Td style={{ width: "30%" }}>
           <Group spacing="xs" style={{ flexWrap: 'nowrap' }}>
-            <Skeleton radius="xs" height={24} width={24} />
+            <Skeleton circle height={24} width={24} />
             <Skeleton height={16} width="30%" />
           </Group>
           </Table.Td>
@@ -1352,44 +926,34 @@ import {
         </Text>
         <SimpleGrid cols={{ base: 1, sm: 1 }} spacing="lg">
           {/* Actions Section */}
-          <SimpleGrid cols={{ base: 1, sm: 3 }} >
+          <SimpleGrid cols={{ base: 1, sm: 2 }} >
             
 
 
               {/* add orders */}
               <Paper style={styleCard}>
                     <Flex gap="sm" align="center">
-                        <Button onClick={CreateOrderModal} fullWidth variant="filled" color="blue" >
-                          Add Order
-                        </Button>
-                        <Button onClick={ImportOrdersModal} fullWidth variant="outline" color='red'>
-                          Import
-                        </Button>
                         <Button onClick={exportOrders} fullWidth variant="outline">
                           Export
                         </Button>
+                        
+                      {
+                        TaskOrder ? 
+                        <>
+                          <Button onClick={()=>{changeOrderTask()}} fullWidth leftSection={<IconList stroke={2} />} variant="outline" color="red" >
+                            Tasks
+                          </Button>
+                        </>
+                        :
+                        <>
+                          <Button onClick={()=>{changeOrderTask()}} fullWidth leftSection={<IconPackage stroke={2} />} variant="outline" color="blue" >
+                            Orders
+                          </Button>
+                        </>
+                      }
                     </Flex>
               </Paper>
 
-
-              <Paper style={styleCard}>
-                    <Flex gap="sm" align="center">
-                    {
-                      TaskOrder ? 
-                      <>
-                        <Button onClick={()=>{changeOrderTask()}} fullWidth leftSection={<IconList stroke={2} />} variant="outline" color="red" >
-                          Tasks
-                        </Button>
-                      </>
-                      :
-                      <>
-                        <Button onClick={()=>{changeOrderTask()}} fullWidth leftSection={<IconPackage stroke={2} />} variant="outline" color="blue" >
-                          Orders
-                        </Button>
-                      </>
-                    }
-                    </Flex>
-              </Paper>
 
 
               {/* search */}
@@ -1443,7 +1007,7 @@ import {
 
 
 
-                  <Table.ScrollContainer style={styleCard} minWidth={800}>
+                <Table.ScrollContainer style={styleCard} minWidth={800}>
                         <Table striped highlightOnHover verticalSpacing="xs">
                             <Table.Thead>
                                 <Table.Tr>

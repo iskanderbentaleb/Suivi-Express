@@ -122,7 +122,6 @@ class OrderController extends Controller
         }
     }
 
-
     public function tasktoday(Request $request)
     {
 
@@ -204,10 +203,6 @@ class OrderController extends Controller
         return OrderResource::collection($orders);
     }
 
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreOrderRequest $request)
     {
         try {
@@ -225,6 +220,7 @@ class OrderController extends Controller
                 'affected_to' => $validatedData['affected_to'],
                 'created_by' => auth()->id(), // Use the authenticated user's ID
                 'status_id' => 1, // Default status
+                'product_url' => $validatedData['product_url'] ?? null, // Nullable
             ]);
 
             // Return a success response
@@ -244,19 +240,11 @@ class OrderController extends Controller
         }
     }
 
-
-
-    /**
-     * Display the specified resource.
-     */
     public function show(Order $order)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateOrderRequest $request, Order $order)
     {
         // Get validated data
@@ -271,6 +259,7 @@ class OrderController extends Controller
             'client_lastname' => $validated['client_lastname'] ?? null, // Use null if not provided
             'phone' => $validated['phone'],
             'affected_to' => $validated['affected_to'],
+            'product_url' => $validated['product_url'] ?? null, // Use null if not provided
         ]);
 
         // Return a success response (e.g., JSON or redirect)
@@ -280,9 +269,6 @@ class OrderController extends Controller
         ]);
     }
 
-
-
-    // update status orders
     public function updateStatus(Request $request, Order $order)
     {
         // Validate the incoming request data
@@ -312,9 +298,6 @@ class OrderController extends Controller
             ], 500);
         }
     }
-    // update status orders
-
-
 
     public function getOrderHistory(Order $order)
     {
@@ -335,10 +318,6 @@ class OrderController extends Controller
         ], 200);
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Order $order)
     {
         try {
@@ -367,6 +346,5 @@ class OrderController extends Controller
             ], 500);
         }
     }
-
 
 }

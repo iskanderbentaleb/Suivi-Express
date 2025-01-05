@@ -34,6 +34,7 @@ class StoreOrderRequest extends FormRequest
                 'regex:/^[\d\s+-]+$/', // Allows digits, spaces, '+' and '-'
             ],
             'affected_to' => ['required', 'integer', 'exists:agents,id'], // Must be an existing agent ID
+            'product_url' => ['nullable', 'string', 'min:3'], // Nullable but at least 3 characters if provided
         ];
     }
 }

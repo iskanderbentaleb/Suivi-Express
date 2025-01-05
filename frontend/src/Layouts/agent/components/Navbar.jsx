@@ -19,7 +19,7 @@ import { notifications } from '@mantine/notifications';
 export default function Navbar() {
 
 
-  const {setDahboardOpend  ,DahboardOpend , user } = useUserContext();
+  const {setDahboardOpend , DahboardOpend , user } = useUserContext();
 
   const [active, setActive] = useState('Billing');
 
