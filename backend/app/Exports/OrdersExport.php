@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Illuminate\Support\Facades\Auth;
 
 class OrdersExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
@@ -16,7 +17,9 @@ class OrdersExport implements FromCollection, WithHeadings, WithMapping, WithSty
      */
     public function collection()
     {
-        return Order::with(['status', 'createdBy', 'affectedTo', 'deliveryCompany'])->get();
+        return Order::with(['status', 'createdBy', 'affectedTo', 'deliveryCompany'])
+        ->where('affected_to', Auth::id()) // Filter orders for the authenticated user
+        ->get();
     }
 
     /**

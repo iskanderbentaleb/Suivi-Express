@@ -20,20 +20,18 @@ import {
     Textarea,
     Loader,
     Center,
-    Alert,
-    List,
+    Badge,
   } from '@mantine/core';
-  import { IconUpload, IconX , IconSearch, IconArrowRight, IconTrash, IconPencil, IconCheck, IconCopy, IconHistory, IconList, IconPackage, IconFileUpload} from '@tabler/icons-react';
+  import { IconSearch, IconArrowRight, IconPencil, IconCheck, IconCopy, IconHistory, IconList, IconPackage, IconUnlink, IconLinkOff, IconArchive} from '@tabler/icons-react';
   import { useForm } from '@mantine/form';
   import { modals } from '@mantine/modals';
   import { notifications } from '@mantine/notifications';
   import { useEffect, useState } from 'react';
   import { agents } from '../../../../services/api/admin/agents';
-  import { orders } from '../../../../services/api/admin/orders';
+  import { orders } from '../../../../services/api/agent/orders';
   import { deleveryCompanies } from '../../../../services/api/admin/deleveryCompanies';
   import { useUserContext } from "../../../../context/UserContext";
-  import { statusOrders } from '../../../../services/api/admin/statusOrders';
-  import { Dropzone , MS_EXCEL_MIME_TYPE } from '@mantine/dropzone';
+  import { statusOrders } from '../../../../services/api/agent/statusOrders';
   import '@mantine/dropzone/styles.css';
   
   
@@ -97,68 +95,16 @@ import {
 
       // Fetch the order data based on the provided `id`
       const order = elements.find((element) => element.id === id);
-
-
-      const [deleveryCompaniesElement, setdeleveryCompaniesElement] = useState([]);
-      const [agentsElement, setagentsElement] = useState([]);
-    
-      // Fetch delivery companies and agents for the dropdowns
-      const getDeleveryCompanies = async () => {
-        try {
-          const response = await deleveryCompanies.index();
-          const companies = response.data.map((company) => ({
-            value: company.id.toString(),
-            label: company.name,
-          }));
-          setdeleveryCompaniesElement(companies);
-        } catch (error) {
-          notifications.show({
-            message: 'Error fetching delivery companies: ' + error,
-            color: 'red',
-          });
-        }
-      };
-
-
-      const getAgent = async (search = '', page = 1) => {
-        try {
-          const response = await agents.index(page, search);
-          const data = response.data.data.map((agent) => ({
-            value: agent.id.toString(),
-            label: agent.name,
-          }));
-          setagentsElement(data);
-        } catch (error) {
-          notifications.show({
-            message: 'Error fetching agents: ' + error,
-            color: 'red',
-          });
-        }
-      };
-    
-      useEffect(() => {
-        getDeleveryCompanies();
-        getAgent(order?.affected_to.name , 1);
-      }, []);
     
       // Initialize the form with the agent's existing data
       const formCreate = useForm({
         initialValues: {
-          deleveryCompany: order?.delivery_company.id?.toString() || '',
-          tracking: order?.tracking || '',
-          external_id: order?.external_id || '',
           client_name: order?.client_name || '',
           client_lastname: order?.client_lastname || '',
           phone: order?.phone || '',
-          affected_to: order?.affected_to.id?.toString() || '',
+          product_url: order?.product_url || '',
         },
         validate: {
-          deleveryCompany: (value) =>
-            value.trim().length === 0 ? 'Delivery company is required' : null,
-          tracking: (value) =>
-            value.trim().length === 0 ? 'Tracking is required' : null,
-          external_id: (value) =>
-            value.trim().length > 255 ? 'External ID must not exceed 255 characters' : null,
           client_name: (value) =>
             value.trim().length === 0
               ? 'Client name is required'
@@ -177,8 +123,10 @@ import {
               : !/^[\d\s+-]+$/.test(value)
               ? 'Phone number contains invalid characters'
               : null,
-          affected_to: (value) =>
-            value.trim().length === 0 ? 'Affected to is required' : null,
+          product_url: (value) =>
+            value.trim().length > 0 && value.trim().length < 5 
+              ? 'Product url must have at least 3 characters' 
+              : null, // Nullable, so no error if empty
         },
       });
     
@@ -190,7 +138,7 @@ import {
           setRerender(!Rerender);
           // Show success notification
           notifications.show({
-            message: 'Agent updated successfully!',
+            message: 'order updated successfully!',
             color: 'green',
           });
     
@@ -203,7 +151,7 @@ import {
     
           // Display failure notification
           notifications.show({
-            message: error?.response?.data?.message || 'Failed to update agent. Please try again.',
+            message: error?.response?.data?.message || 'Failed to update order. Please try again.',
             color: 'red',
           });
         }
@@ -219,34 +167,30 @@ import {
       return (
         <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
           {/* Delivery Company */}
-          <Select
+          <TextInput
+            disabled
             label="Delivery Company"
-            withAsterisk
-            placeholder="Select a Delivery Company"
-            checkIconPosition="right"
-            data={deleveryCompaniesElement}
-            searchable
             mt="sm"
-            nothingFoundMessage="Nothing found..."
-            {...formCreate.getInputProps('deleveryCompany')}
+            placeholder=""
+            value={order?.delivery_company.name}
           />
     
           {/* Tracking */}
           <TextInput
+            disabled
             label="Tracking"
-            withAsterisk
             mt="sm"
-            placeholder="YAL-TAXKXD"
-            {...formCreate.getInputProps('tracking')}
+            value={order?.tracking}
           />
     
           {/* External ID */}
           <TextInput
+            disabled
             label="External ID"
             withAsterisk
             mt="sm"
             placeholder="web5010"
-            {...formCreate.getInputProps('external_id')}
+            value={order?.external_id}
           />
     
           {/* Client Name */}
@@ -274,21 +218,15 @@ import {
             placeholder="0501010011"
             {...formCreate.getInputProps('phone')}
           />
-    
-          {/* Affected To */}
-          <Select
-            label="Affected To"
-            withAsterisk
-            placeholder="Select an Agent"
-            checkIconPosition="right"
-            data={agentsElement}
-            searchable
+
+          {/* Product URL */}
+          <TextInput
+            label="Product URL"
             mt="sm"
-            onSearchChange={(search) => getAgent(search)} // Pass the search value
-            nothingFoundMessage="Nothing found..."
-            {...formCreate.getInputProps('affected_to')}
+            placeholder="Product URL"
+            {...formCreate.getInputProps('product_url')}
           />
-    
+
           {/* Submit Button */}
           <Button type="submit" fullWidth mt="md">
             Update
@@ -309,7 +247,6 @@ import {
         children: <UpdateOrderForm id={id} closeModal={() => modals.closeAll()} />,
       });
     };
-    
     // ------------------ update Agent : id ----------------------
   
 
@@ -320,14 +257,14 @@ import {
   
   
     // --------------- search agents --------------------
-      const handleSearch = (values) => {
+    const handleSearch = (values) => {
         const trimmedSearch = values.search.trim().toLowerCase();
         if (trimmedSearch !== search) {
           setSearch(trimmedSearch);
           setRerender(!Rerender);
           setActivePage(1);
         }
-      };
+    };
     // --------------- search agents --------------------
   
   
@@ -351,7 +288,7 @@ import {
 
   
     // ------------------- feetch agents -------------------
-      const feetchOrders = async (page = 1) => {
+    const feetchOrders = async (page = 1) => {
         setLoading(true);
         try {
           const { data } = await orders.index(page, search);
@@ -363,7 +300,7 @@ import {
           setLoading(false);
           notifications.show({ message: 'Error fetching orders :' + error , color: 'red' });
         }
-      };
+    };
     // ------------------- feetch agents -------------------
   
 
@@ -385,50 +322,6 @@ import {
     // ------------------- export orders -------------------
   
 
-
-  
-    // --------------------- delete actions --------------------- 
-    const DeleteOrderModal = (id) => modals.openConfirmModal({
-      title: 'Confirm Deletion',
-      centered: true,
-      children: (
-        <Text size="sm">
-          Are you sure you want to delete this order ? <br />
-          NOTE : This action cannot be undone.
-        </Text>
-      ),
-      labels: { confirm: 'Confirm', cancel: 'Cancel' },
-      onCancel: () => console.log('Cancel'),
-      onConfirm: () => {
-        handleDelete(id);
-      },
-    });
-    
-  
-    const handleDelete = async (id) => {
-      try {
-        const response = await orders.delete(id);
-    
-        // Adjust pagination or fetch agents based on current conditions
-        if (elements.length === 1 && activePage > 1) {
-          setRerender(!Rerender);
-          setActivePage(activePage - 1);
-        } else if (elements.length === 1 && activePage === 1) {
-          feetchOrders(1); // Refresh the first page
-          setActivePage(1);
-        } else {
-          setElements(elements.filter(el => el.id !== id)); // Remove the deleted element from the list
-        }
-    
-        // Show success notification
-        notifications.show({ message: response.data.message, color: 'green' });
-      } catch (error) {
-        // Show error notification
-        notifications.show({ message: error.response?.data?.message || 'An error occurred', color: 'red' });
-      }
-    };
-    // --------------------- delete actions --------------------- 
-    
   
   
 
@@ -777,6 +670,9 @@ import {
               <ActionIcon style={{background:'#dee2e6' , border: '0.1px dashed #222426'}} variant="subtle" color="gray" onClick={()=>{ CallModal(row.id) }}>
                   <IconHistory style={{ width: '16px', height: '16px' }} stroke={1.5} />
               </ActionIcon>
+                    
+                  {
+                    row.archive === 0 ? (
                     <NativeSelect
                       placeholder=""
                       defaultValue={row.status.id.toString()}
@@ -796,6 +692,23 @@ import {
                         },
                       })}
                     />
+                  ) : 
+                    <div
+                      style={{
+                        borderRadius: '8px',
+                        display: 'flex',
+                        background: `${row.status.colorHex}1A`, // Background with 10% opacity
+                        border: `1px solid ${row.status.colorHex}`, // Border color
+                        color: row.status.colorHex, // Text color
+                        width: '200px',
+                        height: '35px',
+                        alignItems: 'center', // Vertically center text
+                        paddingLeft: '12px', // Add some padding for text
+                      }}
+                    >
+                      {row.status.status}
+                    </div>
+                  }  
             </Group>
           </Table.Td>
 
@@ -833,33 +746,48 @@ import {
               {row.phone}
           </Table.Td>
 
-
           <Table.Td>
             <span style={{border:'black dashed 1px' , padding:5 , borderRadius:8 , color:'black' , whiteSpace: 'nowrap',}}>
-              {user.id === row.created_by.id ? 'Me' : row.created_by.name}
-            </span>
-          </Table.Td>
-          
-          <Table.Td>
-            <span style={{border:'black dashed 1px' , padding:5 , borderRadius:8 , color:'black' ,whiteSpace: 'nowrap',}}>
-              {row.affected_to.name}
+              {row.created_by.name}
             </span>
           </Table.Td>
 
           <Table.Td>
-            <Group gap={0} justify="flex-end" style={{ flexWrap: 'nowrap' }}>
-              <ActionIcon variant="subtle" color="gray" onClick={()=>{ UpdateOrderModal(row.id) }}>
-                <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
-              </ActionIcon>
-              { row.status.status === "En préparation" ?
-                <>
-                  <ActionIcon variant="subtle" color="red" onClick={()=>{ DeleteOrderModal(row.id) }}>
-                    <IconTrash style={{ width: '16px', height: '16px' }} stroke={1.5}  />
-                  </ActionIcon>
-                </>
-                : null
+            <Group gap={5} justify="flex-start" style={{ flexWrap: 'nowrap' }}>
+            
+              { row.product_url !== null ?
+                <ActionIcon color="gray" onClick={()=>{ window.open(row.product_url, '_blank'); }}>
+                  <IconUnlink style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                </ActionIcon>
+                : 
+                <ActionIcon color='black'>
+                  <IconLinkOff style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                </ActionIcon>
               }
-
+              
+              {
+                row.archive === 0 ? (
+                    <ActionIcon variant="subtle" color="gray" onClick={() => { UpdateOrderModal(row.id) }}>
+                        <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                    </ActionIcon>
+                ) : (
+                    <Badge
+                        variant="filled"
+                        color="black"
+                        leftSection={<IconArchive style={{ width: '14px', height: '14px' }} />}
+                        styles={{
+                            root: {
+                                padding: '4px 8px',
+                                height: 'auto',
+                                borderRadius: '4px',
+                                cursor: 'default',
+                            },
+                        }}
+                    >
+                        Archived
+                    </Badge>
+                )
+              }
             </Group>
           </Table.Td>
         </Table.Tr>
@@ -993,7 +921,6 @@ import {
                           <Table.Th>Lastname</Table.Th>
                           <Table.Th>Phone</Table.Th>
                           <Table.Th>creator</Table.Th>
-                          <Table.Th>Agent</Table.Th>
                         </Table.Tr>
                       </Table.Thead>
                       <Table.Tbody>
@@ -1019,7 +946,6 @@ import {
                                 <Table.Th>Lastname</Table.Th>
                                 <Table.Th>Phone</Table.Th>
                                 <Table.Th>creator</Table.Th>
-                                <Table.Th>Agent</Table.Th>
                                 </Table.Tr>
                             </Table.Thead>
                             <Table.Tbody height={80}>
@@ -1047,7 +973,6 @@ import {
                               <Table.Th>Lastname</Table.Th>
                               <Table.Th>Phone</Table.Th>
                               <Table.Th>creator</Table.Th>
-                              <Table.Th>Agent</Table.Th>
                             </Table.Tr>
                         </Table.Thead>
                         </Table>

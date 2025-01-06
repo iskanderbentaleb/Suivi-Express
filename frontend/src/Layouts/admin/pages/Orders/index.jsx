@@ -23,7 +23,7 @@ import {
     Alert,
     List,
   } from '@mantine/core';
-  import { IconUpload, IconX , IconSearch, IconArrowRight, IconTrash, IconPencil, IconCheck, IconCopy, IconHistory, IconList, IconPackage, IconFileUpload, IconArchive, IconUnlink, IconLinkOff} from '@tabler/icons-react';
+  import { IconUpload, IconX , IconSearch, IconArrowRight, IconTrash, IconPencil, IconCheck, IconCopy, IconHistory, IconList, IconPackage, IconFileUpload, IconArchive, IconUnlink, IconLinkOff, IconArchiveOff} from '@tabler/icons-react';
   import { useForm } from '@mantine/form';
   import { modals } from '@mantine/modals';
   import { notifications } from '@mantine/notifications';
@@ -327,6 +327,31 @@ import {
     
     // ------------------ update Agent : id ----------------------
   
+
+    // ------------------ update archive : id ----------------------
+    const updateArchive = async (orderId, archiveStatus) => {
+      try {
+        // Call the API to update the archive status
+        const { data } = await orders.updateArchive(orderId, { archive: archiveStatus });
+        console.log(data);
+    
+        // Trigger a re-render or update state
+        setRerender(!Rerender);
+    
+        // Show success notification
+        notifications.show({
+          message: 'Order archive status updated successfully!',
+          color: 'green',
+        });
+      } catch (error) {
+        // Show error notification
+        notifications.show({
+          message: `Failed to update order archive status: ${error.message}`,
+          color: 'red',
+        });
+      }
+    };
+    // ------------------ update archive : id ----------------------
   
   
   
@@ -1112,7 +1137,8 @@ import {
     //---------------- data of orders ---------------------
     const rows = elements.map((row) => {
       return (
-        <Table.Tr key={row.id}>
+        <Table.Tr key={row.id} 
+        >
 
           <Table.Td>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -1183,6 +1209,9 @@ import {
               <ActionIcon style={{background:'#dee2e6' , border: '0.1px dashed #222426'}} variant="subtle" color="gray" onClick={()=>{ CallModal(row.id) }}>
                   <IconHistory style={{ width: '16px', height: '16px' }} stroke={1.5} />
               </ActionIcon>
+
+                  {
+                    row.archive === 0 ? (
                     <NativeSelect
                       placeholder=""
                       defaultValue={row.status.id.toString()}
@@ -1202,6 +1231,24 @@ import {
                         },
                       })}
                     />
+                  ) : 
+                    <div
+                      style={{
+                        borderRadius: '8px',
+                        display: 'flex',
+                        background: `${row.status.colorHex}1A`, // Background with 10% opacity
+                        border: `1px solid ${row.status.colorHex}`, // Border color
+                        color: row.status.colorHex, // Text color
+                        width: '200px',
+                        height: '35px',
+                        alignItems: 'center', // Vertically center text
+                        paddingLeft: '12px', // Add some padding for text
+                      }}
+                    >
+                      {row.status.status}
+                    </div>
+                  }  
+
             </Group>
           </Table.Td>
 
@@ -1265,9 +1312,13 @@ import {
                 </ActionIcon>
               }
               
-              <ActionIcon variant="subtle" color="gray" onClick={()=>{ UpdateOrderModal(row.id) }}>
-                <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
-              </ActionIcon>
+              {
+                row.archive === 0 ? (
+                  <ActionIcon variant="subtle" color="gray" onClick={()=>{ UpdateOrderModal(row.id) }}>
+                    <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                  </ActionIcon>
+                ): null
+              }
 
               { row.status.status === "En préparation" ?
                 <>
@@ -1277,15 +1328,18 @@ import {
                 </>
                 : null
               }
-              {/* archive button */}
-              { row.status.status === "Livré" || row.status.status === "Retourné au vendeur" ?
-                <>
-                  <ActionIcon variant="subtle" color="gray" onClick={()=>{  }}>
-                    <IconArchive style={{ width: '16px', height: '16px' }} stroke={1.5}  />
-                  </ActionIcon>
-                </>
-                : null
-              }
+              {/* Archive button */}
+                {row.status && (row.status.status === "Livré" || row.status.status === "Retourné au vendeur") ? (
+                  row.archive === 0 ? (
+                    <ActionIcon variant="subtle" color="gray" onClick={() => updateArchive(row.id, true)}>
+                      <IconArchive style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                    </ActionIcon>
+                  ) : row.archive === 1 ? (
+                    <ActionIcon variant="subtle" color="black" onClick={() => updateArchive(row.id, false)}>
+                      <IconArchiveOff style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                    </ActionIcon>
+                  ) : null
+                ) : null}
             </Group>
           </Table.Td>
         </Table.Tr>

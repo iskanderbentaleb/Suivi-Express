@@ -31,6 +31,9 @@ const orders = {
     update: async (id , payload) => {
         return await axiosClient.post(`/api/admin/orders/${id}?_method=PUT`, payload );
     },
+    updateArchive: async (id , payload) => {
+        return await axiosClient.post(`api/admin/orders/${id}/archive?_method=PUT`, payload );
+    },
     updateStausOrder: async (id , payload) => {
         return await axiosClient.post(`api/admin/orders/${id}/status?_method=PUT`, payload );
     },

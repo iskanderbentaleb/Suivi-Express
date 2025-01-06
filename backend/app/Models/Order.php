@@ -25,6 +25,7 @@ class Order extends Model
         'status_id',
         'delivery_company_id',
         'product_url',
+        'archive',
     ];
 
     /**
