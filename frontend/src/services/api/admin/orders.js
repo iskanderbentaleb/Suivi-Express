@@ -40,6 +40,9 @@ const orders = {
     delete : async (id) => {
         return await axiosClient.delete(`/api/admin/orders/${id}`)
     },
+    ReasonsCall : async () => {
+        return await axiosClient.get(`api/admin/reasons-calls`)
+    },
 }
 
 export { orders };

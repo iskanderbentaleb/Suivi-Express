@@ -912,8 +912,9 @@ import {
 
   // ------------------ Call Model ----------------------
     const CallModelComponent = ({ closeModal, id }) => {
-      const [history, setHistory] = useState([]); // State for order history
-      const [loadingHistory, setLoadingHistory] = useState(false); // Loading state
+      const [history, setHistory] = useState([]);
+      const [reasonCalls, setReasonCalls] = useState([]); 
+      const [loadingHistory, setLoadingHistory] = useState(false); 
 
       const [timer, setTimer] = useState(0); // Timer value in seconds
       const [isRunning, setIsRunning] = useState(false); // Timer running state
@@ -946,9 +947,32 @@ import {
         }
       };
 
+      
+      // Fetch calls Resons
+      const fetchReasonscalls = async () => {
+        setLoadingHistory(true);
+        try {
+          const response = await orders.ReasonsCall();
+          const formattedData = response.data.map((item) => ({
+            value: item.id.toString(), // Use the correct field for value
+            label: item.reason, // Use the correct field for label
+          }));
+          setReasonCalls(formattedData); // Update state with formatted data
+        } catch (error) {
+          console.error('Error fetching order history:', error.message)
+        } finally {
+          setLoadingHistory(false);
+        }
+      };
+
+
       // Timer Logic
       useEffect(() => {
-        fetchHistory(); // Fetch history on component mount
+        
+        fetchReasonscalls();
+
+        fetchHistory();
+        
         let interval;
         if (isRunning) {
           interval = setInterval(() => setTimer((prev) => prev + 1), 1000);
@@ -957,6 +981,7 @@ import {
       }, [isRunning]);
 
       const handleStartPause = () => setIsRunning((prev) => !prev);
+
       const handleReplay = () => {
         setTimer(0);
         setIsRunning(false);
@@ -982,7 +1007,7 @@ import {
             </Center>
           ) : (
             <>
-              <form onSubmit={formCreate.onSubmit(handleSubmit)} hidden>
+              <form onSubmit={formCreate.onSubmit(handleSubmit)}>
                 {/* Timer */}
                 <div style={{ marginBottom: '16px' }}>
                   <Text size="sm" weight={500}>
@@ -1003,11 +1028,7 @@ import {
                   label="Status"
                   placeholder="Select status"
                   withAsterisk
-                  data={[
-                    { value: 'pending', label: 'Pending' },
-                    { value: 'completed', label: 'Completed' },
-                    { value: 'failed', label: 'Failed' },
-                  ]}
+                  data={reasonCalls}
                   {...formCreate.getInputProps('status')}
                 />
 
@@ -1034,7 +1055,7 @@ import {
 
               {/* History Timeline */}
               <div>
-                <Paper withBorder radius="md" shadow="sm" p="xl">
+                <Paper withBorder radius="md" shadow="sm" p="xl" mt={20}>
                   {history.length === 0 ? (
                     // Display this message if history is empty
                     <Text color="dimmed" size="sm" align="center">

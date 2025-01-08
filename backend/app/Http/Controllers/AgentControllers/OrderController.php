@@ -141,39 +141,6 @@ class OrderController extends Controller
 
     public function store(StoreOrderRequest $request)
     {
-        try {
-            // Extract validated data from the request
-            $validatedData = $request->validated();
-
-            // Create the order using the validated data
-            $order = Order::create([
-                'delivery_company_id' => $validatedData['deleveryCompany'],
-                'tracking' => $validatedData['tracking'],
-                'external_id' => $validatedData['external_id'],
-                'client_name' => $validatedData['client_name'],
-                'client_lastname' => $validatedData['client_lastname'] ?? null, // Nullable
-                'phone' => $validatedData['phone'],
-                'affected_to' => $validatedData['affected_to'],
-                'created_by' => auth()->id(), // Use the authenticated user's ID
-                'status_id' => 1, // Default status
-                'product_url' => $validatedData['product_url'] ?? null, // Nullable
-            ]);
-
-            // Return a success response
-            return response()->json([
-                'message' => 'Order created successfully!',
-                'order' => $order,
-            ], 201);
-        } catch (\Exception $e) {
-            // Log the error for debugging
-            \Log::error('Order Creation Failed: ' . $e->getMessage());
-
-            // Return an error response
-            return response()->json([
-                'message' => 'Failed to create order. Please try again.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
     }
 
     public function show(Order $order)

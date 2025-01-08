@@ -3,9 +3,11 @@
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\DeliveryCompanyController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ReasonController;
 use App\Http\Controllers\StatusOrderController;
 
 use App\Http\Controllers\AgentControllers\OrderController as OrderAgentController;
+use App\Http\Controllers\AgentControllers\ReasonController as ReasonAgentController;
 use App\Http\Controllers\AgentControllers\StatusOrderController as StatusOrderAgentController;
 
 use Illuminate\Http\Request;
@@ -28,6 +30,7 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
     Route::put('/orders/{order}/archive', [OrderController::class, 'updateArchive']);
     Route::apiResources(['orders' => OrderController::class]);
 
+    Route::get('/reasons-calls', [ReasonController::class, 'index']);
     Route::get('delivery-companies', [DeliveryCompanyController::class, 'index']);
     Route::get('status-orders', [StatusOrderController::class, 'index']);
 
@@ -42,9 +45,12 @@ Route::middleware(['auth:sanctum' , 'ability:agent'])->prefix('agent')->group(st
     });
 
     Route::get('/orders/todaytask', action: [OrderAgentController::class, 'tasktoday']);
-    Route::get('/orders/export', [OrderAgentController::class, 'export']);
+    Route::get('/orders/export', action: [OrderAgentController::class, 'export']);
+    Route::put('/orders/{order}/status', [OrderAgentController::class, 'updateStatus']);
+    Route::get('orders/{order}/history', [OrderAgentController::class, 'getOrderHistory']);
     Route::apiResources(['orders' => OrderAgentController::class]);
 
+    Route::get('/reasons-calls', [ReasonAgentController::class, 'index']);
     Route::get('status-orders', [StatusOrderAgentController::class, 'index']);
 });
 

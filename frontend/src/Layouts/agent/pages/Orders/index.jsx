@@ -13,7 +13,6 @@ import {
     Skeleton,
     CopyButton,
     Tooltip,
-    Select,
     NativeSelect,
     Timeline,
     Avatar,
@@ -27,9 +26,7 @@ import {
   import { modals } from '@mantine/modals';
   import { notifications } from '@mantine/notifications';
   import { useEffect, useState } from 'react';
-  import { agents } from '../../../../services/api/admin/agents';
   import { orders } from '../../../../services/api/agent/orders';
-  import { deleveryCompanies } from '../../../../services/api/admin/deleveryCompanies';
   import { useUserContext } from "../../../../context/UserContext";
   import { statusOrders } from '../../../../services/api/agent/statusOrders';
   import '@mantine/dropzone/styles.css';
@@ -418,6 +415,7 @@ import {
         return () => clearInterval(interval);
       }, [isRunning]);
 
+
       const handleStartPause = () => setIsRunning((prev) => !prev);
       const handleReplay = () => {
         setTimer(0);
@@ -444,7 +442,7 @@ import {
             </Center>
           ) : (
             <>
-              <form onSubmit={formCreate.onSubmit(handleSubmit)} hidden>
+              <form onSubmit={formCreate.onSubmit(handleSubmit)} >
                 {/* Timer */}
                 <div style={{ marginBottom: '16px' }}>
                   <Text size="sm" weight={500}>
@@ -496,7 +494,7 @@ import {
 
               {/* History Timeline */}
               <div>
-                <Paper withBorder radius="md" shadow="sm" p="xl">
+                <Paper withBorder radius="md" shadow="sm" p="xl" mt={20}>
                   {history.length === 0 ? (
                     // Display this message if history is empty
                     <Text color="dimmed" size="sm" align="center">
