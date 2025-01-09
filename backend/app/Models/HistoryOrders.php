@@ -17,12 +17,18 @@ class HistoryOrders extends Model
         'agent_id',
         'user_id_validator',
         'order_id',
+        'history_judge',
     ];
 
     // Relationship with Reason model
     public function reason()
     {
         return $this->belongsTo(Reason::class, 'reason_id');
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(StatusOrder::class, 'status_order_id');
     }
 
     // Relationship with Agent model

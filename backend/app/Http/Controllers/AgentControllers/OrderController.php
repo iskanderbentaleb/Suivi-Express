@@ -88,19 +88,31 @@ class OrderController extends Controller
 
         // Apply conditions for history_orders
         ->where(function ($query) use ($today) {
-            // Include orders with no history_orders
+            // Include orders with no historyOrders
             $query->whereDoesntHave('historyOrders')
 
-                // Include orders with history_orders
+                // Include orders with historyOrders
                 ->orWhereHas('historyOrders', function ($subQuery) use ($today) {
-                    $subQuery->whereIn('id', function ($query) {
-                        $query->selectRaw('MAX(id)')
-                            ->from('history_orders')
-                            ->groupBy('order_id');
-                    })
-                    ->where(function ($subSubQuery) use ($today) {
-                        // Include if the latest history_order is not from today
-                        $subSubQuery->whereDate('updated_at', '!=', $today);
+                    $subQuery->where(function ($nestedQuery) use ($today) {
+                        // Case 1: All history_judge = false
+                        $nestedQuery->whereNotExists(function ($existsQuery) {
+                            $existsQuery->selectRaw(1)
+                                ->from('history_orders as ho')
+                                ->whereColumn('ho.order_id', 'orders.id')
+                                ->where('ho.history_judge', true);
+                        })
+
+                        // Case 2: At least one history_judge = true
+                        ->orWhereIn('id', function ($query) use ($today) {
+                            $query->selectRaw('MAX(id)')
+                                ->from('history_orders')
+                                ->where('history_judge', true)
+                                ->groupBy('order_id');
+                        })
+                        ->where(function ($latestSubQuery) use ($today) {
+                            // Exclude if the latest history_order with history_judge = true is from today
+                            $latestSubQuery->whereDate('updated_at', '!=', $today);
+                        });
                     });
                 });
         })

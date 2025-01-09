@@ -150,28 +150,54 @@ class OrderController extends Controller
             });
         })
 
-        // Apply conditions
-        ->where(function ($query) use ($today) {
 
-            // Include orders with no history
+
+        ->where(function ($query) use ($today) {
+            // Include orders with no historyOrders
             $query->whereDoesntHave('historyOrders')
 
-                // Include orders with history
+                // Include orders with historyOrders
                 ->orWhereHas('historyOrders', function ($subQuery) use ($today) {
                     $subQuery->whereIn('id', function ($query) {
                         $query->selectRaw('MAX(id)')
                             ->from('history_orders')
+                            ->where('history_judge', true) // Add condition for history_judge = true
                             ->groupBy('order_id');
                     })
-                    ->Where(function ($subSubQuery) use ($today) {
-                        $subSubQuery->whereDate('updated_at', '!=', $today); // Include if updated on another day
+                    ->where(function ($subSubQuery) use ($today) {
+                        // Include if updated on another day
+                        $subSubQuery->whereDate('updated_at', '!=', $today);
                     })
-                    ->orwhere(function ($subSubQuery) use ($today) {
-                        $subSubQuery->whereDate('updated_at', '=', $today) // If updated today
-                            ->whereNull('user_id_validator'); // Include if `user_id_validator` is null
+                    ->orWhere(function ($subSubQuery) use ($today) {
+                        // Include if updated today and user_id_validator is null
+                        $subSubQuery->whereDate('updated_at', '=', $today)
+                            ->whereNull('user_id_validator');
+                    });
+                })
+
+                // Additional condition to handle when all history_judge = false
+                ->orWhereHas('historyOrders', function ($subQuery) {
+                    $subQuery->whereNotExists(function ($existsQuery) {
+                        $existsQuery->selectRaw(1)
+                            ->from('history_orders as ho')
+                            ->whereColumn('ho.order_id', 'history_orders.order_id')
+                            ->where('ho.history_judge', true); // Check for absence of history_judge = true
                     });
                 });
         })
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Order by latest update
         ->orderBy('updated_at', 'desc');
