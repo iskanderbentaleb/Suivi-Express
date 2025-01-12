@@ -14,6 +14,7 @@ class HistoryOrders extends Model
         'note',
         'timetook',
         'reason_id',
+        'status_order_id',
         'agent_id',
         'user_id_validator',
         'order_id',

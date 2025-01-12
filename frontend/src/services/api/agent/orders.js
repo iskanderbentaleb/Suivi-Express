@@ -19,6 +19,9 @@ const orders = {
     updateStausOrder: async (id , payload) => {
         return await axiosClient.post(`api/agent/orders/${id}/status?_method=PUT`, payload );
     },
+    ReasonsCall : async () => {
+        return await axiosClient.get(`api/agent/reasons-calls`)
+    },
 }
 
 export { orders };

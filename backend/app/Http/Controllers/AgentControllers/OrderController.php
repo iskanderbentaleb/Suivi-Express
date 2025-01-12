@@ -24,7 +24,7 @@ class OrderController extends Controller
 
         // Build the query
         $query = Order::with(['status:id,status,colorHex', 'deliveryCompany:id,name,colorHex', 'affectedTo:id,name', 'createdBy:id,name'])
-            ->orderBy('updated_at', 'desc')
+            ->orderBy('created_at', 'desc')
             ->where('affected_to', '=', auth()->id());
 
         // Apply search filter if a search term exists
@@ -52,7 +52,7 @@ class OrderController extends Controller
         }
 
         // Paginate the results
-        $orders = $query->paginate(10);
+        $orders = $query->paginate(20);
 
         // Return the collection as a resource
         return OrderResource::collection($orders);
@@ -111,14 +111,14 @@ class OrderController extends Controller
                         })
                         ->where(function ($latestSubQuery) use ($today) {
                             // Exclude if the latest history_order with history_judge = true is from today
-                            $latestSubQuery->whereDate('updated_at', '!=', $today);
+                            $latestSubQuery->whereDate('created_at', '!=', $today);
                         });
                     });
                 });
         })
 
         // Order by latest update
-        ->orderBy('updated_at', 'desc');
+        ->orderBy('created_at', 'desc');
 
         // Apply search filter if a search term exists
         if ($search) {
@@ -145,7 +145,7 @@ class OrderController extends Controller
         }
 
         // Paginate the results
-        $orders = $orders->paginate(10);
+        $orders = $orders->paginate(20);
 
         // Return the collection as a resource
         return OrderResource::collection($orders);

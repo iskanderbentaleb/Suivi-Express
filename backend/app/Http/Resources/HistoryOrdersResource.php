@@ -34,17 +34,34 @@ class HistoryOrdersResource extends JsonResource
             'id' => $this->id,
             'note' => $this->note,
             'timetook' => $this->timetook,
+            'history_judge' => $this->history_judge,
             'created_at' => $formattedCreatedAt,
             'updated_at' => $this->updated_at,
             'reason' => $this->reason ? [
                 'id' => $this->reason->id,
                 'reason' => $this->reason->reason,
             ] : null,
+            'status' => $this->status ? [
+                'id' => $this->status->id,
+                'status' => $this->status->status,
+            ] : null,
             'agent' => $this->agent ? [
                 'id' => $this->agent->id,
                 'name' => $this->agent->name,
                 'email' => $this->agent->email,
                 'role' => $this->agent->role,
+            ] : [
+                'id' => $this->admin->id,
+                'name' => $this->admin->name,
+                'email' => $this->admin->email,
+                'role' => $this->admin->role,
+                ]
+            ,
+            'validator' => $this->admin ? [
+                'id' => $this->admin->id,
+                'name' => $this->admin->name,
+                'email' => $this->admin->email,
+                'role' => $this->admin->role,
             ] : null,
         ];
     }

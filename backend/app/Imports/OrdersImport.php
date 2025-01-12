@@ -27,6 +27,12 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
         $authUserId = auth()->id();
 
         foreach ($rows as $index => $row) {
+
+            // Skip empty rows
+            if ($this->isRowEmpty($row)) {
+                continue;
+            }
+
             // Convert the row (Collection) to an array before logging
             Log::info('Processing row:', $row->toArray());
 
@@ -92,6 +98,14 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
         return [
             'Template' => $this, // Import only the 'Template' sheet
         ];
+    }
+
+    private function isRowEmpty(Collection $row): bool
+    {
+        // Check if all values in the row are empty
+        return $row->every(function ($value) {
+            return empty($value);
+        });
     }
 
     public function registerEvents(): array

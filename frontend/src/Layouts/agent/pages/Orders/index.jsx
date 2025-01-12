@@ -20,8 +20,9 @@ import {
     Loader,
     Center,
     Badge,
+    ThemeIcon,
   } from '@mantine/core';
-  import { IconSearch, IconArrowRight, IconPencil, IconCheck, IconCopy, IconHistory, IconList, IconPackage, IconUnlink, IconLinkOff, IconArchive} from '@tabler/icons-react';
+  import { IconSearch, IconArrowRight, IconPencil, IconCheck, IconCopy, IconHistory, IconList, IconPackage, IconUnlink, IconLinkOff, IconArchive, IconRosetteDiscountCheck} from '@tabler/icons-react';
   import { useForm } from '@mantine/form';
   import { modals } from '@mantine/modals';
   import { notifications } from '@mantine/notifications';
@@ -30,6 +31,7 @@ import {
   import { useUserContext } from "../../../../context/UserContext";
   import { statusOrders } from '../../../../services/api/agent/statusOrders';
   import '@mantine/dropzone/styles.css';
+import { historyOrders } from '../../../../services/api/agent/historyOrders';
   
   
   
@@ -42,6 +44,7 @@ import {
     const [loading, setLoading] = useState(true);
     const [elements, setElements] = useState([]);
     const [StatusOrdersdata, setStatusOrdersdata] = useState([]);
+    const [StatusOrderIndex, setStatusOrderIndex] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
     const [search, setSearch] = useState('');
     const [Rerender, setRerender] = useState(false);
@@ -334,6 +337,14 @@ import {
           colorHex: status.colorHex,
         }));
         setStatusOrdersdata(statusOrdersdata);
+
+        const filteredStatusOrders = statusOrdersdata.map((item) => ({
+          value: item.value, // Keep the original value
+          label: item.label, // Keep the original label
+          disabled: item.label === "Tentative échouée" || item.label === "En attente du client" || item.label === "Échec livraison", // Disable specific items
+        }));
+        setStatusOrderIndex(filteredStatusOrders);
+
       } catch (error) {
         notifications.show({ message: 'Error get status orders data:' + error , color: 'red' });
       }
@@ -349,16 +360,40 @@ import {
   // ------------------ update status order  -------------------
   const UpdateOrderStatus = async (orderId, statusId) => {
     try {
-      const { data } = await orders.updateStausOrder(orderId, { statusId });
-      console.log(data);
+      // Step 1: Update the order status
+      const updateStatusRequest = orders.updateStausOrder(orderId, { statusId });
+  
+      // Step 2: Create a new HistoryOrder with status_order_id, history_judge = false, and order_id
+      const historyData = {
+        status_order_id: statusId,
+        order_id: orderId,
+        history_judge: false,
+        note: "Order status updated", // Optional: You can add additional notes here
+        timetook: "00:00:00", // Optional: If you want to set a time, adjust accordingly
+      };
+  
+      const createHistoryRequest = historyOrders.post(historyData);
+  
+      // Wait for both requests to be successful
+      const [statusData, historyDataResponse] = await Promise.all([updateStatusRequest, createHistoryRequest]);
+  
+      // If both requests are successful, trigger re-render
+      console.log(statusData);
+      console.log(historyDataResponse);
+  
+      // Step 3: Trigger re-render (assuming you want to refresh some UI state)
       setRerender(!Rerender);
+  
+      // Show success notification
       notifications.show({
-        message: 'Order status updated successfully!',
+        message: 'Order status updated and history created successfully!',
         color: 'green',
       });
+      
     } catch (error) {
+      // Handle error and show notification
       notifications.show({
-        message: `Failed to update order status: ${error.message}`,
+        message: `Failed to update order status or create history: ${error.message}`,
         color: 'red',
       });
     }
@@ -370,210 +405,304 @@ import {
 
 
   // ------------------ Call Model ----------------------
-    const CallModelComponent = ({ closeModal, id }) => {
-      const [history, setHistory] = useState([]); // State for order history
-      const [loadingHistory, setLoadingHistory] = useState(false); // Loading state
+  const CallModelComponent = ({ closeModal, id }) => {
+    const [history, setHistory] = useState([]);
+    const [reasonCalls, setReasonCalls] = useState([]); 
+    const [loadingHistory, setLoadingHistory] = useState(false); 
+    const [statusOrder , setStatusOrder] = useState([]);
+    const [selectedStatus, setSelectedStatus] = useState('');
 
-      const [timer, setTimer] = useState(0); // Timer value in seconds
-      const [isRunning, setIsRunning] = useState(false); // Timer running state
+    const formCreate = useForm({
+      initialValues: {
+        status_order_id: '',
+        reason_id: '',
+        note: '',
+        history_judge:true,
+        order_id:id
+      },
+      validate: {
+        status_order_id: (value) =>
+          value.trim().length === 0 ? 'Status is required' : null,
+        note: (value) =>
+          value.trim().length < 2
+            ? 'note must be at least 2 characters long'
+            : null,
+      },
+    });
 
-      const formCreate = useForm({
-        initialValues: {
-          status: '',
-          agent_note: '',
-        },
-        validate: {
-          status: (value) =>
-            value.trim().length === 0 ? 'Status is required' : null,
-          agent_note: (value) =>
-            value.trim().length < 5
-              ? 'Agent note must be at least 5 characters long'
-              : null,
-        },
-      });
+    // Fetch history orders
+    const fetchHistory = async () => {
+      setLoadingHistory(true);
+      try {
+        const { data } = await orders.order_history(id);
+        setHistory(data.data); // Use the correct response structure
+      } catch (error) {
+        console.error('Error fetching order history:', error.message)
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
 
-      // Fetch history orders
-      const fetchHistory = async () => {
-        setLoadingHistory(true);
-        try {
-          const { data } = await orders.order_history(id);
-          setHistory(data.data); // Use the correct response structure
-        } catch (error) {
-          console.error('Error fetching order history:', error.message)
-        } finally {
-          setLoadingHistory(false);
-        }
-      };
-
-      // Timer Logic
-      useEffect(() => {
-        fetchHistory(); // Fetch history on component mount
-        let interval;
-        if (isRunning) {
-          interval = setInterval(() => setTimer((prev) => prev + 1), 1000);
-        }
-        return () => clearInterval(interval);
-      }, [isRunning]);
+    // Fetch calls Resons
+    const fetchReasonscalls = async () => {
+      setLoadingHistory(true);
+      try {
+        const response = await orders.ReasonsCall();
+        const formattedData = response.data.map((item) => ({
+          value: item.id.toString(), // Use the correct field for value
+          label: item.reason, // Use the correct field for label
+        }));
+        setReasonCalls(formattedData); // Update state with formatted data
+      } catch (error) {
+        console.error('Error fetching order history:', error.message)
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
 
 
-      const handleStartPause = () => setIsRunning((prev) => !prev);
-      const handleReplay = () => {
-        setTimer(0);
-        setIsRunning(false);
-      };
+    // handle status orders data (filtered)
+    const handleStatusOrdersData = () => {
+      const filteredStatusOrders = StatusOrdersdata.filter(
+        (item) =>
+          item.label === "Tentative échouée" ||
+          item.label === "En attente du client" ||
+          item.label === "Échec livraison"
+      );
+    
+      setStatusOrder((prevState) => [...prevState, ...filteredStatusOrders]);
+    };
 
-      const formatTime = (seconds) => {
-        const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
-        const secs = (seconds % 60).toString().padStart(2, '0');
-        return `${mins}:${secs}`;
-      };
+    // handle submit call form
+    const handleSubmit = async (values) => {
+      try {
+        // Make API call add history order
+        await historyOrders.post(values);
 
-      const handleSubmit = (values) => {
-        console.log('Form Values:', values);
-        console.log('Timer Value:', timer);
+        // Make API call update order status
+        await orders.updateStausOrder(id , { statusId : values.status_order_id});
+    
+        // Show success notification
+        notifications.show({
+          message: 'History Order created successfully!',
+          color: 'green',
+        });
+        
+        setRerender(!Rerender);
+    
+        // Reset form and close modal on success
+        formCreate.reset();
         closeModal();
-      };
+      } catch (error) {
+        // Log the error for debugging
+        console.error('Error creating order:', error);
+    
+        // Display failure notification
+        notifications.show({
+          message: error?.response?.data?.message || 'Failed to create order. Please try again.',
+          color: 'red',
+        });
+      }
+    };
 
-      return (
-        <div>
-          {loadingHistory ? (
-            <Center style={{ height: '10vh' }}>
-              <Loader color="blue" type="bars" />
-            </Center>
-          ) : (
-            <>
-              <form onSubmit={formCreate.onSubmit(handleSubmit)} >
-                {/* Timer */}
-                <div style={{ marginBottom: '16px' }}>
-                  <Text size="sm" weight={500}>
-                    Timer: {formatTime(timer)}
+    useEffect(() => {
+      console.log(selectedStatus)
+      formCreate.setFieldValue('reason', '');
+    }, [selectedStatus]);
+    
+
+    useEffect(() => {
+      handleStatusOrdersData();
+      fetchReasonscalls();
+      fetchHistory();
+    }, []);
+
+
+    return (
+      <div>
+        {loadingHistory ? (
+          <Center style={{ height: '10vh' }}>
+            <Loader color="blue" type="bars" />
+          </Center>
+        ) : (
+          <>
+            <form onSubmit={formCreate.onSubmit(handleSubmit)}>
+
+                  <NativeSelect
+                    label="Status Order"
+                    placeholder="Select status"
+                    withAsterisk
+                    data={[{ value: '', label: 'Select status' , disabled: true }, ...statusOrder]} // Add an empty option
+                    value={formCreate.values.status_order_id || ''} // Ensure value defaults to an empty string
+                    onChange={(event) => {
+                      const selectedValue = event.currentTarget.value; // Get the selected value
+                      const selectedLabel = statusOrder.find((item) => item.value === selectedValue)?.label || ''; // Find the corresponding label
+
+                      setSelectedStatus(selectedLabel); // Update custom label state
+                      formCreate.setFieldValue('status_order_id', selectedValue); // Update form field value
+                    }}
+                  />
+
+
+                  {/* Reason */}
+                  {['Échec livraison', 'Tentative échouée'].includes(selectedStatus) && (
+                    <NativeSelect
+                      label="Reason"
+                      placeholder="Select Reason"
+                      withAsterisk
+                      data={reasonCalls} // The data source for the dropdown
+                      value={formCreate.values.reason_id || ''} // Explicitly bind the form field
+                      onChange={(event) => formCreate.setFieldValue('reason_id', event.currentTarget.value)} // Update form value
+                      mt="sm"
+                    />
+                  )}
+
+                  {/* Agent Note */}
+                  <Textarea
+                    label="Note"
+                    placeholder="Add your note here..."
+                    withAsterisk
+                    mt="sm"
+                    {...formCreate.getInputProps('note')}
+                  />
+
+
+                  {/* Buttons */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', whiteSpace: 'nowrap', marginTop: '1rem' }}>
+                    <Button fullWidth variant="outline" onClick={closeModal}>
+                      Cancel
+                    </Button>
+                    <Button fullWidth type="submit">
+                      Submit
+                    </Button>
+                  </div>
+
+            </form>
+
+
+            {/* History Timeline */}
+            <div>
+              <Paper withBorder radius="md" shadow="sm" p="xl" mt={20}>
+                {history.length === 0 ? (
+                  // Display this message if history is empty
+                  <Text color="dimmed" size="sm" align="center">
+                    No history yet.
                   </Text>
-                  <Group spacing="xs" mt="sm">
-                    <Button onClick={handleStartPause} variant="outline">
-                      {isRunning ? 'Pause' : 'Start'}
-                    </Button>
-                    <Button onClick={handleReplay} color="red" variant="outline">
-                      Replay
-                    </Button>
-                  </Group>
-                </div>
-
-                {/* Status */}
-                <NativeSelect
-                  label="Status"
-                  placeholder="Select status"
-                  withAsterisk
-                  data={[
-                    { value: 'pending', label: 'Pending' },
-                    { value: 'completed', label: 'Completed' },
-                    { value: 'failed', label: 'Failed' },
-                  ]}
-                  {...formCreate.getInputProps('status')}
-                />
-
-                {/* Agent Note */}
-                <Textarea
-                  label="Agent Note"
-                  placeholder="Add your note here..."
-                  withAsterisk
-                  mt="sm"
-                  {...formCreate.getInputProps('agent_note')}
-                />
-
-                {/* Submit Button */}
-                <Button type="submit" fullWidth mt="md">
-                  Submit
-                </Button>
-
-                {/* Cancel Button */}
-                <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
-                  Cancel
-                </Button>
-              </form>
-
-
-              {/* History Timeline */}
-              <div>
-                <Paper withBorder radius="md" shadow="sm" p="xl" mt={20}>
-                  {history.length === 0 ? (
-                    // Display this message if history is empty
-                    <Text color="dimmed" size="sm" align="center">
-                      No history yet.
-                    </Text>
-                  ) : (
-                    // Render the Timeline if there are history items
-                    <Timeline
-                      bulletSize={30}
-                      lineWidth={2}
-                      styles={{
-                        itemBullet: {
-                          backgroundColor: '#334ed5ff',
-                        },
-                      }}
-                    >
-                      {history.map((item) => (
-                        <Timeline.Item
-                          key={item.id}
-                          title={
-                            <Group spacing="sm">
-                              <Text weight={700} size="lg">
-                                {item.reason.reason || 'No reason provided'}
-                              </Text>
-                              <Text size="xs" color="dimmed">
-                                {item.created_at}
-                              </Text>
-                            </Group>
-                          }
-                        >
-                          <Group align="center" spacing="sm" mt="xs">
-                            <Avatar size={30} radius="xl" color="blue">
-                              {item.agent?.name?.charAt(0).toUpperCase()}
-                            </Avatar>
-                            <Text weight={500} size="md">
-                              {item.agent?.name || 'Unknown Agent'}
+                ) : (
+                  // Render the Timeline if there are history items
+                  <Timeline radius={'sm'} lineWidth={0.5} bulletSize={35} active={history.length} style={{ maxHeight: '40vh', overflowY: 'auto' }}>
+                    {history.map((item) => (
+                      <Timeline.Item
+                        key={item.id}
+                        title={
+                          <Group spacing="sm">
+                            <Text weight={700} size="lg">
+                            {
+                              item.status?.status ? 
+                                `${item.status.status}${item.reason?.reason ? ` (${item.reason.reason})` : ''}`
+                              : 'No status provided'
+                            }
+                            </Text>
+                            <Text size="xs" color="dimmed">
+                              {item.created_at}
                             </Text>
                           </Group>
-
-                          <Text color="dimmed" size="sm" mt="xs">
-                            {item.note || 'No additional notes available'}
+                        }
+                        bullet={
+                            item.validator !== null || (item.validator === null && item.history_judge == false) ?
+                            <>
+                              <ThemeIcon>
+                                <IconRosetteDiscountCheck size="18rem" />
+                              </ThemeIcon>
+                            </>
+                            : null
+                          }
+                      >
+                        <Group align="center" spacing="sm" mt="xs">
+                          {
+                            item.agent?.role === 'admin' ? (
+                              <Avatar size={30} radius="sm" color="green">
+                                {
+                                  item.agent?.name
+                                    ? item.agent.name.charAt(0).toUpperCase() + item.agent.name.charAt(item.agent.name.length - 1).toUpperCase()
+                                    : ''
+                                }
+                              </Avatar>
+                            ) : (
+                              <Avatar size={30} radius="sm" color="blue">
+                                {
+                                  item.agent?.name
+                                    ? item.agent.name.charAt(0).toUpperCase() + item.agent.name.charAt(item.agent.name.length - 1).toUpperCase()
+                                    : ''
+                                }
+                              </Avatar>
+                            )
+                          }
+                          <Text weight={500} size="md">
+                            {item.agent?.name || 'Unknown Agent'}
                           </Text>
-                          <Text size="sm" mt="xs">
-                            <strong>Time Taken:</strong>{' '}
-                            <span
-                              style={{
-                                background: '#4c6ef5',
-                                padding: '4px 8px',
-                                borderRadius: '8px',
-                                color: '#fff',
-                              }}
-                            >
-                              {item.timetook || 'N/A'}
-                            </span>
-                          </Text>
-                        </Timeline.Item>
-                      ))}
-                    </Timeline>
-                  )}
-                </Paper>
-              </div>
+                            {
+                              (
+                                 item.history_judge == true && item.validator !== null ? 
+                                    (
+                                      <Badge variant="light" color="green" radius="sm">validate by: {item.validator?.name}</Badge>
+                                    )
+                                  : item.history_judge == true ?
+                                  (
+                                      <Badge variant="light" color="yellow" radius="sm">Pending validation...</Badge>
+                                  ) : null
+                              )
+                            }
+                        </Group>
 
-            </>
-          )
-          
-          }
-        </div>
-      );
-    };
+                        {
+                          item.history_judge == true ? (
+                            <>
+                              <Text color="dimmed" size="sm" mt="xs">
+                                {item.note || 'No additional notes available'}
+                              </Text>
+                              {/* 
+                              <Text size="sm" mt="xs">
+                                <strong>Time Taken:</strong>{' '}
+                                <span
+                                  style={{
+                                    background: '#4c6ef5',
+                                    padding: '4px 8px',
+                                    borderRadius: '8px',
+                                    color: '#fff',
+                                  }}
+                                >
+                                  {item.timetook || 'N/A'}
+                                </span>
+                              </Text> 
+                              */}
+                            </>
+                          ) : null
+                        }
+                        
+                      </Timeline.Item>
+                    ))}
+                  </Timeline>
+                )}
+              </Paper>
+            </div>
+          </>
+        )
+        
+        }
+      </div>
+    );
+  };
 
-    const CallModal = (id) => {
-      modals.open({
-        title: 'Order History',
-        centered: true,
-        children: (
-          <CallModelComponent closeModal={() => modals.closeAll()} id={id} />
-        ),
-      });
-    };
+  const CallModal = (id) => {
+    modals.open({
+      title: 'Order History',
+      centered: true,
+      children: (
+        <CallModelComponent closeModal={() => modals.closeAll()} id={id} />
+      ),
+    });
+  };
   // ------------------ Call Model ----------------------
 
 
@@ -674,7 +803,7 @@ import {
                     <NativeSelect
                       placeholder=""
                       defaultValue={row.status.id.toString()}
-                      data={StatusOrdersdata}
+                      data={StatusOrderIndex}
                       onChange={(event) => {
                         const selectedValue = event.currentTarget.value; // Get the selected value
                         UpdateOrderStatus(row.id, selectedValue); // Call your function with the necessary parameters

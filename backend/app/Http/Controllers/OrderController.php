@@ -28,7 +28,7 @@ class OrderController extends Controller
 
         // Build the query
         $query = Order::with(['status:id,status,colorHex', 'deliveryCompany:id,name,colorHex', 'affectedTo:id,name', 'createdBy:id,name'])
-            ->orderBy('updated_at', 'desc');
+            ->orderBy('created_at', 'desc');
 
         // Apply search filter if a search term exists
         if ($search) {
@@ -55,7 +55,7 @@ class OrderController extends Controller
         }
 
         // Paginate the results
-        $orders = $query->paginate(10);
+        $orders = $query->paginate(20);
 
         // Return the collection as a resource
         return OrderResource::collection($orders);
@@ -156,51 +156,58 @@ class OrderController extends Controller
             // Include orders with no historyOrders
             $query->whereDoesntHave('historyOrders')
 
+
+
+
+
+
+
+
                 // Include orders with historyOrders
                 ->orWhereHas('historyOrders', function ($subQuery) use ($today) {
-                    $subQuery->whereIn('id', function ($query) {
-                        $query->selectRaw('MAX(id)')
-                            ->from('history_orders')
-                            ->where('history_judge', true) // Add condition for history_judge = true
-                            ->groupBy('order_id');
-                    })
-                    ->where(function ($subSubQuery) use ($today) {
-                        // Include if updated on another day
-                        $subSubQuery->whereDate('updated_at', '!=', $today);
-                    })
-                    ->orWhere(function ($subSubQuery) use ($today) {
-                        // Include if updated today and user_id_validator is null
-                        $subSubQuery->whereDate('updated_at', '=', $today)
-                            ->whereNull('user_id_validator');
-                    });
-                })
+                    $subQuery->where(function ($nestedQuery) use ($today) {
+                        // Case 1: All history_judge = false
+                        $nestedQuery->whereNotExists(function ($existsQuery) {
+                            $existsQuery->selectRaw(1)
+                                ->from('history_orders as ho')
+                                ->whereColumn('ho.order_id', 'orders.id')
+                                ->where('ho.history_judge', true);
+                        })
 
-                // Additional condition to handle when all history_judge = false
-                ->orWhereHas('historyOrders', function ($subQuery) {
-                    $subQuery->whereNotExists(function ($existsQuery) {
-                        $existsQuery->selectRaw(1)
-                            ->from('history_orders as ho')
-                            ->whereColumn('ho.order_id', 'history_orders.order_id')
-                            ->where('ho.history_judge', true); // Check for absence of history_judge = true
+                        // Case 2: At least one history_judge = true
+                        ->orWhere(function ($orQuery) use ($today) {
+                            $orQuery->whereIn('id', function ($query) {
+                                $query->selectRaw('MAX(id)')
+                                    ->from('history_orders')
+                                    ->where('history_judge', true)
+                                    ->groupBy('order_id');
+                            })
+                            ->where(function ($latestSubQuery) use ($today) {
+                                // Exclude if the latest history_order with history_judge = true is from today
+                                $latestSubQuery->whereDate('created_at', '!=', $today);
+                            });
+                        })
+
+
+                        // Case 3: Latest history_judge = true is from today and user_id_validator is null
+                        ->orWhere(function ($orQuery) use ($today) {
+                            $orQuery->whereIn('id', function ($query) {
+                                $query->selectRaw('MAX(id)')
+                                    ->from('history_orders')
+                                    ->where('history_judge', true)
+                                    ->groupBy('order_id');
+                            })
+                            ->whereDate('created_at', '=', $today)
+                            ->whereNull('user_id_validator');
+                        });
                     });
                 });
+
         })
 
 
-
-
-
-
-
-
-
-
-
-
-
-
         // Order by latest update
-        ->orderBy('updated_at', 'desc');
+        ->orderBy('created_at', 'desc');
 
 
 
@@ -231,7 +238,7 @@ class OrderController extends Controller
 
 
 
-        $orders = $orders->paginate(10);
+        $orders = $orders->paginate(20);
 
         // Return the collection as a resource
         return OrderResource::collection($orders);
