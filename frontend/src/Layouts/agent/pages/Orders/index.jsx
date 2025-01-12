@@ -418,7 +418,8 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
         reason_id: '',
         note: '',
         history_judge:true,
-        order_id:id
+        order_id:id,
+        timetook: "00:00:00",
       },
       validate: {
         status_order_id: (value) =>
