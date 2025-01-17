@@ -25,7 +25,7 @@ export default function Navbar() {
 
   const data = [
     { link: AGENT_DASHBOARD_ROUTE , label: 'Dashboard', icon: IconLayoutDashboard },
-    { link: AGENT_NOTIFICATIONS_ROUTE , label: 'Notifications', icon: IconBrandWechat },
+    { link: AGENT_NOTIFICATIONS_ROUTE , label: 'Messages', icon: IconBrandWechat },
     { link: AGENT_ORDERS_ROUTE , label: 'Orders', icon: IconPackage },
     { link: AGENT_SETTING_ROUTE , label: 'Settings', icon: IconSettings },
   ];

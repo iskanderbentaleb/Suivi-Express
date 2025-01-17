@@ -12,7 +12,7 @@ import Error404 from '../Layouts/pages_general/pages/Error404'
 
 // ===================== ADMIN PAGES =====================  
 import Dashboard from '../Layouts/admin/pages/Dashboard'
-import Notifications from '../Layouts/admin/pages/Notifications'
+import Messages from '../Layouts/admin/pages/Messages/Messages'
 import Orders from '../Layouts/admin/pages/Orders/index'
 import Setting from '../Layouts/admin/pages/Setting'
 import Agents from '../Layouts/admin/pages/agents/index'
@@ -20,7 +20,7 @@ import Agents from '../Layouts/admin/pages/agents/index'
 
 // ===================== AGENT PAGES =====================
 import Dashboard_Agent from '../Layouts/agent/pages/Dashboard'
-import Notifications_Agent from '../Layouts/agent/pages/Notifications'
+import Notifications_Agent from '../Layouts/agent/pages/Messages'
 import Orders_Agent from '../Layouts/agent/pages/Orders/index'
 import Setting_Agent from '../Layouts/agent/pages/Setting'
 // ===================== AGENT PAGES =====================
@@ -91,7 +91,7 @@ export const router = createBrowserRouter(
             },
             {
                 path: ADMIN_NOTIFICATIONS_ROUTE,
-                element:<Notifications/>
+                element:<Messages/>
             },
             {
                 path: ADMIN_ORDERS_ROUTE,

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\DeliveryCompanyController;
+use App\Http\Controllers\MailController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReasonController;
 use App\Http\Controllers\StatusOrderController;
@@ -11,7 +12,8 @@ use App\Http\Controllers\AgentControllers\ReasonController as ReasonAgentControl
 use App\Http\Controllers\AgentControllers\StatusOrderController as StatusOrderAgentController;
 use App\Http\Controllers\HistoryOrdersController;
 use App\Http\Controllers\AgentControllers\HistoryOrdersController as HistoryOrdersAgentController;
-use App\Models\HistoryOrders;
+use App\Http\Controllers\AgentControllers\MailController as MailAgentController ;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +40,10 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
     Route::get('delivery-companies', [DeliveryCompanyController::class, 'index']);
     Route::get('status-orders', [StatusOrderController::class, 'index']);
 
+
+    Route::apiResource('mails', MailController::class);
+
+
 });
 
 
@@ -58,5 +64,7 @@ Route::middleware(['auth:sanctum' , 'ability:agent'])->prefix('agent')->group(st
 
     Route::get('/reasons-calls', [ReasonAgentController::class, 'index']);
     Route::get('status-orders', [StatusOrderAgentController::class, 'index']);
+
+    Route::apiResource('mails', MailAgentController::class);
 });
 

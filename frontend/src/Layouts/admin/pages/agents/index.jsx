@@ -15,7 +15,7 @@ import {
   Skeleton,
   PasswordInput
 } from '@mantine/core';
-import { IconSearch, IconArrowRight, IconTrash, IconPencil } from '@tabler/icons-react';
+import { IconSearch, IconArrowRight, IconTrash, IconPencil, IconUserPlus } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
@@ -46,7 +46,7 @@ export default function Index() {
   const styleCard = {
     background: 'white',
     borderRadius: rem(8),
-    padding: rem(16),
+    padding: rem(10),
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
   };
 
@@ -465,7 +465,7 @@ export default function Index() {
           </Group>
         </Table.Td>
         <Table.Td style={{ width: "20%" }}>
-          <Group justify="flex-end" spacing="xs">
+          <Group justify="flex-end"  spacing="xs" style={{ flexWrap: 'nowrap' }}>
             <Skeleton circle height={24} width={24} />
             <Skeleton circle height={24} width={24} />
           </Group>
@@ -487,7 +487,7 @@ export default function Index() {
           <Paper style={styleCard}>
             <Flex gap="sm" align="center">
               <Button onClick={CreateAgentModal} fullWidth variant="filled" color="blue" >
-                Add Agent
+                <IconUserPlus stroke={2} />
               </Button>
               <Button onClick={exportAgents} fullWidth variant="outline">
                 Export
@@ -607,7 +607,7 @@ export default function Index() {
             </Paper>
 
 
-        </SimpleGrid>
+      </SimpleGrid>
 
 
 

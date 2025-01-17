@@ -63,7 +63,6 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
       background: 'white',
       borderRadius: rem(8),
       padding: rem(10),
-      marginTop:10,
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
     };
   
@@ -936,13 +935,16 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
             </Group>
           </Table.Td>
           <Table.Td style={{ width: "30%" }}>
-          <Group spacing="xs" style={{ flexWrap: 'nowrap' }}>
-            <Skeleton circle height={24} width={24} />
-            <Skeleton height={16} width="30%" />
-          </Group>
+            <Group spacing="xs" style={{ flexWrap: 'nowrap' }}>
+              <Skeleton radius="xs" height={24} width={24} />
+              <Skeleton height={16} width="60%" />
+            </Group>
           </Table.Td>
           <Table.Td style={{ width: "30%" }}>
-            <Skeleton height={16} width="60%" />
+            <Group spacing="xs" style={{ flexWrap: 'nowrap' }}>
+              <Skeleton radius="xs" height={24} width={24} />
+              <Skeleton height={16} width="60%" />
+            </Group>
           </Table.Td>
           <Table.Td style={{ width: "30%" }}>
             <Group style={{ alignItems: "center" }}>
