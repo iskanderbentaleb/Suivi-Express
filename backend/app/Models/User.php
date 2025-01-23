@@ -18,6 +18,22 @@ class User extends Authenticatable
         return 'admin';
     }
 
+    /**
+     * Get the mails sent by this admin.
+    */
+    public function sentMails()
+    {
+        return $this->hasMany(Mail::class, 'sender_admin_id');
+    }
+
+    /**
+     * Get the mails received by this admin.
+     */
+    public function receivedMails()
+    {
+        return $this->hasMany(Mail::class, 'receiver_admin_id');
+    }
+
 
     /**
      * The attributes that are mass assignable.

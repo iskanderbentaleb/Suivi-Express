@@ -65,4 +65,9 @@ class Order extends Model
         return $this->belongsTo(DeliveryCompany::class, 'delivery_company_id');
     }
 
+    public function mails()
+    {
+        return $this->hasMany(Mail::class);
+    }
+
 }

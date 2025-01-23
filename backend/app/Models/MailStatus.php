@@ -17,4 +17,13 @@ class MailStatus extends Model
     protected $fillable = [
         'status',
     ];
+
+
+    /**
+     * Get the mails with this status.
+     */
+    public function mails()
+    {
+        return $this->hasMany(Mail::class);
+    }
 }

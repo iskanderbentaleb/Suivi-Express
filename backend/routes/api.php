@@ -41,7 +41,14 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
     Route::get('status-orders', [StatusOrderController::class, 'index']);
 
 
-    Route::apiResource('mails', MailController::class);
+    // mail
+    Route::get('mails', [MailController::class, 'inbox']); // Get all mails
+    // Route::get('mails', [MailController::class, 'sent']); // Get all mails
+
+    // Route::post('mails', [MailController::class, 'store']); // Create a new mail
+    // Route::get('mails/{mail}', [MailController::class, 'show']); // Get a single mail
+    // Route::put('mails/{mail}', [MailController::class, 'update']); // Update a mail
+    // Route::delete('mails/{mail}', [MailController::class, 'destroy']); // Delete a mail
 
 
 });
@@ -65,6 +72,12 @@ Route::middleware(['auth:sanctum' , 'ability:agent'])->prefix('agent')->group(st
     Route::get('/reasons-calls', [ReasonAgentController::class, 'index']);
     Route::get('status-orders', [StatusOrderAgentController::class, 'index']);
 
-    Route::apiResource('mails', MailAgentController::class);
+
+    // // mail
+    // Route::get('mails', [MailAgentController::class, 'index']); // Get all mails
+    // Route::post('mails', [MailAgentController::class, 'store']); // Create a new mail
+    // Route::get('mails/{mail}', [MailAgentController::class, 'show']); // Get a single mail
+    // Route::put('mails/{mail}', [MailAgentController::class, 'update']); // Update a mail
+    // Route::delete('mails/{mail}', [MailAgentController::class, 'destroy']); // Delete a mail
 });
 

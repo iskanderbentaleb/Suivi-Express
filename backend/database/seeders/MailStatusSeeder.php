@@ -18,7 +18,6 @@ class MailStatusSeeder extends Seeder
             ['status' => 'Succès'],
             ['status' => 'Échec'],
             ['status' => 'Rejeté'],
-            ['status' => 'Annulé'],
         ];
 
         MailStatus::insert($statuses);

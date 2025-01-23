@@ -47,6 +47,22 @@ class Agent extends Authenticatable
         return $this->hasMany(Order::class , 'affected_to');
     }
 
+        /**
+     * Get the mails sent by this agent.
+     */
+    public function sentMails()
+    {
+        return $this->hasMany(Mail::class, 'sender_agent_id');
+    }
+
+    /**
+     * Get the mails received by this agent.
+     */
+    public function receivedMails()
+    {
+        return $this->hasMany(Mail::class, 'receiver_agent_id');
+    }
+
     /**
      * Get the attributes that should be cast.
      *

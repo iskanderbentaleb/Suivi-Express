@@ -20,7 +20,7 @@ import Agents from '../Layouts/admin/pages/agents/index'
 
 // ===================== AGENT PAGES =====================
 import Dashboard_Agent from '../Layouts/agent/pages/Dashboard'
-import Notifications_Agent from '../Layouts/agent/pages/Messages'
+import Messages_Agent from '../Layouts/agent/pages/Messages'
 import Orders_Agent from '../Layouts/agent/pages/Orders/index'
 import Setting_Agent from '../Layouts/agent/pages/Setting'
 // ===================== AGENT PAGES =====================
@@ -37,7 +37,7 @@ export const RESET_PASSWORD_ROUTE = '/password-reset'
 // ===================== ADMIN ROUTES =====================
 export const ADMIN_ROUTE = '/admin'
 export const ADMIN_DASHBOARD_ROUTE = ADMIN_ROUTE + '/dashboard'
-export const ADMIN_NOTIFICATIONS_ROUTE = ADMIN_ROUTE + '/notifications/'
+export const ADMIN_NOTIFICATIONS_ROUTE = ADMIN_ROUTE + '/messages/'
 export const ADMIN_ORDERS_ROUTE = ADMIN_ROUTE + '/orders/'
 export const ADMIN_USERS_ROUTE = ADMIN_ROUTE + '/agents/'
 export const ADMIN_SETTING_ROUTE = ADMIN_ROUTE + '/setting/'
@@ -46,7 +46,7 @@ export const ADMIN_SETTING_ROUTE = ADMIN_ROUTE + '/setting/'
 // ===================== AGENT ROUTES =====================
 export const AGENT_ROUTE = '/agent'
 export const AGENT_DASHBOARD_ROUTE = AGENT_ROUTE + '/dashboard'
-export const AGENT_NOTIFICATIONS_ROUTE = AGENT_ROUTE + '/notifications/'
+export const AGENT_NOTIFICATIONS_ROUTE = AGENT_ROUTE + '/messages/'
 export const AGENT_ORDERS_ROUTE = AGENT_ROUTE + '/orders/'
 export const AGENT_USERS_ROUTE = AGENT_ROUTE + '/agents/'
 export const AGENT_SETTING_ROUTE = AGENT_ROUTE + '/setting/'
@@ -119,7 +119,7 @@ export const router = createBrowserRouter(
             },
             {
                 path: AGENT_NOTIFICATIONS_ROUTE,
-                element:<Notifications_Agent/>
+                element:<Messages_Agent/>
             },
             {
                 path: AGENT_ORDERS_ROUTE,
