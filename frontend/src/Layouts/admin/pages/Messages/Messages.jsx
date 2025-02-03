@@ -86,39 +86,24 @@ export default function Messages() {
     setResponse("");
   };
 
-  const filteredMessages = inboxMessages.filter((message) => {
-    if (filter === "read") return message.read;
-    if (filter === "unread") return !message.read;
-    return true; // 'all'
-  });
 
-  // Fetch messages from the API
+
+  //============ Fetch messages from the API ======================
   const fetchInboxMessages = async (page = 1, searchTerm = "") => {
     setLoading(true);
     try {
-      const { data } = await messages.inbox(page, searchTerm);
-
-      // Map the API response to your UI structure
-      const mappedMessages = data.data.map((message) => ({
-        id: message.id,
-        sender: {
-          firstName: message.sender_agent?.name || "Unknown",
-          lastName: "",
-        },
-        subject: message.message,
-        content: message.message, // Use the message as content
-        timestamp: message.created_at,
-        read: message.is_read === 1,
-        status: message.status.name,
-        order: {
-          id: message.order.id,
-          tracking: message.order.tracking,
-          status: message.order.status.status,
-        },
+      const { data } = await messages.inbox(page, searchTerm , filter);
+  
+      // Transform API data to match UI needs
+      const formattedMessages = Object.values(data.data).map(item => ({
+        ...item,
+        id: item.order.id, // Ensure each message has a unique identifier
+        read: item.latest_mail.is_read === 1,
       }));
+  
+      setInboxMessages(formattedMessages); // Update state with grouped messages
+      setTotalPages(Math.ceil(data.meta.total / data.meta.per_page)); // Correct total pages calculation
 
-      setInboxMessages(mappedMessages); // Update the state with mapped messages
-      setTotalPages(data.meta.last_page || 1); // Update total pages
     } catch (error) {
       notifications.show({ message: "Error fetching data: " + error, color: "red" });
     } finally {
@@ -126,9 +111,11 @@ export default function Messages() {
     }
   };
 
+
+
   useEffect(() => {
     fetchInboxMessages(currentPage, search);
-  }, [currentPage, search]);
+  }, [currentPage, search , filter]);
 
   // Skeleton component for loading state
   const SkeletonMessage = () => (
@@ -251,6 +238,11 @@ export default function Messages() {
               </form>
             </Box>
 
+
+
+
+
+
             {/* Body */}
             <Box
               style={{
@@ -260,24 +252,43 @@ export default function Messages() {
                 padding: "8px",
               }}
             >
-              <ScrollArea>
-                {loading ? (
-                  // Show skeleton while loading
-                  Array.from({ length: 5 }).map((_, index) => <SkeletonMessage key={index} />)
-                ) : (
-                  // Show actual messages when data is loaded
-                  filteredMessages
-                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                    .map((message) => (
+              {loading ? (
+                // Skeleton Loading Effect while fetching data
+                <ScrollArea>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <SkeletonMessage key={index} />
+                  ))}
+                </ScrollArea>
+              ) : inboxMessages.length > 0 ? (
+                <ScrollArea>
+                  {inboxMessages.map((message) => (
+                    <Box key={message.id} style={{ position: "relative", marginBottom: "16px" }}>
+                      {/* First Layer: White Paper (Stacked Effect) */}
+                      {message.mail_count > 1 && (
+                        <Paper 
+                          p="md"
+                          style={{
+                            backgroundColor: theme.white,
+                            border: `1px solid ${theme.colors.gray[3]}`,
+                            borderRadius: theme.radius.md,
+                            boxShadow: theme.shadows.sm,
+                            position: "absolute",
+                            top: 4,
+                            left: 4,
+                            right: 4,
+                            bottom: 4,
+                            zIndex: -1, // Behind the top layer
+                          }}
+                        />
+                      )}
+
+                      {/* Second Layer: Actual Message */}
                       <Paper
-                        key={message.id}
                         p="md"
-                        mb="sm"
                         onClick={() => handleMessageSelect(message)}
                         style={{
                           cursor: "pointer",
-                          backgroundColor:
-                            selectedMessage?.id === message.id ? theme.colors.gray[1] : theme.white,
+                          backgroundColor: selectedMessage?.id === message.id ? theme.colors.gray[1] : theme.white,
                           border: `1px solid ${theme.colors.gray[3]}`,
                           borderRadius: theme.radius.md,
                           transition: "all 0.2s ease-in-out",
@@ -289,7 +300,7 @@ export default function Messages() {
                           },
                         }}
                       >
-                        {/* Sender and Unread Badge */}
+                        {/* Sender + Unread Status */}
                         <Group align="center" spacing="sm" style={{ marginBottom: "8px" }}>
                           {!message.read && (
                             <Badge color="blue" size="sm" radius="sm">
@@ -302,65 +313,71 @@ export default function Messages() {
                             color={theme.colors.gray[7]}
                             style={{ flex: 1 }}
                           >
-                            {message.sender.firstName} {message.sender.lastName}
+                            {message.latest_mail.sender_agent.name}
                           </Text>
+                          {/* Display message count if multiple messages exist */}
+                          {message.mail_count > 1 && (
+                            <Badge color="teal" size="sm" radius="sm">
+                              {message.mail_count} messages
+                            </Badge>
+                          )}
                         </Group>
 
                         {/* Subject */}
-                        <Text
-                          size="sm"
-                          color="dimmed"
-                          weight={!message.read ? 600 : 400}
-                          style={{ marginBottom: "4px" }}
-                        >
-                          {message.subject}
+                        <Text size="sm" color="dimmed" weight={!message.read ? 600 : 400} style={{ marginBottom: "4px" }}>
+                          {"Order #" + message.order.tracking + " "}
+                          <span style={{ border: "gray 0.4px dashed", padding: "3px", borderRadius: "5px" }}>
+                            {message.order.status.status}
+                          </span>
                         </Text>
 
                         {/* Timestamp */}
                         <Text size="xs" color="gray" style={{ marginBottom: "8px" }}>
-                          {new Date(message.timestamp).toLocaleString()}
+                          {message.latest_mail.created_at}
                         </Text>
 
                         {/* Status Badge */}
                         <Box style={{ display: "flex", justifyContent: "flex-end" }}>
                           <Badge
-                            color={
-                              message.status === "Succès"
-                                ? "green"
-                                : message.status === "En attente de réponse"
-                                ? "orange"
-                                : message.status === "Échec"
-                                ? "red"
-                                : "gray"
-                            }
+                            color={"gray"}
                             size="sm"
                             radius="lg"
                             style={{
-                              border: `1px solid ${
-                                message.status === "Succès"
-                                  ? theme.colors.green[6]
-                                  : message.status === "En attente de réponse"
-                                  ? theme.colors.orange[6]
-                                  : message.status === "Échec"
-                                  ? theme.colors.red[6]
-                                  : theme.colors.gray[6]
-                              }`,
+                              border: `1px solid ${theme.colors.gray[6]}`,
                               padding: "4px 12px",
                               boxShadow: theme.shadows.xs,
                               transition: "all 0.2s ease-in-out",
-                              ":hover": {
-                                transform: "scale(1.05)",
-                              },
                             }}
                           >
-                            {message.status}
+                            {message.latest_mail.status.name}
                           </Badge>
                         </Box>
                       </Paper>
-                    ))
-                )}
-              </ScrollArea>
+                    </Box>
+                  ))}
+                </ScrollArea>
+              ) : (
+                // Centered "No Messages Found" Text
+                <Box
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "50vh",
+                    textAlign: "center",
+                  }}
+                >
+                  <Text size="lg" color="gray">
+                    No messages found
+                  </Text>
+                </Box>
+              )}
             </Box>
+
+
+
+
+
 
             {/* Footer */}
             <Box
@@ -384,6 +401,10 @@ export default function Messages() {
                 style={{ justifyContent: "center" }}
               />
             </Box>
+
+
+
+
           </Paper>
         </Grid.Col>
 

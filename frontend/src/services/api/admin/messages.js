@@ -1,8 +1,8 @@
 import axiosClient from "../axios";
 
 const messages = {
-    inbox : async (page , search = '') => {
-        return await axiosClient.get(`/api/admin/mails?page=${page}&search=${search}`)
+    inbox : async (page , search = '' , isRead = "all") => {
+        return await axiosClient.get(`/api/admin/mails?page=${page}&search=${search}&is_read=${isRead}`)
     },
     // exportAgent : async () => {
     //     return await axiosClient.get(`/api/admin/agents/export`, {responseType: 'blob'})
