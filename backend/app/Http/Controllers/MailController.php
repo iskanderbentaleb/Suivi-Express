@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\MailResource;
 use App\Models\Mail;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -123,11 +124,67 @@ class MailController extends Controller
         ]);
     }
 
+    /**
+     * Display messages that selected by id
+    */
+    public function selectedOrderMessagesInbox($orderId)
+    {
 
+
+        // Validate that the orderId exists in the orders table
+        if (!Order::where('id', $orderId)->exists()) {
+            return response()->json([
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+
+
+
+        try {
+            // Update all messages related to the order to mark them as read
+            $adminId = Auth::id();
+            Mail::where('order_id', $orderId)
+            ->whereNotNull('sender_agent_id')
+            ->whereNotNull('receiver_admin_id')
+            ->whereNull('receiver_agent_id')
+            ->whereNull('sender_admin_id')
+            ->where('receiver_admin_id', $adminId)
+            ->update(['is_read' => 1]);
+
+
+            // Fetch paginated mails related to the given orderId
+            $mails = Mail::where('order_id', $orderId)
+                         ->orderBy('id', 'desc') // Sort by latest messages first
+                         ->with([
+                            'order.status', // Ensure 'order' and 'status' relationships exist
+                            'senderAgent',  // Ensure 'senderAgent' relationship exists
+                            'receiverAgent', // Ensure 'receiverAgent' relationship exists
+                            'senderAdmin',  // Ensure 'senderAdmin' relationship exists
+                            'receiverAdmin', // Ensure 'receiverAdmin' relationship exists
+                            'status',       // Ensure 'status' relationship exists
+                            'parentMail',   // Ensure 'parentMail' relationship exists
+                            'replies'       // Ensure 'replies' relationship exists
+                         ])
+                         ->get(); // Paginate the results, 20 items per page
+
+            // Return paginated response using MailResource
+            return response()->json([
+                'data' => MailResource::collection($mails)
+            ]);
+
+        } catch (\Exception $e) {
+            // Handle any exceptions that occur
+            return response()->json([
+                'message' => 'An error occurred while fetching the mails.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
 
     /**
-     * Display Display sent messages
+     * Display  sent messages
     */
     public function sent()
     {

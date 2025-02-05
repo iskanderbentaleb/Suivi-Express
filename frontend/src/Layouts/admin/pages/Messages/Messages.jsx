@@ -22,6 +22,7 @@ import { useForm } from "@mantine/form";
 import { useMediaQuery } from "@mantine/hooks";
 import {
   IconArrowRight,
+  IconBox,
   IconBrandTelegram,
   IconMessageCircleDown,
   IconSearch,
@@ -41,7 +42,10 @@ export default function Messages() {
   const [loading, setLoading] = useState(true);
   const [selectedButton, setSelectedButton] = useState("inbox");
   const [search, setSearch] = useState("");
-  const [selectedMessage, setSelectedMessage] = useState(null);
+  
+  const [selectedMessages, setSelectedMessages] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
   const [response, setResponse] = useState("");
   const [filter, setFilter] = useState("all"); // 'all', 'read', 'unread'
   const [inboxMessages, setInboxMessages] = useState([]);
@@ -67,14 +71,12 @@ export default function Messages() {
     }
   };
 
-  const handleMessageSelect = (message) => {
-    setSelectedMessage(message);
-    setResponse("");
-    setInboxMessages((prevMessages) =>
-      prevMessages.map((msg) =>
-        msg.id === message.id ? { ...msg, read: true } : msg
-      )
-    );
+  // Fetch messages for the selected order
+  const handleMessageSelect = async (orderId) => {
+    const { data } = await messages.selectedOrderMessagesInbox(orderId);
+    setSelectedOrder(orderId);
+    setSelectedMessages(data.data);
+    setResponse(""); // Reset response input
   };
 
   const handleResponseChange = (event) => {
@@ -240,9 +242,6 @@ export default function Messages() {
 
 
 
-
-
-
             {/* Body */}
             <Box
               style={{
@@ -263,8 +262,9 @@ export default function Messages() {
                 <ScrollArea>
                   {inboxMessages.map((message) => (
                     <Box key={message.id} style={{ position: "relative", marginBottom: "16px" }}>
-                      {/* First Layer: White Paper (Stacked Effect) */}
-                      {message.mail_count > 1 && (
+                      {/* First Layer: White Paper (Stacked Effect) */} 
+                      {
+                        message.mail_count > 1 && (
                         <Paper 
                           p="md"
                           style={{
@@ -281,14 +281,13 @@ export default function Messages() {
                           }}
                         />
                       )}
-
                       {/* Second Layer: Actual Message */}
                       <Paper
                         p="md"
-                        onClick={() => handleMessageSelect(message)}
+                        onClick={() => handleMessageSelect(message.id)}
                         style={{
                           cursor: "pointer",
-                          backgroundColor: selectedMessage?.id === message.id ? theme.colors.gray[1] : theme.white,
+                          backgroundColor: selectedOrder?.id === message.id ? theme.colors.gray[1] : theme.white,
                           border: `1px solid ${theme.colors.gray[3]}`,
                           borderRadius: theme.radius.md,
                           transition: "all 0.2s ease-in-out",
@@ -376,9 +375,6 @@ export default function Messages() {
 
 
 
-
-
-
             {/* Footer */}
             <Box
               style={{
@@ -403,8 +399,6 @@ export default function Messages() {
             </Box>
 
 
-
-
           </Paper>
         </Grid.Col>
 
@@ -420,9 +414,10 @@ export default function Messages() {
                 position: "relative",
               }}
             >
-              {selectedMessage ? (
+              {selectedMessages ? (
                 <>
-                  {/* User Information Section */}
+
+                  {/* user info section */}
                   <Box
                     style={{
                       position: "absolute",
@@ -436,27 +431,23 @@ export default function Messages() {
                     }}
                   >
                     <Group align="center" spacing="sm">
-                      <Avatar radius="sm" color="blue">
-                        {selectedMessage.sender.firstName.charAt(0).toUpperCase()}
+                      <Avatar radius="sm" color="black">
+                        <IconBox stroke={2} />
                       </Avatar>
                       <div>
                         <Text size="sm" weight={500} color={theme.colors.gray[7]}>
-                          {selectedMessage.sender.firstName} {selectedMessage.sender.lastName}
+                          {selectedMessages[0].order.tracking}
                         </Text>
                         <Text size="xs" color="dimmed">
-                          {selectedMessage.sender.email}
-                        </Text>
-                        <Text size="xs">
-                          Order Tracking:{" "}
-                          <Code color="red.9" c="white">
-                            {selectedMessage.order.tracking}
-                          </Code>
+                          {selectedMessages[0].order.status.status}
                         </Text>
                       </div>
                     </Group>
                   </Box>
 
-                  {/* Message Content Section */}
+
+
+                  {/* Admin and Agent Replies Section */}
                   <Box
                     style={{
                       position: "absolute",
@@ -468,107 +459,87 @@ export default function Messages() {
                       overflowY: "auto",
                     }}
                   >
-                    {/* Original Message */}
-                    <Box
-                      style={{
-                        width: "80%",
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      <Paper
-                        p="md"
-                        style={{
-                          backgroundColor: theme.colors.gray[1],
-                          border: `1px solid ${theme.colors.gray[3]}`,
-                          borderRadius: theme.radius.md,
-                          maxWidth: "70%",
-                        }}
-                      >
-                        <Text
-                          size="sm"
-                          style={{
-                            fontFamily: "monospace",
-                            whiteSpace: "pre-wrap",
-                            lineHeight: 1.6,
-                            color: theme.colors.gray[8],
-                          }}
-                        >
-                          {selectedMessage.content}
-                        </Text>
-                        <Text
-                          size="xs"
-                          color={theme.colors.gray[5]}
-                          mt="xs"
-                          style={{ textAlign: "right" }}
-                        >
-                          {new Date(selectedMessage.timestamp).toLocaleString()}
-                        </Text>
-                      </Paper>
-                    </Box>
+                    {selectedMessages.map((msg) => {
+                      const isAgent = msg.sender_agent !== null; // Check if sender is an agent
+                      const senderName = isAgent ? msg.sender_agent.name : msg.sender_admin.name ;
+                      const senderInitial = senderName.charAt(0).toUpperCase() + senderName.charAt(senderName.length-1).toUpperCase() ;
 
-                    {/* Fake Responses */}
-                    {[
-                      {
-                        id: 1,
-                        sender: "John Doe",
-                        content: "This is a response to the original message.",
-                        timestamp: "2023-10-02T12:30:00",
-                      },
-                      {
-                        id: 2,
-                        sender: "Jane Smith",
-                        content: "Another response with more details.",
-                        timestamp: "2023-10-02T14:45:00",
-                      },
-                      {
-                        id: 3,
-                        sender: "Alice Johnson",
-                        content: "A third response for testing purposes.",
-                        timestamp: "2023-10-02T16:15:00",
-                      },
-                    ].map((response) => (
-                      <Box
-                        key={response.id}
-                        style={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          marginBottom: "16px",
-                        }}
-                      >
-                        <Paper
-                          p="md"
+                      return (
+                        <Box
+                          key={msg.id}
                           style={{
-                            backgroundColor: theme.colors.gray[3],
-                            border: `1px solid ${theme.colors.gray[4]}`,
-                            borderRadius: theme.radius.md,
-                            maxWidth: "70%",
+                            display: "flex",
+                            justifyContent: isAgent ? "flex-start" : "flex-end",
+                            alignItems: "center",
+                            marginBottom: "16px",
+                            gap: "8px",
                           }}
                         >
-                          <Text
-                            size="sm"
+                          {/* Show Avatar & Sender Name for Agent Messages */}
+                          {/* Show Avatar & Sender Name for Agent Messages */}
+                          {isAgent && (
+                            <Avatar radius="sm" color="blue">
+                              <Text size="xs" style={{ fontWeight: "bold" }}>
+                                {senderInitial}
+                              </Text>
+                            </Avatar>
+                          )}
+
+
+                          <Paper
+                            p="md"
                             style={{
-                              fontFamily: "monospace",
-                              whiteSpace: "pre-wrap",
-                              lineHeight: 1.6,
-                              color: theme.colors.gray[8],
+                              backgroundColor: isAgent
+                                ? theme.colors.gray[1] // Agent messages (light gray)
+                                : theme.colors.gray[0], // Admin messages (light blue)
+                              border: `1px solid ${
+                                isAgent ? theme.colors.gray[3] : theme.colors.gray[3]
+                              }`,
+                              borderRadius: theme.radius.md,
+                              maxWidth: "70%",
+                              padding: "12px",
+                              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                             }}
                           >
-                            {response.content}
-                          </Text>
-                          <Text
-                            size="xs"
-                            color={theme.colors.gray[5]}
-                            mt="xs"
-                            style={{ textAlign: "right" }}
-                          >
-                            {new Date(response.timestamp).toLocaleString()}
-                          </Text>
-                        </Paper>
-                      </Box>
-                    ))}
+                            {/* Sender Name (Only for Agent) */}
+                            {isAgent && (
+                              <Text size="xs" weight="bold" color={theme.colors.blue[7]}>
+                                {senderName}
+                              </Text>
+                            )}
+
+                            {/* Message Content */}
+                            <Text
+                              size="sm"
+                              style={{
+                                fontFamily: "monospace",
+                                whiteSpace: "pre-wrap",
+                                lineHeight: 1.6,
+                                color: theme.colors.gray[8],
+                              }}
+                            >
+                              {msg.message}
+                            </Text>
+
+                            {/* Timestamp */}
+                            <Text
+                              size="xs"
+                              color={theme.colors.gray[5]}
+                              mt="xs"
+                              style={{ textAlign: "right" }}
+                            >
+                              {msg.created_at}
+                            </Text>
+                          </Paper>
+                        </Box>
+                      );
+                    })}
                   </Box>
+
+
+
+
+
 
                   {/* Response Section */}
                   <Box
@@ -642,16 +613,14 @@ export default function Messages() {
           </Grid.Col>
         ) : (
           <Modal
-            opened={!!selectedMessage}
-            onClose={() => setSelectedMessage(null)}
+            opened={!!selectedMessages}
+            onClose={() => setSelectedMessages(null)}
             title="Message"
             size="lg"
             padding="lg"
-            overlayProps={{
-              blur: 1,
-            }}
+            overlayProps={{ blur: 1 }}
           >
-            {selectedMessage && (
+            {selectedMessages && (
               <>
                 {/* User Information Section */}
                 <Box
@@ -662,27 +631,21 @@ export default function Messages() {
                   }}
                 >
                   <Group align="center" spacing="sm">
-                    <Avatar radius="sm" color="blue">
-                      {selectedMessage.sender.firstName.charAt(0).toUpperCase()}
+                    <Avatar radius="sm" color="black">
+                      <IconBox stroke={2} />
                     </Avatar>
                     <div>
                       <Text size="sm" weight={500} color={theme.colors.gray[7]}>
-                        {selectedMessage.sender.firstName} {selectedMessage.sender.lastName}
+                        {selectedMessages[0].order.tracking}
                       </Text>
                       <Text size="xs" color="dimmed">
-                        {selectedMessage.sender.email}
-                      </Text>
-                      <Text size="xs">
-                        Order Tracking:{" "}
-                        <Code color="red.9" c="white">
-                          {selectedMessage.order.tracking}
-                        </Code>
+                        {selectedMessages[0].order.status.status}
                       </Text>
                     </div>
                   </Group>
                 </Box>
 
-                {/* Message Content Section */}
+                {/* Messages Section */}
                 <Box
                   style={{
                     padding: "16px",
@@ -690,105 +653,55 @@ export default function Messages() {
                     maxHeight: "40vh",
                   }}
                 >
-                  {/* Original Message */}
-                  <Box
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-start",
-                      marginBottom: "16px",
-                    }}
-                  >
-                    <Paper
-                      p="md"
-                      style={{
-                        backgroundColor: theme.colors.gray[1],
-                        border: `1px solid ${theme.colors.gray[3]}`,
-                        borderRadius: theme.radius.md,
-                        maxWidth: "80%",
-                      }}
-                    >
-                      <Text
-                        size="xs"
+                  {selectedMessages.map((msg) => {
+                    const isAgent = msg.sender_agent !== null;
+                    const senderName = isAgent ? msg.sender_agent.name : msg.sender_admin.name;
+                    return (
+                      <Box
+                        key={msg.id}
                         style={{
-                          fontFamily: "monospace",
-                          whiteSpace: "pre-wrap",
-                          lineHeight: 1.6,
-                          color: theme.colors.gray[8],
+                          display: "flex",
+                          justifyContent: isAgent ? "flex-start" : "flex-end",
+                          marginBottom: "16px",
                         }}
                       >
-                        {selectedMessage.content}
-                      </Text>
-                      <Text
-                        size="xs"
-                        color={theme.colors.gray[5]}
-                        mt="xs"
-                        style={{ textAlign: "right" }}
-                      >
-                        {new Date(selectedMessage.timestamp).toLocaleString()}
-                      </Text>
-                    </Paper>
-                  </Box>
-
-                  {/* Fake Responses */}
-                  {[
-                    {
-                      id: 1,
-                      sender: "John Doe",
-                      content: "This is a response to the original message.",
-                      timestamp: "2023-10-02T12:30:00",
-                    },
-                    {
-                      id: 2,
-                      sender: "Jane Smith",
-                      content: "Another response with more details.",
-                      timestamp: "2023-10-02T14:45:00",
-                    },
-                    {
-                      id: 3,
-                      sender: "Alice Johnson",
-                      content: "A third response for testing purposes.",
-                      timestamp: "2023-10-02T16:15:00",
-                    },
-                  ].map((response) => (
-                    <Box
-                      key={response.id}
-                      style={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      <Paper
-                        p="md"
-                        style={{
-                          backgroundColor: theme.colors.gray[3],
-                          border: `1px solid ${theme.colors.gray[4]}`,
-                          borderRadius: theme.radius.md,
-                          maxWidth: "80%",
-                        }}
-                      >
-                        <Text
-                          size="xs"
+                        <Paper
+                          p="md"
                           style={{
-                            fontFamily: "monospace",
-                            whiteSpace: "pre-wrap",
-                            lineHeight: 1.6,
-                            color: theme.colors.gray[8],
+                            backgroundColor: isAgent ? theme.colors.gray[1] : theme.colors.gray[0],
+                            border: `1px solid ${theme.colors.gray[3]}`,
+                            borderRadius: theme.radius.md,
+                            maxWidth: "80%",
                           }}
                         >
-                          {response.content}
-                        </Text>
-                        <Text
-                          size="xs"
-                          color={theme.colors.gray[5]}
-                          mt="xs"
-                          style={{ textAlign: "right" }}
-                        >
-                          {new Date(response.timestamp).toLocaleString()}
-                        </Text>
-                      </Paper>
-                    </Box>
-                  ))}
+                          {isAgent && (
+                            <Text size="xs" weight="bold" color={theme.colors.blue[7]}>
+                              {senderName}
+                            </Text>
+                          )}
+                          <Text
+                            size="sm"
+                            style={{
+                              fontFamily: "monospace",
+                              whiteSpace: "pre-wrap",
+                              lineHeight: 1.6,
+                              color: theme.colors.gray[8],
+                            }}
+                          >
+                            {msg.message}
+                          </Text>
+                          <Text
+                            size="xs"
+                            color={theme.colors.gray[5]}
+                            mt="xs"
+                            style={{ textAlign: "right" }}
+                          >
+                            {msg.created_at}
+                          </Text>
+                        </Paper>
+                      </Box>
+                    );
+                  })}
                 </Box>
 
                 {/* Response Section */}
@@ -806,14 +719,9 @@ export default function Messages() {
                     placeholder="Type your response..."
                     value={response}
                     onChange={handleResponseChange}
-                    radius="md"
+                    radius="sm"
                     size="xs"
-                    styles={{
-                      input: {
-                        backgroundColor: theme.white,
-                        borderColor: theme.colors.gray[3],
-                      },
-                    }}
+                    styles={{ input: { backgroundColor: theme.white, borderColor: theme.colors.gray[3] } }}
                   />
                   <Button
                     onClick={handleSendResponse}
@@ -824,9 +732,7 @@ export default function Messages() {
                       root: {
                         backgroundColor: theme.colors.blue[6],
                         color: theme.white,
-                        "&:hover": {
-                          backgroundColor: theme.colors.blue[7],
-                        },
+                        "&:hover": { backgroundColor: theme.colors.blue[7] },
                       },
                     }}
                   >
@@ -836,6 +742,7 @@ export default function Messages() {
               </>
             )}
           </Modal>
+
         )}
       </Grid>
     </>

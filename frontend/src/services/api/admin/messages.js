@@ -4,6 +4,9 @@ const messages = {
     inbox : async (page , search = '' , isRead = "all") => {
         return await axiosClient.get(`/api/admin/mails?page=${page}&search=${search}&is_read=${isRead}`)
     },
+    selectedOrderMessagesInbox : async (order_id) => {
+        return await axiosClient.get(`/api/admin/mails/${order_id}`)
+    },
     // exportAgent : async () => {
     //     return await axiosClient.get(`/api/admin/agents/export`, {responseType: 'blob'})
     // },
