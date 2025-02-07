@@ -44,6 +44,8 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
     // mail
     Route::get('mails', [MailController::class, 'inbox']); // Get all mails
     Route::get('mails/{orderId}', [MailController::class, 'selectedOrderMessagesInbox']); // Get all mails
+    Route::post('mails/sent-message', [MailController::class, 'sentMessages']);
+
     // Route::get('mails', [MailController::class, 'sent']); // Get all mails
 
     // Route::post('mails', [MailController::class, 'store']); // Create a new mail

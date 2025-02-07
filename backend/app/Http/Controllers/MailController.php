@@ -184,11 +184,30 @@ class MailController extends Controller
 
 
     /**
-     * Display  sent messages
+     *  Sent messages
     */
-    public function sent()
+    public function sentMessages(Request $request)
     {
+        // Validate input
+        $validatedData = $request->validate([
+            'tracking' => 'required|string|exists:orders,tracking',
+            'message' => 'required|string|min:1',
+        ]);
 
+        // Retrieve the order based on tracking number
+        $order = Order::where('tracking', $validatedData['tracking'])->firstOrFail();
+
+        // Create the new mail entry
+        $mail = Mail::create([
+            'order_id' => $order->id,
+            'sender_admin_id' => auth()->id(), // Current logged-in admin
+            'receiver_agent_id' => $order->affected_to ,
+            'message' => $validatedData['message'],
+            'status_id' => 1
+        ]);
+
+        // Return the newly created message as a resource
+        return new MailResource($mail);
     }
 
     /**

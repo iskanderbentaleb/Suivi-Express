@@ -7,12 +7,14 @@ const messages = {
     selectedOrderMessagesInbox : async (order_id) => {
         return await axiosClient.get(`/api/admin/mails/${order_id}`)
     },
+    sendMessage : async (payload) => {
+        return await axiosClient.post(`/api/admin/mails/sent-message` , payload);
+    },
+
     // exportAgent : async () => {
     //     return await axiosClient.get(`/api/admin/agents/export`, {responseType: 'blob'})
     // },
-    // post : async (payload) => {
-    //     return await axiosClient.post(`/api/admin/agents` , payload);
-    // },
+
     // update: async (id , payload) => {
     //     // here we should add ?_method=PUT and make request method post , 
     //     return await axiosClient.post(`/api/admin/agents/${id}?_method=PUT`, payload );

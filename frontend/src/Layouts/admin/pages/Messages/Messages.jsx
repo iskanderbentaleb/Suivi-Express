@@ -4,7 +4,6 @@ import {
   Badge,
   Box,
   Button,
-  Code,
   Flex,
   Grid,
   Group,
@@ -13,8 +12,11 @@ import {
   Paper,
   rem,
   ScrollArea,
+  Select,
+  SimpleGrid,
   Skeleton,
   Text,
+  Textarea,
   TextInput,
   useMantineTheme,
 } from "@mantine/core";
@@ -23,13 +25,12 @@ import { useMediaQuery } from "@mantine/hooks";
 import {
   IconArrowRight,
   IconBox,
-  IconBrandTelegram,
-  IconMessageCircleDown,
   IconSearch,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { messages } from "../../../../services/api/admin/messages";
 import { notifications } from "@mantine/notifications";
+
 
 const styleCard = {
   background: "white",
@@ -38,11 +39,124 @@ const styleCard = {
   boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
 };
 
+
+
+
+//========= responce message section==========
+const ResponseSection = ({ orderTracking }) => {
+  const theme = useMantineTheme();
+  const [response, setResponse] = useState(""); // Stores user input
+  const [loading, setLoading] = useState(false); // Loading state
+
+  // Handle input change
+  const handleResponseChange = (event) => {
+    setResponse(event.target.value);
+  };
+
+  // Handle send response
+  const handleSendResponse = async () => {
+    const trimmedResponse = response.trim();
+    if (!trimmedResponse) return;
+
+    setLoading(true); // Show loading state
+
+    try {
+
+      const { data } = await messages.sendMessage(
+        {
+          tracking: orderTracking ,
+          message: trimmedResponse
+        }
+      );
+
+      console.log("Message sent:", data);
+
+      // Show success notification
+      notifications.show({
+        message: "Message sent successfully!",
+        color: "green",
+      });
+
+      // Clear input field after sending
+      setResponse("");
+
+
+    } catch (error) {
+      console.error("Error sending message:", error);
+      notifications.show({
+        message: "Message sent failed!",
+        color: "green",
+      });
+
+    } finally {
+      setLoading(false); // Stop loading state
+    }
+  };
+
+  return (
+    <Box
+      style={{
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: "16px",
+        borderTop: `1px solid ${theme.colors.gray[3]}`,
+        backgroundColor: theme.colors.gray[0],
+        display: "flex",
+        flexDirection: "column",
+        gap: "12px",
+      }}
+    >
+      <TextInput
+        placeholder="Type your response..."
+        value={response}
+        onChange={handleResponseChange}
+        radius="md"
+        size="md"
+        disabled={loading} // Disable input while loading
+        styles={{
+          input: {
+            backgroundColor: theme.white,
+            borderColor: theme.colors.gray[3],
+          },
+        }}
+      />
+      <Button
+        onClick={handleSendResponse}
+        size="md"
+        radius="md"
+        fullWidth
+        disabled={response.trim().length === 0 || loading} // Disable when empty or loading
+        loading={loading} // Show loader when sending
+        styles={{
+          root: {
+            backgroundColor:
+              response.trim().length > 0 ? theme.colors.blue[6] : theme.colors.gray[5], 
+            color: theme.white,
+            "&:hover": {
+              backgroundColor:
+                response.trim().length > 0 ? theme.colors.blue[7] : theme.colors.gray[5], 
+            },
+          },
+        }}
+      >
+        Send
+      </Button>
+    </Box>
+  );
+};
+
+
+
+
+// ======= all page  ==========
 export default function Messages() {
+  const [selectedTab, setSelectedTab] = useState("receive");
   const [loading, setLoading] = useState(true);
-  const [selectedButton, setSelectedButton] = useState("inbox");
   const [search, setSearch] = useState("");
   
+  const [opened, setOpened] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
@@ -58,10 +172,6 @@ export default function Messages() {
   const formSearch = useForm({
     initialValues: { search: "" },
   });
-
-  const handleSwitchButtonSentInboxClick = (buttonName) => {
-    setSelectedButton(buttonName);
-  };
 
   const handleSearch = (values) => {
     const trimmedSearch = values.search.trim().toLowerCase();
@@ -81,11 +191,6 @@ export default function Messages() {
 
   const handleResponseChange = (event) => {
     setResponse(event.target.value);
-  };
-
-  const handleSendResponse = () => {
-    alert(`Response sent: ${response}`);
-    setResponse("");
   };
 
 
@@ -136,40 +241,82 @@ export default function Messages() {
 
   return (
     <>
+
       <Text fw={700} fz="xl" mb="md">
         Messages
       </Text>
 
-      {/* Actions Section */}
-      <Grid gutter="lg" mb="lg">
-        {/* Buttons Section */}
-        <Grid.Col span={{ base: 12, sm: 4 }}>
+
+        {/* Actions Section */}
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
           <Paper style={styleCard}>
             <Flex gap="sm" align="center">
               <Button
-                rightSection={<IconMessageCircleDown size={14} />}
-                onClick={() => handleSwitchButtonSentInboxClick("inbox")}
                 fullWidth
-                variant={selectedButton === "inbox" ? "outline" : "light"}
+                variant={selectedTab === "receive" ? "filled" : "outline"}
+                color="blue"
+                onClick={() => setSelectedTab("receive")}
               >
-                Inbox
+                RECEIVE
               </Button>
               <Button
-                rightSection={<IconBrandTelegram size={14} />}
-                onClick={() => handleSwitchButtonSentInboxClick("sent")}
-                color="green"
                 fullWidth
-                variant={selectedButton === "sent" ? "outline" : "light"}
+                variant={selectedTab === "sent" ? "filled" : "outline"}
+                color="teal"
+                onClick={() => setSelectedTab("sent")}
               >
-                Sent
+                SENT
               </Button>
             </Flex>
           </Paper>
-        </Grid.Col>
-      </Grid>
+        </SimpleGrid>
+
+
+
+        {/* create new messages */}
+        <Modal
+          opened={opened}
+          onClose={() => setOpened(false)}
+          title="New Messages"
+          size="lg"
+          centered // Centers the modal
+        >
+          <Box>
+            {/* Searchable Select for Order Tracking */}
+            <Select
+              label="Order Tracking"
+              placeholder="Select an order"
+              searchable
+              nothingFound="No orders found"
+              required
+            />
+
+            {/* Disabled TextInput for User Name */}
+            <TextInput
+              label="User Name"
+              placeholder="User Name"
+              disabled
+              mt="md"
+            />
+
+            {/* Bigger Textarea for Message Content */}
+            <Textarea
+              label="Message Content"
+              placeholder="Type your message here"
+              required
+              mt="md"
+              autosize
+              minRows={4} // Minimum height of the text area
+              maxRows={10} // Maximum height before scrolling
+            />
+          </Box>
+        </Modal>
+
+
+
 
       {/* Message List and Selected Message */}
-      <Grid style={{ marginTop: "20px", height: "80vh", overflow: "hidden" }}>
+      <Grid style={{ height: "80vh", overflow: "hidden" , marginTop:'15px' }}>
         {/* Left Side: Message List */}
         <Grid.Col span={{ base: 12, md: isMobile ? 12 : 4 }} style={{ height: "75vh" }}>
           <Paper
@@ -192,9 +339,6 @@ export default function Messages() {
                 marginBottom: "16px",
               }}
             >
-              <Text size="xl" mb="lg" weight={700} color={theme.colors.gray[7]}>
-                Inbox
-              </Text>
               <Group mb="lg" spacing="sm" noWrap>
                 <Button
                   variant={filter === "all" ? "filled" : "outline"}
@@ -220,6 +364,12 @@ export default function Messages() {
                 >
                   Unread
                 </Button>
+
+                <Button size="xs" color="teal"
+                variant="outline"
+                onClick={() => setOpened(true)}
+                > Send Message </Button>
+              
               </Group>
 
               {/* Search Form */}
@@ -366,9 +516,11 @@ export default function Messages() {
                     textAlign: "center",
                   }}
                 >
+                
                   <Text size="lg" color="gray">
                     No messages found
                   </Text>
+                  
                 </Box>
               )}
             </Box>
@@ -542,51 +694,8 @@ export default function Messages() {
 
 
                   {/* Response Section */}
-                  <Box
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      padding: "16px",
-                      borderTop: `1px solid ${theme.colors.gray[3]}`,
-                      backgroundColor: theme.colors.gray[0],
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "12px",
-                    }}
-                  >
-                    <TextInput
-                      placeholder="Type your response..."
-                      value={response}
-                      onChange={handleResponseChange}
-                      radius="md"
-                      size="md"
-                      styles={{
-                        input: {
-                          backgroundColor: theme.white,
-                          borderColor: theme.colors.gray[3],
-                        },
-                      }}
-                    />
-                    <Button
-                      onClick={handleSendResponse}
-                      size="md"
-                      radius="md"
-                      fullWidth
-                      styles={{
-                        root: {
-                          backgroundColor: theme.colors.blue[6],
-                          color: theme.white,
-                          "&:hover": {
-                            backgroundColor: theme.colors.blue[7],
-                          },
-                        },
-                      }}
-                    >
-                      Send
-                    </Button>
-                  </Box>
+                  <ResponseSection orderTracking={selectedMessages[0].order.tracking} />
+
                 </>
               ) : (
                 <Text
@@ -601,13 +710,16 @@ export default function Messages() {
                     height: "100%",
                   }}
                 >
+
                   <img
                     src="/select-message.svg"
                     alt="No messages"
                     style={{ width: "300px" }}
                   />
                   Select a message to view and respond
+                  <Button size="xs" variant="outline" color="teal" onClick={() => setOpened(true)}> Send Message </Button>
                 </Text>
+                
               )}
             </Paper>
           </Grid.Col>
@@ -724,7 +836,7 @@ export default function Messages() {
                     styles={{ input: { backgroundColor: theme.white, borderColor: theme.colors.gray[3] } }}
                   />
                   <Button
-                    onClick={handleSendResponse}
+                    // onClick={handleSendResponse}
                     size="xs"
                     radius="xs"
                     fullWidth
