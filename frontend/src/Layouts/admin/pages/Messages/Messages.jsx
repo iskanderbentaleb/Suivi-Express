@@ -147,6 +147,139 @@ const ResponseSection = ({ orderTracking }) => {
   );
 };
 
+// ====================== NEW CODES FRON CHATGBT========================
+const DesktopViewMessages = ({ selectedMessages , setOpened }) => {
+  const theme = useMantineTheme();
+  
+  return (
+    <Grid.Col span={{ base: 12, md: 8 }} style={{ height: "75vh", overflow: "hidden" }}>
+      <Paper
+        p="lg"
+        shadow="sm"
+        style={{ height: "100%", backgroundColor: theme.white, position: "relative" }}
+      >
+        {selectedMessages ? (
+          <>
+            <UserInfo selectedMessages={selectedMessages} />
+            <MessagesList selectedMessages={selectedMessages} />
+            <ResponseSection orderTracking={selectedMessages[0].order.tracking} />
+          </>
+        ) : (
+          <NoMessageSelected setOpened={setOpened} />
+        )}
+      </Paper>
+    </Grid.Col>
+  );
+};
+
+const PhoneViewMessages = ({ selectedMessages, setSelectedMessages }) => {
+  const theme = useMantineTheme();
+  
+  return (
+    <Modal
+      opened={!!selectedMessages}
+      onClose={() => setSelectedMessages(null)}
+      title="Message"
+      size="lg"
+      padding="lg"
+      overlayProps={{ blur: 1 }}
+    >
+      {selectedMessages && (
+        <>
+          <UserInfo selectedMessages={selectedMessages} />
+          <MessagesList selectedMessages={selectedMessages} />
+          <ResponseSection orderTracking={selectedMessages[0].order.tracking} />
+        </>
+      )}
+    </Modal>
+  );
+};
+
+const UserInfo = ({ selectedMessages }) => {
+  const theme = useMantineTheme();
+  
+  return (
+    <Box
+      style={{
+        padding: "16px",
+        borderBottom: `1px solid ${theme.colors.gray[3]}`,
+        backgroundColor: theme.colors.gray[0],
+      }}
+    >
+      <Group align="center" spacing="sm">
+        <Avatar radius="sm" color="black">
+          <IconBox stroke={2} />
+        </Avatar>
+        <div>
+          <Text size="sm" weight={500} color={theme.colors.gray[7]}>
+            {selectedMessages[0].order.tracking}
+          </Text>
+          <Text size="xs" color="dimmed">
+            {selectedMessages[0].order.status.status}
+          </Text>
+        </div>
+      </Group>
+    </Box>
+  );
+};
+
+const MessagesList = ({ selectedMessages }) => {
+  const theme = useMantineTheme();
+  
+  return (
+    <Box style={{ padding: "16px", overflowY: "auto", maxHeight: "40vh" }}>
+      {selectedMessages.map((msg) => {
+        const isAgent = msg.sender_agent !== null;
+        const senderName = isAgent ? msg.sender_agent.name : msg.sender_admin.name;
+        const senderInitial = senderName.charAt(0).toUpperCase() + senderName.charAt(senderName.length - 1).toUpperCase();
+        
+        return (
+          <Box key={msg.id} style={{ display: "flex", justifyContent: isAgent ? "flex-start" : "flex-end", marginBottom: "16px" }}>
+            {isAgent && (
+              <Avatar radius="sm" color="blue">
+                <Text size="xs" style={{ fontWeight: "bold" }}>{senderInitial}</Text>
+              </Avatar>
+            )}
+            <Paper
+              p="md"
+              style={{
+                backgroundColor: isAgent ? theme.colors.gray[1] : theme.colors.gray[0],
+                border: `1px solid ${theme.colors.gray[3]}`,
+                borderRadius: theme.radius.md,
+                maxWidth: "80%",
+              }}
+            >
+              {isAgent && (
+                <Text size="xs" weight="bold" color={theme.colors.blue[7]}>
+                  {senderName}
+                </Text>
+              )}
+              <Text size="sm" style={{ fontFamily: "monospace", whiteSpace: "pre-wrap", lineHeight: 1.6, color: theme.colors.gray[8] }}>
+                {msg.message}
+              </Text>
+              <Text size="xs" color={theme.colors.gray[5]} mt="xs" style={{ textAlign: "right" }}>
+                {msg.created_at}
+              </Text>
+            </Paper>
+          </Box>
+        );
+      })}
+    </Box>
+  );
+};
+
+const NoMessageSelected = ({ setOpened }) => (
+  <Text
+    size="lg"
+    color="dimmed"
+    align="center"
+    style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100%" }}
+  >
+    <img src="/select-message.svg" alt="No messages" style={{ width: "300px" }} />
+    Select a message to view and respond
+    <Button size="xs" variant="outline" color="teal" onClick={() => setOpened(true)}> Send Message </Button>
+  </Text>
+);
 
 
 
@@ -556,307 +689,27 @@ export default function Messages() {
 
         {/* Right Side: Selected Message and Response */}
         {!isMobile ? (
-          <Grid.Col span={{ base: 12, md: 8 }} style={{ height: "75vh", overflow: "hidden" }}>
-            <Paper
-              p="lg"
-              shadow="sm"
-              style={{
-                height: "100%",
-                backgroundColor: theme.white,
-                position: "relative",
-              }}
-            >
-              {selectedMessages ? (
-                <>
-
-                  {/* user info section */}
-                  <Box
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      padding: "16px",
-                      borderBottom: `1px solid ${theme.colors.gray[3]}`,
-                      backgroundColor: theme.colors.gray[0],
-                      gap: "12px",
-                    }}
-                  >
-                    <Group align="center" spacing="sm">
-                      <Avatar radius="sm" color="black">
-                        <IconBox stroke={2} />
-                      </Avatar>
-                      <div>
-                        <Text size="sm" weight={500} color={theme.colors.gray[7]}>
-                          {selectedMessages[0].order.tracking}
-                        </Text>
-                        <Text size="xs" color="dimmed">
-                          {selectedMessages[0].order.status.status}
-                        </Text>
-                      </div>
-                    </Group>
-                  </Box>
-
-
-
-                  {/* Admin and Agent Replies Section */}
-                  <Box
-                    style={{
-                      position: "absolute",
-                      top: "90px",
-                      bottom: "120px",
-                      left: 0,
-                      right: 0,
-                      padding: "16px",
-                      overflowY: "auto",
-                    }}
-                  >
-                    {selectedMessages.map((msg) => {
-                      const isAgent = msg.sender_agent !== null; // Check if sender is an agent
-                      const senderName = isAgent ? msg.sender_agent.name : msg.sender_admin.name ;
-                      const senderInitial = senderName.charAt(0).toUpperCase() + senderName.charAt(senderName.length-1).toUpperCase() ;
-
-                      return (
-                        <Box
-                          key={msg.id}
-                          style={{
-                            display: "flex",
-                            justifyContent: isAgent ? "flex-start" : "flex-end",
-                            alignItems: "center",
-                            marginBottom: "16px",
-                            gap: "8px",
-                          }}
-                        >
-                          {/* Show Avatar & Sender Name for Agent Messages */}
-                          {/* Show Avatar & Sender Name for Agent Messages */}
-                          {isAgent && (
-                            <Avatar radius="sm" color="blue">
-                              <Text size="xs" style={{ fontWeight: "bold" }}>
-                                {senderInitial}
-                              </Text>
-                            </Avatar>
-                          )}
-
-
-                          <Paper
-                            p="md"
-                            style={{
-                              backgroundColor: isAgent
-                                ? theme.colors.gray[1] // Agent messages (light gray)
-                                : theme.colors.gray[0], // Admin messages (light blue)
-                              border: `1px solid ${
-                                isAgent ? theme.colors.gray[3] : theme.colors.gray[3]
-                              }`,
-                              borderRadius: theme.radius.md,
-                              maxWidth: "70%",
-                              padding: "12px",
-                              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                            }}
-                          >
-                            {/* Sender Name (Only for Agent) */}
-                            {isAgent && (
-                              <Text size="xs" weight="bold" color={theme.colors.blue[7]}>
-                                {senderName}
-                              </Text>
-                            )}
-
-                            {/* Message Content */}
-                            <Text
-                              size="sm"
-                              style={{
-                                fontFamily: "monospace",
-                                whiteSpace: "pre-wrap",
-                                lineHeight: 1.6,
-                                color: theme.colors.gray[8],
-                              }}
-                            >
-                              {msg.message}
-                            </Text>
-
-                            {/* Timestamp */}
-                            <Text
-                              size="xs"
-                              color={theme.colors.gray[5]}
-                              mt="xs"
-                              style={{ textAlign: "right" }}
-                            >
-                              {msg.created_at}
-                            </Text>
-                          </Paper>
-                        </Box>
-                      );
-                    })}
-                  </Box>
-
-
-
-
-
-
-                  {/* Response Section */}
-                  <ResponseSection orderTracking={selectedMessages[0].order.tracking} />
-
-                </>
-              ) : (
-                <Text
-                  size="lg"
-                  color="dimmed"
-                  align="center"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "100%",
-                  }}
-                >
-
-                  <img
-                    src="/select-message.svg"
-                    alt="No messages"
-                    style={{ width: "300px" }}
-                  />
-                  Select a message to view and respond
-                  <Button size="xs" variant="outline" color="teal" onClick={() => setOpened(true)}> Send Message </Button>
-                </Text>
-                
-              )}
-            </Paper>
-          </Grid.Col>
+          <DesktopViewMessages selectedMessages={selectedMessages} />
         ) : (
-          <Modal
-            opened={!!selectedMessages}
-            onClose={() => setSelectedMessages(null)}
-            title="Message"
-            size="lg"
-            padding="lg"
-            overlayProps={{ blur: 1 }}
-          >
-            {selectedMessages && (
-              <>
-                {/* User Information Section */}
-                <Box
-                  style={{
-                    padding: "16px",
-                    borderBottom: `1px solid ${theme.colors.gray[3]}`,
-                    backgroundColor: theme.colors.gray[0],
-                  }}
-                >
-                  <Group align="center" spacing="sm">
-                    <Avatar radius="sm" color="black">
-                      <IconBox stroke={2} />
-                    </Avatar>
-                    <div>
-                      <Text size="sm" weight={500} color={theme.colors.gray[7]}>
-                        {selectedMessages[0].order.tracking}
-                      </Text>
-                      <Text size="xs" color="dimmed">
-                        {selectedMessages[0].order.status.status}
-                      </Text>
-                    </div>
-                  </Group>
-                </Box>
-
-                {/* Messages Section */}
-                <Box
-                  style={{
-                    padding: "16px",
-                    overflowY: "auto",
-                    maxHeight: "40vh",
-                  }}
-                >
-                  {selectedMessages.map((msg) => {
-                    const isAgent = msg.sender_agent !== null;
-                    const senderName = isAgent ? msg.sender_agent.name : msg.sender_admin.name;
-                    return (
-                      <Box
-                        key={msg.id}
-                        style={{
-                          display: "flex",
-                          justifyContent: isAgent ? "flex-start" : "flex-end",
-                          marginBottom: "16px",
-                        }}
-                      >
-                        <Paper
-                          p="md"
-                          style={{
-                            backgroundColor: isAgent ? theme.colors.gray[1] : theme.colors.gray[0],
-                            border: `1px solid ${theme.colors.gray[3]}`,
-                            borderRadius: theme.radius.md,
-                            maxWidth: "80%",
-                          }}
-                        >
-                          {isAgent && (
-                            <Text size="xs" weight="bold" color={theme.colors.blue[7]}>
-                              {senderName}
-                            </Text>
-                          )}
-                          <Text
-                            size="sm"
-                            style={{
-                              fontFamily: "monospace",
-                              whiteSpace: "pre-wrap",
-                              lineHeight: 1.6,
-                              color: theme.colors.gray[8],
-                            }}
-                          >
-                            {msg.message}
-                          </Text>
-                          <Text
-                            size="xs"
-                            color={theme.colors.gray[5]}
-                            mt="xs"
-                            style={{ textAlign: "right" }}
-                          >
-                            {msg.created_at}
-                          </Text>
-                        </Paper>
-                      </Box>
-                    );
-                  })}
-                </Box>
-
-                {/* Response Section */}
-                <Box
-                  style={{
-                    padding: "16px",
-                    borderTop: `1px solid ${theme.colors.gray[3]}`,
-                    backgroundColor: theme.colors.gray[0],
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "12px",
-                  }}
-                >
-                  <TextInput
-                    placeholder="Type your response..."
-                    value={response}
-                    onChange={handleResponseChange}
-                    radius="sm"
-                    size="xs"
-                    styles={{ input: { backgroundColor: theme.white, borderColor: theme.colors.gray[3] } }}
-                  />
-                  <Button
-                    // onClick={handleSendResponse}
-                    size="xs"
-                    radius="xs"
-                    fullWidth
-                    styles={{
-                      root: {
-                        backgroundColor: theme.colors.blue[6],
-                        color: theme.white,
-                        "&:hover": { backgroundColor: theme.colors.blue[7] },
-                      },
-                    }}
-                  >
-                    Send
-                  </Button>
-                </Box>
-              </>
-            )}
-          </Modal>
-
+          <PhoneViewMessages selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages} setOpened={setOpened} />
         )}
       </Grid>
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

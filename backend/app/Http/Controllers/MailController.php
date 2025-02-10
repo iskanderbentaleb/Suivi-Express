@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageSent;
 use App\Http\Resources\MailResource;
 use App\Models\Mail;
 use App\Models\Order;
@@ -209,6 +210,38 @@ class MailController extends Controller
         // Return the newly created message as a resource
         return new MailResource($mail);
     }
+
+
+
+    //-------------------test for realtime apps--------------------
+    public function sendMail(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'message' => 'required|string',
+            'sender_admin_id' => 'nullable|exists:users,id',
+            'receiver_admin_id' => 'nullable|exists:users,id',
+            'sender_agent_id' => 'nullable|exists:agents,id',
+            'receiver_agent_id' => 'nullable|exists:agents,id',
+            'status_id' => 'required|exists:mail_statuses,id',
+        ]);
+
+        $mail = Mail::create([
+            'order_id' => $request->order_id,
+            'message' => $request->message,
+            'sender_admin_id' => $request->sender_admin_id,
+            'receiver_admin_id' => $request->receiver_admin_id,
+            'sender_agent_id' => $request->sender_agent_id,
+            'receiver_agent_id' => $request->receiver_agent_id,
+            'status_id' => $request->status_id,
+        ]);
+
+        // Broadcast the event
+        broadcast(new MessageSent($mail))->toOthers();
+
+        return response()->json(['message' => $mail]);
+    }
+
 
     /**
      * Store a newly created resource in storage.
