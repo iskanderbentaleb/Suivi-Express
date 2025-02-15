@@ -37,7 +37,7 @@ import {
   import { statusOrders } from '../../../../services/api/admin/statusOrders';
   import { Dropzone , MS_EXCEL_MIME_TYPE } from '@mantine/dropzone';
   import '@mantine/dropzone/styles.css';
-import { historyOrders } from '../../../../services/api/admin/historyOrders';
+  import { historyOrders } from '../../../../services/api/admin/historyOrders';
   
   
   
@@ -73,10 +73,6 @@ import { historyOrders } from '../../../../services/api/admin/historyOrders';
     };
   
   
-  
-
-
-
     //------------- filter between task today , and all order -------------
     const changeOrderTask = () =>{
       setTaskOrder(!TaskOrder);
@@ -635,7 +631,7 @@ import { historyOrders } from '../../../../services/api/admin/historyOrders';
     
 
   
-    // ------------------- feetch agents -------------------
+    // ------------------- feetch orders -------------------
       const feetchOrders = async (page = 1) => {
         setLoading(true);
         try {
@@ -649,7 +645,7 @@ import { historyOrders } from '../../../../services/api/admin/historyOrders';
           notifications.show({ message: 'Error fetching orders :' + error , color: 'red' });
         }
       };
-    // ------------------- feetch agents -------------------
+    // ------------------- feetch orders -------------------
   
 
     // ------------------- export orders -------------------
@@ -1737,10 +1733,8 @@ import { historyOrders } from '../../../../services/api/admin/historyOrders';
               </Paper>
   
   
-          </SimpleGrid>
-  
-  
-  
+        </SimpleGrid>
+
       </>
     );
   }

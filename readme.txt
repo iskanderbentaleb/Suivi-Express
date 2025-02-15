@@ -360,10 +360,60 @@
 
 33) ------------------ when we login multiple times he go to '/' -------------------
 
-    // remove respoce '/' after login -----> remove redirection
+    // remove response '/' after login -----> remove redirection
     // backend/vendor/laravel/framework/src/Illuminate/Auth/Middleware/RedirectIfAuthenticated.php
 
 33) ------------------ when we login multiple times he go to '/' -------------------
+
+
+
+
+34) ------------------- websocket in your app -------------------
+
+websocket is protocole to transer data : double ( ytble mn server and client client<->sever ) 
+
+in laravel we can use many third part extention to implement ( websocket ) 
+i prefer to make with myself with reveb : we go to documentation :
+go to : https://github.com/iskanderbentaleb/e-commerce-call-center/tree/useWebsocketBasic to see what we should change 
+in backend :
+==> 1) : php artisan install:broadcasting
+==> 2) : composer require laravel/reverb
+==> 3) : composer require laravel/reverb
+in frontend : 
+==> 1) npm install --save-dev laravel-echo pusher-js 
+==> 2) we go to backend it created ( ressource > js > echo.js ) copy this and copy in fronend 
+and modify it ... authorazation and auth of sactume ( dont forget to filled env with what we need )
+==> 3) importent : backend/bootstrap/app.php
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php',
+        ['prefix' => 'api', 'middleware' => ['api', 'auth:sanctum']],
+    )
+for test :
+==> 1) php artisan serve 
+==> 2) php artisan reverb:start --debug
+==> 3) php artisan queue:listen (this for listen the change in backend if changed success the problem is fronend )X
+==> 4) php artisan queue:work
+==> 5) php artisan tinker ( for test in backend work ) :
+and put this : 
+//====== code ======
+
+use App\Models\Mail;
+use App\Events\MessageSent;
+use Illuminate\Support\Facades\Broadcast;
+$mail = Mail::create([
+    'order_id' => 247,
+    'message' => 'Hello, this is a real-time message!',
+    'sender_admin_id' => 2,
+    'receiver_admin_id' => 2,
+    'status_id' => 1,
+]); Broadcast::event(new MessageSent($mail));
+
+//====== code ======
+
+------------------- websocket in your app -------------------
+
+
+
 
 
 

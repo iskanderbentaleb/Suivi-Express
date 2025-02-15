@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schedule;
 use Laravel\Sanctum\PersonalAccessToken;
+use Psy\CodeCleaner\ReturnTypePass;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -43,25 +44,47 @@ class AuthenticatedSessionController extends Controller
         // delete expired token every 24H
         Schedule::command('sanctum:prune-expired --hours=24')->daily();
 
-        // set access token
-        $accessToken = $user->createToken('access_token', [$user->getRoleAttribute()], now()->addMinutes(30)); // 30 min expiration
-        $newRefreshToken = $user->createToken('refresh_token', [$user->getRoleAttribute()] , now()->addWeeks(1)); // one week expirations
+        // ======================== LAST CODE =========================
+
+        // // set access token
+        // $accessToken = $user->createToken('access_token', [$user->getRoleAttribute()], now()->addMinutes(30) ); // 30 min expiration
+        // $newRefreshToken = $user->createToken('refresh_token', [$user->getRoleAttribute()] , now()->addWeeks(1)); // one week expirations
 
 
-        // Retrieve the (token) record // and // update ip adress
-        $newTokenRecord = PersonalAccessToken::where('id', $accessToken->accessToken->id )->first();
-        $newTokenRecord->update(['ip_address' => $request->ip()]);
+        // // Retrieve the (token) record // and // update ip adress
+        // $newTokenRecord = PersonalAccessToken::where('id', $accessToken->accessToken->id )->first();
+        // $newTokenRecord->update(['ip_address' => $request->ip()]);
 
 
-        // Retrieve the (token refresh) record // and // update ip adress
-        $newRefreshTokenRecord = PersonalAccessToken::where('id', $newRefreshToken->accessToken->id )->first();
-        $newRefreshTokenRecord->update(['ip_address' => $request->ip()]);
+        // // Retrieve the (token refresh) record // and // update ip adress
+        // $newRefreshTokenRecord = PersonalAccessToken::where('id', $newRefreshToken->accessToken->id )->first();
+        // $newRefreshTokenRecord->update(['ip_address' => $request->ip()]);
+
+        // ======================== LAST CODE =========================
+
+
+
+        // Create access token with IP address
+        $accessToken = $user->createToken('access_token', [$user->getRoleAttribute()], now()->addMinutes(30));
+        $accessToken->accessToken->ip_address = $request->ip();
+        $accessToken->accessToken->save();
+
+        // Create refresh token with IP address
+        $newRefreshToken = $user->createToken('refresh_token', [$user->getRoleAttribute()], now()->addWeeks(1));
+        $newRefreshToken->accessToken->ip_address = $request->ip();
+        $newRefreshToken->accessToken->save();
+
+
+
+
+
 
         return response()->json([
             'user' => $user,
             'token' => $accessToken->plainTextToken ,
             'refresh_token' => $newRefreshToken->plainTextToken
         ]);
+
     }
 
 
@@ -151,12 +174,12 @@ class AuthenticatedSessionController extends Controller
         // Delete the old access token
         $user->tokens()->where('name', 'access_token')->delete();
 
+
         // Create a new access token with user roles
         $accessToken = $user->createToken('access_token', [$user->getRoleAttribute()], now()->addMinutes(30));
+        $accessToken->accessToken->ip_address = $request->ip();
+        $accessToken->accessToken->save();
 
-        // Update IP address for the new access token
-        $newTokenRecord = PersonalAccessToken::where('id', $accessToken->accessToken->id)->first();
-        $newTokenRecord->update(['ip_address' => $request->ip()]);
 
         return response()->json([
             'token' => $accessToken->plainTextToken,

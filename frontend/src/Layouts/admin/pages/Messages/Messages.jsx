@@ -27,9 +27,14 @@ import {
   IconBox,
   IconSearch,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { messages } from "../../../../services/api/admin/messages";
 import { notifications } from "@mantine/notifications";
+// import echo from "../../../../services/resources/echo";
+import { useUserContext } from "../../../../context/userContext";
+import axiosClient from "../../../../services/api/axios";
+import Echo from 'laravel-echo';
+import { orders } from '../../../../services/api/admin/orders';
 
 
 const styleCard = {
@@ -41,114 +46,7 @@ const styleCard = {
 
 
 
-
-//========= responce message section==========
-const ResponseSection = ({ orderTracking }) => {
-  const theme = useMantineTheme();
-  const [response, setResponse] = useState(""); // Stores user input
-  const [loading, setLoading] = useState(false); // Loading state
-
-  // Handle input change
-  const handleResponseChange = (event) => {
-    setResponse(event.target.value);
-  };
-
-  // Handle send response
-  const handleSendResponse = async () => {
-    const trimmedResponse = response.trim();
-    if (!trimmedResponse) return;
-
-    setLoading(true); // Show loading state
-
-    try {
-
-      const { data } = await messages.sendMessage(
-        {
-          tracking: orderTracking ,
-          message: trimmedResponse
-        }
-      );
-
-      console.log("Message sent:", data);
-
-      // Show success notification
-      notifications.show({
-        message: "Message sent successfully!",
-        color: "green",
-      });
-
-      // Clear input field after sending
-      setResponse("");
-
-
-    } catch (error) {
-      console.error("Error sending message:", error);
-      notifications.show({
-        message: "Message sent failed!",
-        color: "green",
-      });
-
-    } finally {
-      setLoading(false); // Stop loading state
-    }
-  };
-
-  return (
-    <Box
-      style={{
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: "16px",
-        borderTop: `1px solid ${theme.colors.gray[3]}`,
-        backgroundColor: theme.colors.gray[0],
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-      }}
-    >
-      <TextInput
-        placeholder="Type your response..."
-        value={response}
-        onChange={handleResponseChange}
-        radius="md"
-        size="md"
-        disabled={loading} // Disable input while loading
-        styles={{
-          input: {
-            backgroundColor: theme.white,
-            borderColor: theme.colors.gray[3],
-          },
-        }}
-      />
-      <Button
-        onClick={handleSendResponse}
-        size="md"
-        radius="md"
-        fullWidth
-        disabled={response.trim().length === 0 || loading} // Disable when empty or loading
-        loading={loading} // Show loader when sending
-        styles={{
-          root: {
-            backgroundColor:
-              response.trim().length > 0 ? theme.colors.blue[6] : theme.colors.gray[5], 
-            color: theme.white,
-            "&:hover": {
-              backgroundColor:
-                response.trim().length > 0 ? theme.colors.blue[7] : theme.colors.gray[5], 
-            },
-          },
-        }}
-      >
-        Send
-      </Button>
-    </Box>
-  );
-};
-
-// ====================== NEW CODES FRON CHATGBT========================
-const DesktopViewMessages = ({ selectedMessages , setOpened }) => {
+const DesktopViewMessages = ({ selectedMessages , setOpened , setSelectedMessages}) => {
   const theme = useMantineTheme();
   
   return (
@@ -161,7 +59,7 @@ const DesktopViewMessages = ({ selectedMessages , setOpened }) => {
         {selectedMessages ? (
           <>
             <UserInfo selectedMessages={selectedMessages} />
-            <MessagesList selectedMessages={selectedMessages} />
+            <MessagesList selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages} />
             <ResponseSection orderTracking={selectedMessages[0].order.tracking} />
           </>
         ) : (
@@ -172,22 +70,38 @@ const DesktopViewMessages = ({ selectedMessages , setOpened }) => {
   );
 };
 
-const PhoneViewMessages = ({ selectedMessages, setSelectedMessages }) => {
+const PhoneViewMessages = ({ selectedMessages , setSelectedMessages }) => {
   const theme = useMantineTheme();
-  
+
   return (
     <Modal
       opened={!!selectedMessages}
       onClose={() => setSelectedMessages(null)}
       title="Message"
-      size="lg"
-      padding="lg"
-      overlayProps={{ blur: 1 }}
+      fullScreen
+      transition="fade"
+      transitionDuration={500}
+      overlayProps={{ blur: 3, backgroundOpacity: 0.7 }}
+      styles={{
+        content: {
+          maxWidth: "100vw",
+          maxHeight: "100vh",
+          padding: 0,
+          display: "flex",
+          flexDirection: "column",
+        },
+        body: {
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        },
+      }}
     >
-      {selectedMessages && (
+      {Array.isArray(selectedMessages) && selectedMessages.length > 0 && (
         <>
           <UserInfo selectedMessages={selectedMessages} />
-          <MessagesList selectedMessages={selectedMessages} />
+          <MessagesList selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages} />
           <ResponseSection orderTracking={selectedMessages[0].order.tracking} />
         </>
       )}
@@ -204,6 +118,9 @@ const UserInfo = ({ selectedMessages }) => {
         padding: "16px",
         borderBottom: `1px solid ${theme.colors.gray[3]}`,
         backgroundColor: theme.colors.gray[0],
+        position: "sticky", // Fixed at the top
+        top: 0,
+        zIndex: 1, // Ensure it stays above other content
       }}
     >
       <Group align="center" spacing="sm">
@@ -223,47 +140,223 @@ const UserInfo = ({ selectedMessages }) => {
   );
 };
 
-const MessagesList = ({ selectedMessages }) => {
-  const theme = useMantineTheme();
-  
+const MessagesList = ({ selectedMessages, setSelectedMessages }) => {
+  const { user } = useUserContext();
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    console.log("✅ Connecting to Pusher...");
+
+    const echo = new Echo({
+      broadcaster: "pusher",
+      key: import.meta.env.VITE_PUSHER_APP_KEY,
+      cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+      forceTLS: true,
+      encrypted: true,
+      namespace: "App.Events",
+      withCredentials: true,
+      authEndpoint: import.meta.env.VITE_BACKEND_URL + "/api/broadcasting/auth",
+      authorizer: (channel) => ({
+        authorize: (socketId, callback) => {
+          axiosClient
+            .post("/api/broadcasting/auth", { socket_id: socketId, channel_name: channel.name })
+            .then((response) => {
+              console.log("✅ Pusher Auth Success:", response.data);
+              callback(false, response.data);
+            })
+            .catch((error) => {
+              console.error("🔴 Pusher Auth Failed:", error);
+              callback(true, error);
+            });
+        },
+      }),
+    });
+
+    const channel = echo.private(`private-messages.${user.id}`);
+
+    channel.on("pusher:subscription_succeeded", () => {
+      console.log(`✅ Successfully subscribed to private-messages.${user.id}`);
+    });
+
+    channel.on("pusher:subscription_error", (error) => {
+      console.error("❌ Subscription Error:", error);
+    });
+
+    channel.listen(".my-event", (data) => {
+      console.log("🔴 New message received:", data);
+      setSelectedMessages((prev) => [...prev, data]);
+    });
+
+    return () => {
+      channel.stopListening(".my-event");
+      echo.leave(`private-messages.${user.id}`);
+      echo.disconnect();
+    };
+  }, [user.id, setSelectedMessages]);
+
+  // Auto-scroll to latest message
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [selectedMessages]);
+
   return (
-    <Box style={{ padding: "16px", overflowY: "auto", maxHeight: "40vh" }}>
-      {selectedMessages.map((msg) => {
-        const isAgent = msg.sender_agent !== null;
-        const senderName = isAgent ? msg.sender_agent.name : msg.sender_admin.name;
-        const senderInitial = senderName.charAt(0).toUpperCase() + senderName.charAt(senderName.length - 1).toUpperCase();
-        
-        return (
-          <Box key={msg.id} style={{ display: "flex", justifyContent: isAgent ? "flex-start" : "flex-end", marginBottom: "16px" }}>
-            {isAgent && (
-              <Avatar radius="sm" color="blue">
-                <Text size="xs" style={{ fontWeight: "bold" }}>{senderInitial}</Text>
-              </Avatar>
-            )}
-            <Paper
-              p="md"
-              style={{
-                backgroundColor: isAgent ? theme.colors.gray[1] : theme.colors.gray[0],
-                border: `1px solid ${theme.colors.gray[3]}`,
-                borderRadius: theme.radius.md,
-                maxWidth: "80%",
-              }}
-            >
-              {isAgent && (
-                <Text size="xs" weight="bold" color={theme.colors.blue[7]}>
-                  {senderName}
-                </Text>
-              )}
-              <Text size="sm" style={{ fontFamily: "monospace", whiteSpace: "pre-wrap", lineHeight: 1.6, color: theme.colors.gray[8] }}>
-                {msg.message}
-              </Text>
-              <Text size="xs" color={theme.colors.gray[5]} mt="xs" style={{ textAlign: "right" }}>
-                {msg.created_at}
-              </Text>
-            </Paper>
-          </Box>
-        );
-      })}
+    <Box
+      style={{
+        flex: 1, // Take up remaining space
+        padding: "16px",
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+        gap: "12px",
+        height:'60vh',
+        marginBottom:'50px'
+      }}
+    >
+      {selectedMessages.map((msg) => (
+        <MessageBubble key={msg.id} msg={msg} user={user} />
+      ))}
+      <div ref={messagesEndRef} />
+    </Box>
+  );
+};
+
+const MessageBubble = ({ msg, user }) => {
+  const isUserAdmin = msg.sender_admin?.id === user?.id;
+  const isUserAgent = msg.sender_agent?.id === user?.id;
+  const isUserMessage = isUserAdmin || isUserAgent;
+  const alignMessage = isUserAdmin ? "flex-end" : "flex-start";
+  const bubbleColor = isUserAdmin ? "#323d49" : "#F1F3F5";
+  const textColor = isUserAdmin ? "#FFF" : "#333";
+  const senderName = msg.sender_admin?.name || msg.sender_agent?.name || "Unknown";
+
+  return (
+    <Group align="flex-end" spacing="sm" style={{ justifyContent: alignMessage }}>
+      {!isUserMessage && senderName && (
+        <Avatar radius="xl" color="blue">
+          {senderName[0]?.toUpperCase()}
+        </Avatar>
+      )}
+      <Paper
+        p="sm"
+        radius="lg"
+        style={{
+          backgroundColor: bubbleColor,
+          color: textColor,
+          maxWidth: "60%",
+          padding: "10px 14px",
+          boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
+          borderRadius: isUserAdmin ? "20px 20px 0px 20px" : "20px 20px 20px 0px",
+          alignSelf: alignMessage,
+        }}
+      >
+        <Text size="sm" weight={500}>{msg.message}</Text>
+        <Text size="xs" color="#bbbbbb" align="right" mt={4}>
+          {msg.created_at}
+        </Text>
+      </Paper>
+      {isUserMessage && senderName && (
+        <Avatar radius="xl" color="gray">
+          {senderName[0]?.toUpperCase()}
+        </Avatar>
+      )}
+    </Group>
+  );
+};
+
+const ResponseSection = ({ orderTracking }) => {
+  const theme = useMantineTheme();
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)"); // Detect mobile devices
+
+  const handleResponseChange = (event) => {
+    setResponse(event.target.value);
+  };
+
+  const handleSendResponse = async () => {
+    const trimmedResponse = response.trim();
+    if (!trimmedResponse) return;
+
+    setLoading(true);
+
+    try {
+      const { data } = await messages.sendMessage({
+        tracking: orderTracking,
+        message: trimmedResponse,
+      });
+
+      console.log("Message sent:", data);
+      // notifications.show({
+      //   message: "Message sent successfully!",
+      //   color: "green",
+      // });
+      setResponse("");
+    } catch (error) {
+      console.error("Error sending message:", error);
+      notifications.show({
+        message: "Message sent failed!",
+        color: "red",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Box
+      style={{
+        position: isMobile ? "fixed" : "absolute", // Fixed on mobile, absolute on desktop
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: "16px",
+        borderTop: `1px solid ${theme.colors.gray[3]}`,
+        backgroundColor: theme.colors.gray[0],
+        display: "flex",
+        flexDirection: "row", // Change to row for inline layout
+        gap: "12px",
+        alignItems: "center", // Align items vertically
+      }}
+    >
+      <TextInput
+        placeholder="Type your response..."
+        value={response}
+        onChange={handleResponseChange}
+        radius="md"
+        size="md"
+        disabled={loading}
+        style={{ flex: 1 }} // Take up remaining space
+        styles={{
+          input: {
+            backgroundColor: theme.white,
+            borderColor: theme.colors.gray[3],
+          },
+        }}
+      />
+      <Button
+        onClick={handleSendResponse}
+        size="md"
+        radius="md"
+        disabled={response.trim().length === 0 || loading}
+        loading={loading}
+        styles={{
+          root: {
+            backgroundColor: "#323d49", // Dark color matching the bubble
+            color: theme.white,
+            "&:hover": {
+              backgroundColor: "#2a333d", // Slightly darker on hover
+            },
+            "&:disabled": {
+              backgroundColor: theme.colors.gray[5], // Gray when disabled
+              color: theme.colors.gray[7],
+            },
+          },
+        }}
+      >
+        Send
+      </Button>
     </Box>
   );
 };
@@ -283,12 +376,89 @@ const NoMessageSelected = ({ setOpened }) => (
 
 
 
-// ======= all page  ==========
+const NewMessageModal = ({ opened, setOpened }) => {
+  const [loading, setLoading] = useState(true);
+  const [ordersList, setOrdersList] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [assignedUser, setAssignedUser] = useState("");
+
+  // ✅ Fetch Orders from API
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const { data } = await orders.index(); // Fetch orders
+      setOrdersList(
+        data.data.map((order) => ({
+          value: order.id.toString(),
+          label: `Order #${order.tracking}`,
+          user: order.affected_to_user, // Store assigned user
+        }))
+      );
+    } catch (error) {
+      notifications.show({ message: "Error fetching orders: " + error, color: "red" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Fetch orders when modal opens
+  useEffect(() => {
+    if (opened) {
+      fetchOrders();
+    }
+  }, [opened]);
+
+  // ✅ Handle order selection
+  const handleOrderChange = (orderId) => {
+    const selected = ordersList.find((order) => order.value === orderId);
+    setSelectedOrder(selected);
+    setAssignedUser(selected?.user?.name || "No user assigned");
+  };
+
+  return (
+    <Modal opened={opened} onClose={() => setOpened(false)} title="New Message" size="lg" centered>
+      <Box>
+        {/* ✅ Searchable Select for Order Tracking */}
+        <Select
+          label="Order Tracking"
+          placeholder={loading ? "Loading orders..." : "Select an order"}
+          searchable
+          data={ordersList}
+          nothingFound="No orders found"
+          required
+          disabled={loading}
+          onChange={handleOrderChange}
+          rightSection={loading && <Loader size="sm" />}
+        />
+
+        {/* ✅ Show assigned user */}
+        <TextInput label="Assigned User" value={assignedUser} disabled mt="md" />
+
+        {/* ✅ Message Textarea */}
+        <Textarea
+          label="Message Content"
+          placeholder="Type your message here"
+          required
+          mt="md"
+          autosize
+          minRows={4}
+          maxRows={10}
+        />
+      </Box>
+    </Modal>
+  );
+};
+
+
+
+
+// ======= Parent Component  ==========
 export default function Messages() {
   const [selectedTab, setSelectedTab] = useState("receive");
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [loadingMessagesView, setLoadingMessagesView] = useState(true);
   
+  const [search, setSearch] = useState("");
   const [opened, setOpened] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -322,11 +492,7 @@ export default function Messages() {
     setResponse(""); // Reset response input
   };
 
-  const handleResponseChange = (event) => {
-    setResponse(event.target.value);
-  };
-
-
+  
 
   //============ Fetch messages from the API ======================
   const fetchInboxMessages = async (page = 1, searchTerm = "") => {
@@ -406,45 +572,8 @@ export default function Messages() {
 
 
 
-        {/* create new messages */}
-        <Modal
-          opened={opened}
-          onClose={() => setOpened(false)}
-          title="New Messages"
-          size="lg"
-          centered // Centers the modal
-        >
-          <Box>
-            {/* Searchable Select for Order Tracking */}
-            <Select
-              label="Order Tracking"
-              placeholder="Select an order"
-              searchable
-              nothingFound="No orders found"
-              required
-            />
-
-            {/* Disabled TextInput for User Name */}
-            <TextInput
-              label="User Name"
-              placeholder="User Name"
-              disabled
-              mt="md"
-            />
-
-            {/* Bigger Textarea for Message Content */}
-            <Textarea
-              label="Message Content"
-              placeholder="Type your message here"
-              required
-              mt="md"
-              autosize
-              minRows={4} // Minimum height of the text area
-              maxRows={10} // Maximum height before scrolling
-            />
-          </Box>
-        </Modal>
-
+      {/* create new messages */}
+      <NewMessageModal opened={opened} setOpened={setOpened} />
 
 
 
@@ -570,7 +699,7 @@ export default function Messages() {
                         onClick={() => handleMessageSelect(message.id)}
                         style={{
                           cursor: "pointer",
-                          backgroundColor: selectedOrder?.id === message.id ? theme.colors.gray[1] : theme.white,
+                          backgroundColor: selectedMessages?.[0]?.order?.id === message?.order?.id  ? theme.colors.gray[1] : theme.white,
                           border: `1px solid ${theme.colors.gray[3]}`,
                           borderRadius: theme.radius.md,
                           transition: "all 0.2s ease-in-out",
@@ -689,7 +818,7 @@ export default function Messages() {
 
         {/* Right Side: Selected Message and Response */}
         {!isMobile ? (
-          <DesktopViewMessages selectedMessages={selectedMessages} />
+          <DesktopViewMessages selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages} setOpened={setOpened}/>
         ) : (
           <PhoneViewMessages selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages} setOpened={setOpened} />
         )}

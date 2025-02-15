@@ -45,8 +45,6 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
     Route::get('mails', [MailController::class, 'inbox']); // Get all mails
     Route::get('mails/{orderId}', [MailController::class, 'selectedOrderMessagesInbox']); // Get all mails
     Route::post('mails/sent-message', [MailController::class, 'sentMessages']);
-    // ----------- test for realtime app -------------
-    Route::post('mails/sent-realtime-messages', [MailController::class, 'sendMail']);
 
     // Route::get('mails', [MailController::class, 'sent']); // Get all mails
 

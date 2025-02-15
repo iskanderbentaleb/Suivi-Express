@@ -143,7 +143,7 @@ export const router = createBrowserRouter(
             v7_normalizeFormMethod: true,        // Normalizes formMethod casing to uppercase
             v7_partialHydration: true,           // Changes in RouterProvider hydration behavior
             v7_skipActionErrorRevalidation: true, // Changes revalidation after 4xx/5xx action responses
-            v7_startTransition: false,           // Uses startTransition for state updates
+            v7_startTransition: true,           // Uses startTransition for state updates
     },
     }
 )

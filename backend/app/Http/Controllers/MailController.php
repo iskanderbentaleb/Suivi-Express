@@ -156,7 +156,6 @@ class MailController extends Controller
 
             // Fetch paginated mails related to the given orderId
             $mails = Mail::where('order_id', $orderId)
-                         ->orderBy('id', 'desc') // Sort by latest messages first
                          ->with([
                             'order.status', // Ensure 'order' and 'status' relationships exist
                             'senderAgent',  // Ensure 'senderAgent' relationship exists
@@ -189,58 +188,68 @@ class MailController extends Controller
     */
     public function sentMessages(Request $request)
     {
-        // Validate input
-        $validatedData = $request->validate([
+        $request->validate([
             'tracking' => 'required|string|exists:orders,tracking',
             'message' => 'required|string|min:1',
         ]);
 
-        // Retrieve the order based on tracking number
-        $order = Order::where('tracking', $validatedData['tracking'])->firstOrFail();
+        $order = Order::where('tracking', $request->tracking)->firstOrFail();
 
-        // Create the new mail entry
+        if (!$order->affected_to) {
+            return response()->json(['error' => 'No agent assigned to this order.'], 400);
+        }
+
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // Create new mail message
         $mail = Mail::create([
             'order_id' => $order->id,
-            'sender_admin_id' => auth()->id(), // Current logged-in admin
-            'receiver_agent_id' => $order->affected_to ,
-            'message' => $validatedData['message'],
-            'status_id' => 1
+            'sender_admin_id' => Auth::id(),
+            'receiver_agent_id' => $order->affected_to,
+            'message' => $request->message,
+            'status_id' => 1,
         ]);
 
-        // Return the newly created message as a resource
-        return new MailResource($mail);
+        // Broadcast event
+        broadcast(new MessageSent($mail))->toOthers();
+
+        // Return formatted response using MailResource
+        return response()->json([
+            'message' => 'Message sent.',
+            'data' => new MailResource($mail) // ✅ Use MailResource to format response
+        ]);
     }
+
 
 
 
     //-------------------test for realtime apps--------------------
-    public function sendMail(Request $request)
-    {
-        $request->validate([
-            'order_id' => 'required|exists:orders,id',
-            'message' => 'required|string',
-            'sender_admin_id' => 'nullable|exists:users,id',
-            'receiver_admin_id' => 'nullable|exists:users,id',
-            'sender_agent_id' => 'nullable|exists:agents,id',
-            'receiver_agent_id' => 'nullable|exists:agents,id',
-            'status_id' => 'required|exists:mail_statuses,id',
-        ]);
+    // public function sendMail(Request $request)
+    // {
+    //     $request->validate([
+    //         'order_id' => 'required|exists:orders,id',
+    //         'message' => 'required|string',
+    //         'sender_admin_id' => 'nullable|exists:users,id',
+    //         'receiver_admin_id' => 'nullable|exists:users,id',
+    //         'sender_agent_id' => 'nullable|exists:agents,id',
+    //         'receiver_agent_id' => 'nullable|exists:agents,id',
+    //         'status_id' => 'required|exists:mail_statuses,id',
+    //     ]);
 
-        $mail = Mail::create([
-            'order_id' => $request->order_id,
-            'message' => $request->message,
-            'sender_admin_id' => $request->sender_admin_id,
-            'receiver_admin_id' => $request->receiver_admin_id,
-            'sender_agent_id' => $request->sender_agent_id,
-            'receiver_agent_id' => $request->receiver_agent_id,
-            'status_id' => $request->status_id,
-        ]);
+    //     $mail = Mail::create([
+    //         'order_id' => $request->order_id,
+    //         'message' => $request->message,
+    //         'sender_admin_id' => $request->sender_admin_id,
+    //         'receiver_admin_id' => $request->receiver_admin_id,
+    //         'sender_agent_id' => $request->sender_agent_id,
+    //         'receiver_agent_id' => $request->receiver_agent_id,
+    //         'status_id' => $request->status_id,
+    //     ]);
 
-        // Broadcast the event
-        broadcast(new MessageSent($mail))->toOthers();
 
-        return response()->json(['message' => $mail]);
-    }
+    // }
 
 
     /**
