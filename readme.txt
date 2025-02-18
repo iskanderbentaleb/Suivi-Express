@@ -13,6 +13,12 @@
     - npm run dev
     - php artisan serve --host=192.168.100.60 --port=8000 
 
+// MAKE IT PUBLIC WIFI 
+1) ipconfig getifaddr en0  ||-> this is to get host ip
+2) ( turn off firewall )
+3) 
+
+// MAKE IT PUBLIC WIFI 
 
 
 4) install react-router-dom :

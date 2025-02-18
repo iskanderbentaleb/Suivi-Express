@@ -28,7 +28,7 @@ import {
   IconSearch,
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
-import { messages } from "../../../../services/api/admin/messages";
+import { messages } from "../../../../services/api/agent/messages";
 import { notifications } from "@mantine/notifications";
 // import echo from "../../../../services/resources/echo";
 import { useUserContext } from "../../../../context/userContext";
@@ -40,7 +40,7 @@ import newMessageSound from "./../../../../assets/sound/message.mp3"; // ✅ Imp
 import Echo from 'laravel-echo';
 import axios from "axios";
 import { modals } from "@mantine/modals";
-import { orders } from '../../../../services/api/admin/orders';
+import { orders } from '../../../../services/api/agent/orders';
 
 
 const styleCard = {
@@ -234,19 +234,19 @@ const MessagesList = ({ selectedMessages, setSelectedMessages }) => {
 };
 
 const MessageBubble = ({ msg, user }) => {
-  const isUserAdmin = msg.sender_admin?.id === user?.id;
   const isUserAgent = msg.sender_agent?.id === user?.id;
-  const isUserMessage = isUserAdmin || isUserAgent;
-  const alignMessage = isUserAdmin ? "flex-end" : "flex-start";
-  const bubbleColor = isUserAdmin ? "#323d49" : "#F1F3F5";
-  const textColor = isUserAdmin ? "#FFF" : "#333";
+  const isUserAdmin = msg.sender_admin?.id === user?.id;
+  const isUserMessage = isUserAgent || isUserAdmin;
+  const alignMessage = isUserAgent ? "flex-end" : "flex-start";
+  const bubbleColor = isUserAgent ? "#323d49" : "#F1F3F5";
+  const textColor = isUserAgent ? "#FFF" : "#333";
   const senderName = msg.sender_admin?.name || msg.sender_agent?.name || "Unknown";
 
   return (
     <Group align="flex-end" spacing="sm" style={{ justifyContent: alignMessage }}>
       {!isUserMessage && senderName && (
-        <Avatar radius="xl" color="blue">
-          {senderName[0]?.toUpperCase()}
+        <Avatar radius="xl" color="gray[8]">
+          {senderName[0]?.toUpperCase()} 
         </Avatar>
       )}
       <Paper
@@ -258,11 +258,12 @@ const MessageBubble = ({ msg, user }) => {
           maxWidth: "60%",
           padding: "10px 14px",
           boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
-          borderRadius: isUserAdmin ? "20px 20px 0px 20px" : "20px 20px 20px 0px",
+          borderRadius: isUserAgent ? "20px 20px 0px 20px" : "20px 20px 20px 0px",
           alignSelf: alignMessage,
         }}
       >
-        <Text size="sm" weight={500}>{msg.message}</Text>
+        {/* <Text size="xs" weight={100}>{}</Text> */}
+        <Text size="sm" weight={500}>{senderName + " : " + msg.message}</Text>
         <Text size="xs" color="#bbbbbb" align="right" mt={4}>
           {msg.created_at}
         </Text>

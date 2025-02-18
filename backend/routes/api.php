@@ -12,7 +12,7 @@ use App\Http\Controllers\AgentControllers\ReasonController as ReasonAgentControl
 use App\Http\Controllers\AgentControllers\StatusOrderController as StatusOrderAgentController;
 use App\Http\Controllers\HistoryOrdersController;
 use App\Http\Controllers\AgentControllers\HistoryOrdersController as HistoryOrdersAgentController;
-use App\Http\Controllers\AgentControllers\MailController as MailAgentController ;
+use App\Http\Controllers\AgentControllers\MailController as MailControllerAgentController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -46,13 +46,6 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
     Route::get('mails/{orderId}', [MailController::class, 'selectedOrderMessagesInbox']); // Get all mails
     Route::post('mails/sent-message', [MailController::class, 'sentMessages']);
 
-    // Route::get('mails', [MailController::class, 'sent']); // Get all mails
-
-    // Route::post('mails', [MailController::class, 'store']); // Create a new mail
-    // Route::get('mails/{mail}', [MailController::class, 'show']); // Get a single mail
-    // Route::put('mails/{mail}', [MailController::class, 'update']); // Update a mail
-    // Route::delete('mails/{mail}', [MailController::class, 'destroy']); // Delete a mail
-
 
 });
 
@@ -76,11 +69,11 @@ Route::middleware(['auth:sanctum' , 'ability:agent'])->prefix('agent')->group(st
     Route::get('status-orders', [StatusOrderAgentController::class, 'index']);
 
 
-    // // mail
-    // Route::get('mails', [MailAgentController::class, 'index']); // Get all mails
-    // Route::post('mails', [MailAgentController::class, 'store']); // Create a new mail
-    // Route::get('mails/{mail}', [MailAgentController::class, 'show']); // Get a single mail
-    // Route::put('mails/{mail}', [MailAgentController::class, 'update']); // Update a mail
-    // Route::delete('mails/{mail}', [MailAgentController::class, 'destroy']); // Delete a mail
+    // mail
+    Route::get('mails', [MailControllerAgentController::class, 'inbox']); // Get all mails
+    Route::get('mails/{orderId}', [MailControllerAgentController::class, 'selectedOrderMessagesInbox']); // Get all mails
+    Route::post('mails/sent-message', [MailControllerAgentController::class, 'sentMessages']);
+
+
 });
 

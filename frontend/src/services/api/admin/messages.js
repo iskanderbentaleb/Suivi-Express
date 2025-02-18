@@ -1,8 +1,8 @@
 import axiosClient from "../axios";
 
 const messages = {
-    inbox : async (page , search = '' , isRead = "all") => {
-        return await axiosClient.get(`/api/admin/mails?page=${page}&search=${search}&is_read=${isRead}`)
+    inbox : async (page , search = '' , isRead = "all" , typeMessage = "receive") => {
+        return await axiosClient.get(`/api/admin/mails?page=${page}&search=${search}&is_read=${isRead}&typeMessage=${typeMessage}`)
     },
     selectedOrderMessagesInbox : async (order_id) => {
         return await axiosClient.get(`/api/admin/mails/${order_id}`)

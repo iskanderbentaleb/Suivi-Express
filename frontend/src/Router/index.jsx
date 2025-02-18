@@ -20,7 +20,7 @@ import Agents from '../Layouts/admin/pages/agents/index'
 
 // ===================== AGENT PAGES =====================
 import Dashboard_Agent from '../Layouts/agent/pages/Dashboard'
-import Messages_Agent from '../Layouts/agent/pages/Messages'
+import Messages_Agent from '../Layouts/agent/pages/Messages/Messages'
 import Orders_Agent from '../Layouts/agent/pages/Orders/index'
 import Setting_Agent from '../Layouts/agent/pages/Setting'
 // ===================== AGENT PAGES =====================

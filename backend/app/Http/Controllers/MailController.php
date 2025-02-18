@@ -19,18 +19,34 @@ class MailController extends Controller
      */
     public function inbox()
     {
+
+
+
+
         $adminId = Auth::id();
         $searchTerm = request('search', '');
         $isRead = request('is_read', 'all'); // 'all', 'read', 'unread'
+        $typeMessage = request('typeMessage', 'receive'); // 'receive', 'sent'
 
         // Fetch mails with necessary conditions
-        $mails = Mail::whereNotNull('sender_agent_id')
-            ->whereNotNull('receiver_admin_id')
-            ->whereNull('receiver_agent_id')
-            ->whereNull('sender_admin_id')
-            ->where('receiver_admin_id', $adminId)
-            ->when($isRead !== 'all', function ($query) use ($isRead) {
+        $mails = Mail::when($isRead !== 'all', function ($query) use ($isRead) {
                 return $query->where('is_read', $isRead === 'read' ? true : false);
+            })
+            ->when($typeMessage === 'receive', function ($query) use ($adminId) {
+                // ===== Received Messages for Admin =====
+                return $query->whereNotNull('sender_agent_id')
+                        ->whereNotNull('receiver_admin_id')
+                        ->whereNull('receiver_agent_id')
+                        ->whereNull('sender_admin_id')
+                        ->where('receiver_admin_id', $adminId);
+            })
+            ->when($typeMessage === 'sent', function ($query) use ($adminId) {
+                // ===== Sent Messages by Admin =====
+                return $query->whereNull('sender_agent_id')
+                        ->whereNull('receiver_admin_id')
+                        ->whereNotNull('receiver_agent_id')
+                        ->whereNotNull('sender_admin_id')
+                        ->where('sender_admin_id', $adminId);
             })
             ->with([
                 'order.status',
@@ -44,6 +60,7 @@ class MailController extends Controller
             ])
             ->orderBy('created_at', 'desc')
             ->get();
+
 
         // Apply search filtering
         if (!empty($searchTerm)) {
@@ -224,63 +241,4 @@ class MailController extends Controller
 
 
 
-
-    //-------------------test for realtime apps--------------------
-    // public function sendMail(Request $request)
-    // {
-    //     $request->validate([
-    //         'order_id' => 'required|exists:orders,id',
-    //         'message' => 'required|string',
-    //         'sender_admin_id' => 'nullable|exists:users,id',
-    //         'receiver_admin_id' => 'nullable|exists:users,id',
-    //         'sender_agent_id' => 'nullable|exists:agents,id',
-    //         'receiver_agent_id' => 'nullable|exists:agents,id',
-    //         'status_id' => 'required|exists:mail_statuses,id',
-    //     ]);
-
-    //     $mail = Mail::create([
-    //         'order_id' => $request->order_id,
-    //         'message' => $request->message,
-    //         'sender_admin_id' => $request->sender_admin_id,
-    //         'receiver_admin_id' => $request->receiver_admin_id,
-    //         'sender_agent_id' => $request->sender_agent_id,
-    //         'receiver_agent_id' => $request->receiver_agent_id,
-    //         'status_id' => $request->status_id,
-    //     ]);
-
-
-    // }
-
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

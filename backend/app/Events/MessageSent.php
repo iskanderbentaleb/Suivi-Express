@@ -23,10 +23,16 @@ class MessageSent implements ShouldBroadcastNow
         $this->mail = $mail;
     }
 
+    // public function broadcastOn()
+    // {
+    //     return new PrivateChannel('private-messages.' . $this->mail->sender_admin_id);
+    // }
+
     public function broadcastOn()
     {
-        return new PrivateChannel('private-messages.' . $this->mail->sender_admin_id);
+        return new PrivateChannel('order-room.' . $this->mail->order_id);
     }
+
 
     public function broadcastAs()
     {
