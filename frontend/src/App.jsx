@@ -6,6 +6,7 @@ import '@mantine/core/styles.css';
 import { Notifications } from '@mantine/notifications'
 import '@mantine/notifications/styles.css';
 import { ModalsProvider } from '@mantine/modals';
+import '@mantine/charts/styles.css';
 
 export const theme = {
   colorScheme: 'light', // You can switch to dark if needed
@@ -63,45 +64,3 @@ export default function App() {
     </>
   )
 }
-
-
-// import { useEffect, useState } from "react";
-// import echo from "./../src/services/resources/echo"; // Import correctly
-
-// const App = () => {
-//   const [mails, setMails] = useState([]);
-
-//   useEffect(() => {
-//     console.log("📡 Connecting to Echo...");
-  
-//     const channel = echo.channel("chat"); // 🔴 Change from `channel` to `private`
-
-//     channel.listen(".MessageSent", (data) => {
-//       console.log("🔥 New Mail Received:", data);
-//       setMails((prev) => [...prev, data.mail]);
-//     });
-  
-//     return () => {
-//       console.log("❌ Stopping Listener...");
-//       channel.stopListening(".MessageSent");
-//     };
-//   }, []);
-  
-
-//   return (
-//     <div>
-//       <h1>Real-Time Mail</h1>
-//       {mails.length === 0 && <p>🔄 Waiting for messages...</p>}
-//       {mails.map((mail, index) => (
-//         <div key={index}>
-//           <p><strong>From:</strong> {mail.sender_admin_id}</p>
-//           <p><strong>To:</strong> {mail.receiver_admin_id}</p>
-//           <p><strong>Message:</strong> {mail.message}</p>
-//           <hr />
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
-
-// export default App;

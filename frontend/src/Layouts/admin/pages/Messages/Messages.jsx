@@ -222,7 +222,8 @@ const MessagesList = ({ selectedMessages, setSelectedMessages }) => {
         flexDirection: "column",
         gap: "12px",
         height:'60vh',
-        marginBottom:'50px'
+        marginBottom:'50px',
+        paddingBottom : '70px'
       }}
     >
       {selectedMessages.map((msg) => (
