@@ -18,7 +18,7 @@ class OrdersExport implements FromCollection, WithHeadings, WithMapping, WithSty
     public function collection()
     {
         return Order::with(['status', 'createdBy', 'affectedTo', 'deliveryCompany'])
-        ->where('affected_to', Auth::id()) // Filter orders for the authenticated user
+        ->where('created_by', Auth::id()) // Filter orders for the authenticated user
         ->get();
     }
 

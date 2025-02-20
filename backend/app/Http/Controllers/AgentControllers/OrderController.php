@@ -63,7 +63,6 @@ class OrderController extends Controller
         return Excel::download(new OrdersExport, 'orders.xlsx');
     }
 
-
     public function tasktoday(Request $request)
     {
         // Retrieve the search query from request
@@ -151,14 +150,6 @@ class OrderController extends Controller
         return OrderResource::collection($orders);
     }
 
-    public function store(StoreOrderRequest $request)
-    {
-    }
-
-    public function show(Order $order)
-    {
-        //
-    }
 
     public function update(Request $request, Order $order)
     {
@@ -246,8 +237,5 @@ class OrderController extends Controller
         ], 200);
     }
 
-    public function destroy()
-    {
-    }
 
 }

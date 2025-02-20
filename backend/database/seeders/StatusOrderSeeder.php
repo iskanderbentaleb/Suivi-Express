@@ -25,6 +25,9 @@ class StatusOrderSeeder extends Seeder
             ['status' => 'Échec livraison', 'colorHex' => '#F44336'], // Red
             ['status' => 'Retourné vers vendeur', 'colorHex' => '#F44336'], // red
             ['status' => 'Retourné au vendeur', 'colorHex' => '#FFC107'], // yellow
+            ['status' => 'Retour à retirer', 'colorHex' => '#fc122d'],
+            ['status' => 'Echange (pas encore ramassé)', 'colorHex' => '#3b3a38'],
+            ['status' => 'Echange (Ramassé)', 'colorHex' => '#3c2d87'],
         ];
         StatusOrder::insert($statuses);
     }

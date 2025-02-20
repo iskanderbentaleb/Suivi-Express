@@ -281,11 +281,6 @@ class OrderController extends Controller
         }
     }
 
-    public function show(Order $order)
-    {
-        //
-    }
-
     public function update(UpdateOrderRequest $request, Order $order)
     {
         // Get validated data

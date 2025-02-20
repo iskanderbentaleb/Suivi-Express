@@ -22,7 +22,7 @@ export default function Navbar() {
 
   const {setDahboardOpend  ,DahboardOpend , user } = useUserContext();
 
-  const [active, setActive] = useState('Billing');
+  const [active, setActive] = useState('Dashboard');
 
   const data = [
     { link: ADMIN_DASHBOARD_ROUTE , label: 'Dashboard', icon: IconLayoutDashboard },
