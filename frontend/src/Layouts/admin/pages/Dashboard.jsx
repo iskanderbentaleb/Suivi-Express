@@ -1,18 +1,18 @@
 import {
-    IconArrowDownRight,
-    IconArrowUpRight,
     IconCirclePercentage,
     IconPackage,
     IconCalculator,
     IconMoneybag,
   } from '@tabler/icons-react';
-  import { Group, Paper, SimpleGrid, Text, Title, Card, Container, Grid } from '@mantine/core';
+  import { Group, Paper, SimpleGrid, Text, Title, Card, Container, Grid, Loader, Skeleton, Select, Flex } from '@mantine/core';
   import { BarChart, LineChart, PieChart } from '@mantine/charts';
   import classes from './../styles/dashboard.module.css';
-import { useState } from 'react';
-import { DatePickerInput } from '@mantine/dates';
-import '@mantine/dates/styles.css';
-
+  import { useEffect, useState } from 'react';
+  import { dashboard } from '../../../services/api/admin/dashboard';
+  import dayjs from 'dayjs';
+  import CountUp from 'react-countup'; // Import CountUp
+  
+  // Icon Mapping for Stats Cards
   const icons = {
     box: IconPackage,
     percentage: IconCirclePercentage,
@@ -20,190 +20,240 @@ import '@mantine/dates/styles.css';
     moneybag: IconMoneybag,
   };
   
-  const data = [
-    { title: 'Total Orders', icon: 'box', value: '13,456', diff: 34 },
-    { title: 'Delivery Rate', icon: 'percentage', value: '4,145', diff: -13 },
-    { title: 'Total Agents', icon: 'calculator', value: '745', diff: 18 },
-    { title: 'Debts', icon: 'moneybag', value: '188', diff: -30 },
-  ];
-  
-  const companyData = [
-    { month: 'Yalidine', delivered: 1200, returned: 900, inProcess: 200 },
-    { month: 'Mystro', delivered: 1900, returned: 1200, inProcess: 400 },
-    { month: 'ZR Express', delivered: 400, returned: 1000, inProcess: 200 },
-  ];
-  
-  const chartData = [
-    { date: '01', Apples: 2890, Oranges: 2338, Tomatoes: 2452 },
-    { date: '02', Apples: 2756, Oranges: 2103, Tomatoes: 2402 },
-    { date: '03', Apples: 3322, Oranges: 986, Tomatoes: 1821 },
-    { date: '04', Apples: 3470, Oranges: 2108, Tomatoes: 2809 },
-    { date: '05', Apples: 3129, Oranges: 1726, Tomatoes: 2290 },
-    { date: '06', Apples: 3129, Oranges: 1726, Tomatoes: 2290 },
-  ];
-  
-  const pieChartData = [
-    { name: 'USA', value: 400, color: 'indigo.6' },
-    { name: 'India', value: 300, color: 'yellow.6' },
-    { name: 'Japan', value: 300, color: 'teal.6' },
-    { name: 'Other', value: 200, color: 'gray.6' },
-  ];
-  
   export default function Dashboard() {
-
-    const [selectedDates, setSelectedDates] = useState({
-        Weekly: null,
-        Monthly: null,
-        Yearly: null,
-      });
-
-
-    const stats = data.map((stat) => {
-      const Icon = icons[stat.icon];
-      const DiffIcon = stat.diff > 0 ? IconArrowUpRight : IconArrowDownRight;
-  
-      return (
-        <Card
-          withBorder
-          p="lg"
-          radius="lg"
-          key={stat.title}
-          shadow="sm"
-          className={classes.card}
-        >
-          <Group justify="space-between" align="center">
-            <Text size="sm" c="dimmed" className={classes.title}>
-              {stat.title}
-            </Text>
-            <Icon className={classes.icon} size={28} stroke={1.5} />
-          </Group>
-  
-          <Group align="flex-end" gap="xs" mt={20}>
-            <Text className={classes.value} fz="xl" fw={800}>
-              {stat.value}
-            </Text>
-          </Group>
-
-        </Card>
-      );
+    const [loading, setLoading] = useState(true);
+    const [dashboardData, setDashboardData] = useState({
+      total_orders: 0,
+      delivery_rate: 0,
+      total_agents: 0,
+      status_distribution: [],
+      delivery_companies: [],
     });
+  
+    const [chartData, setChartData] = useState({
+      Weekly: [],
+      Monthly: [],
+      Yearly: [],
+    });
+  
+    const [year, setYear] = useState(dayjs().year());
+    const [minYear, setMinYear] = useState(dayjs().year());
+    const [yearOptions, setYearOptions] = useState([]);
+  
+    // Fetch Dashboard Data
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const { data } = await dashboard.index();
+        setDashboardData(data);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données du tableau de bord:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    // Fetch Minimum Year
+    const fetchMinYear = async () => {
+      try {
+        const { data } = await dashboard.getMinYear();
+        setMinYear(data.min_year);
+        generateYearOptions(data.min_year);
+      } catch (error) {
+        console.error('Erreur lors de la récupération de l\'année minimale:', error);
+      }
+    };
+  
+    // Fetch Yearly Data
+    const fetchYearlyChartData = async () => {
+      setLoading(true);
+      try {
+        const { data } = await dashboard.getOrdersByYear({ year });
+        setChartData((prev) => ({ ...prev, Yearly: data.data }));
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données annuelles:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    // Generate Year Options
+    const generateYearOptions = (minYear) => {
+      const options = Array.from({ length: dayjs().year() - minYear + 1 }, (_, i) => ({
+        value: (minYear + i).toString(),
+        label: (minYear + i).toString(),
+      }));
+      setYearOptions(options);
+    };
+  
+    useEffect(() => {
+      fetchMinYear();
+      fetchDashboardData();
+      fetchYearlyChartData();
+    }, [year]);
+  
+    // Dashboard Statistics Cards
+    const stats = [
+      { title: 'Commandes Totales', icon: 'box', value: dashboardData.total_orders },
+      { title: 'Taux de Livraison', icon: 'percentage', value: dashboardData.delivery_rate },
+      { title: 'Agents Totaux', icon: 'calculator', value: dashboardData.total_agents },
+    ];
+  
+    // Render a message if no data is available
+    const renderNoDataMessage = (message) => (
+      <Text c="dimmed" fz="lg" ta="center" py="xl">
+        {message}
+      </Text>
+    );
   
     return (
       <Container size="xl" py="xl" px="md">
         <Title order={1} mb="xl" className={classes.mainTitle}>
-          Dashboard Overview
+          Aperçu du Tableau de Bord
         </Title>
   
-        <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }} spacing="lg">
-          {stats}
+        {/* Stats Cards */}
+        <SimpleGrid cols={{ base: 1, xs: 2, md: 3 }} spacing="lg">
+          {loading
+            ? Array(3).fill(null).map((_, index) => (
+                <Skeleton key={index} height={120} radius="lg" />
+              ))
+            : stats.map((stat) => {
+                const Icon = icons[stat.icon];
+                return (
+                  <Card withBorder p="lg" radius="lg" key={stat.title} shadow="sm" className={classes.card}>
+                    <Group justify="space-between" align="center">
+                      <Text size="sm" c="dimmed" className={classes.title}>
+                        {stat.title}
+                      </Text>
+                      <Icon className={classes.icon} size={28} stroke={1.5} />
+                    </Group>
+                    <Group align="flex-end" gap="xs" mt={20}>
+                      <Text className={classes.value} fz="xl" fw={800}>
+                        {stat.title === 'Taux de Livraison' ? (
+                          <CountUp
+                            end={stat.value}
+                            suffix="%"
+                            duration={2}
+                            decimals={2}
+                          />
+                        ) : (
+                          <CountUp
+                            end={stat.value}
+                            duration={2}
+                          />
+                        )}
+                      </Text>
+                    </Group>
+                  </Card>
+                );
+              })}
         </SimpleGrid>
   
+        {/* Charts Section */}
         <Grid gutter="xl" mt="xl">
-            {/* BarChart */}
-            <Grid.Col span={{ base: 12, md: 6 }}>
-                <Paper p="lg" radius="lg" withBorder shadow="sm" className={classes.chartCard}>
-                <Title order={3} fw={700} c="dimmed" mb="md">
-                    Delivery Company Comparison
-                </Title>
+          {/* BarChart - Delivery Company Comparison */}
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <Paper p="lg" radius="lg" withBorder shadow="sm" className={classes.chartCard}>
+              <Title order={3} fw={700} c="dimmed" mb="md">
+                Comparaison des Sociétés de Livraison
+              </Title>
+              {loading ? (
+                <Skeleton height={300} radius="lg" />
+              ) : dashboardData.delivery_companies.length === 0 ? (
+                renderNoDataMessage("Aucune donnée disponible pour les sociétés de livraison.")
+              ) : (
                 <BarChart
-                    h={380}
-                    data={companyData}
-                    dataKey="month"
-                    type="percent"
-                    orientation="vertical"
-                    barSize={20}
-                    series={[
+                  h={380}
+                  data={dashboardData.delivery_companies}
+                  dataKey="company"
+                  series={[
                     { name: 'delivered', color: 'teal.6', label: 'Livré' },
-                    { name: 'returned', color: 'red.6', label: 'Retourné' },
-                    { name: 'inProcess', color: 'orange.5', label: 'En cours' },
-                    ]}
-                    withLegend
-                    legendProps={{ verticalAlign: 'bottom', height: 40 }}
-                    tooltipAnimationDuration={200}
-                    padding={{ left: 40, right: 20, top: 20, bottom: 40 }}
+                    { name: 'returned', color: 'red.7', label: 'Retourné' },
+                    { name: 'inProcess', color: 'gray.5', label: 'En cours' },
+                  ]}
+                  withLegend
+                  legendProps={{ verticalAlign: 'bottom', height: 40 }}
+                  tooltipAnimationDuration={200}
+                  padding={{ left: 40, right: 20, top: 20, bottom: 40 }}
                 />
-                </Paper>
-            </Grid.Col>
-    
-            {/* PieChart */}
-            <Grid.Col span={{ base: 12, md: 6 }}>
-                <Paper
-                    p="lg"
-                    radius="lg"
-                    withBorder
-                    shadow="sm"
-                    className={classes.chartCard}
-                    style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}
-                >
-                    <Title order={3} fw={700} c="dimmed" mb="md">
-                    Orders Breakdown
-                    </Title>
+              )}
+            </Paper>
+          </Grid.Col>
+  
+          {/* PieChart - Order Status Distribution */}
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <Paper p="lg" radius="lg" withBorder shadow="sm" className={classes.chartCard}>
+              <Title order={3} fw={700} c="dimmed" mb="md">
+                Répartition des Commandes
+              </Title>
+              {loading ? (
+                <Skeleton height={300} radius="lg" />
+              ) : dashboardData.status_distribution.length === 0 ? (
+                renderNoDataMessage("Aucune donnée disponible pour le statut des commandes.")
+              ) : (
+                <Flex justify="center" align="center">
                     <PieChart
                     size={300}
-                    data={pieChartData}
+                    data={dashboardData.status_distribution}
                     labelsPosition="outside"
                     labelsType="percent"
                     withLabels
                     withTooltip
-                    strokeWidth={2}
+                    strokeWidth={1}
                     tooltipAnimationDuration={200}
                     withLegend
                     legendProps={{ layout: 'horizontal', align: 'center' }}
                     />
-                </Paper>
-            </Grid.Col>
-
-    
-            {/* LineChart */}
-            <Grid.Col span={{ base: 12 }}>
-                {['Weekly', 'Monthly', 'Yearly'].map((period) => (
-                    <Paper
-                    key={period}
-                    p="lg"
-                    radius="lg"
-                    withBorder
-                    shadow="sm"
-                    className={classes.chartCard}
-                    mb="xl"
-                    >
-                    <Title order={3} fw={700} c="dimmed" mb="md">
-                        {period} Orders Performance
-                    </Title>
-
-                    {/* Date Picker for each period */}
-                    <Group position="center" mb="md">
-                        <DatePickerInput
-                        value={selectedDates[period]}
-                        onChange={(date) =>
-                            setSelectedDates((prev) => ({ ...prev, [period]: date }))
-                        }
-                        placeholder={`Select ${period} Date`}
-                        label={`${period} Date`}
-                        />
-                    </Group>
-
-                    {/* Line Chart */}
-                    <LineChart
-                        h={300}
-                        data={chartData}
-                        dataKey="date"
-                        series={[
-                        { name: 'Apples', color: 'indigo.6', label: 'Apples' },
-                        { name: 'Oranges', color: 'blue.6', label: 'Oranges' },
-                        { name: 'Tomatoes', color: 'teal.6', label: 'Tomatoes' },
-                        ]}
-                        curveType="monotone"
-                        withDots
-                        withTooltip
-                        tooltipAnimationDuration={200}
-                        gridAxis="xy"
-                        tickLine="xy"
-                        strokeWidth={2.5}
-                        padding={{ left: 40, right: 20, top: 20, bottom: 40 }}
-                    />
-                    </Paper>
-                ))}
-            </Grid.Col>
+                </Flex>
+              )}
+            </Paper>
+          </Grid.Col>
+  
+          {/* LineChart Yearly */}
+          <Grid.Col span={{ base: 12 }}>
+            <Paper p="lg" radius="lg" withBorder shadow="sm" className={classes.chartCard} mb="xl">
+              <Title order={3} fw={700} c="dimmed" mb="md">
+                Performance Annuelle des Commandes ({year})
+              </Title>
+              <Group position="center" mb="md">
+                <Select
+                  value={year.toString()}
+                  onChange={(value) => setYear(parseInt(value))}
+                  data={yearOptions}
+                  placeholder="Sélectionner une Année"
+                  label="Année"
+                  disabled={loading}
+                />
+              </Group>
+              {loading ? (
+                <Skeleton height={300} radius="lg" />
+              ) : chartData.Yearly.length === 0 ? (
+                <Text c="dimmed" fz="lg" ta="center" py="xl">
+                  Aucune donnée disponible pour {year}.
+                </Text>
+              ) : (
+                <LineChart
+                  h={300}
+                  data={chartData.Yearly}
+                  dataKey="date"
+                  series={[
+                    { name: 'created_orders', color: 'blue.4', label: 'Commandes Créées' },
+                    { name: 'delivered_orders', color: 'teal.6', label: 'Commandes Livrées' },
+                    { name: 'returned_orders', color: 'red.6', label: 'Commandes Retournées' },
+                  ]}
+                  curveType="monotone"
+                  withDots
+                  withTooltip
+                  tooltipAnimationDuration={200}
+                  gridAxis="xy"
+                  tickLine="xy"
+                  strokeWidth={2.5}
+                  padding={{ left: 40, right: 20, top: 20, bottom: 40 }}
+                />
+              )}
+            </Paper>
+          </Grid.Col>
         </Grid>
       </Container>
     );

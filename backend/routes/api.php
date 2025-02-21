@@ -13,10 +13,10 @@ use App\Http\Controllers\AgentControllers\StatusOrderController as StatusOrderAg
 use App\Http\Controllers\HistoryOrdersController;
 use App\Http\Controllers\AgentControllers\HistoryOrdersController as HistoryOrdersAgentController;
 use App\Http\Controllers\AgentControllers\MailController as MailControllerAgentController;
-
+use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(static function(){
     Route::get('/', function (Request $request) {
@@ -45,6 +45,11 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
     Route::get('mails', [MailController::class, 'inbox']); // Get all mails
     Route::get('mails/{orderId}', [MailController::class, 'selectedOrderMessagesInbox']); // Get all mails
     Route::post('mails/sent-message', [MailController::class, 'sentMessages']);
+
+
+    Route::get('dashboard', [DashboardController::class, 'index']);
+    Route::post('dashboard', action: [DashboardController::class, 'getOrdersByYear']);
+    Route::get('dashboard/getMinYear', [DashboardController::class, 'getMinYear']);
 
 
 });

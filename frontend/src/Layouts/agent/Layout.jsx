@@ -5,7 +5,7 @@ import Navbar from './components/Navbar';
 import { useEffect, useState } from "react";
 import { LOGIN_ROUTE } from "../../Router";
 import { guestApi } from "../../Services/Api/guest/guestApi";
-import { IconPlaneInflight } from "@tabler/icons-react";
+import { IconClick, IconPlaneInflight } from "@tabler/icons-react";
 
 function Layout() {
 
@@ -113,8 +113,11 @@ function Layout() {
                 <Group h="100%" px="md" style={{ position: 'absolute', left: 0 }}>
                     <Burger color="white" opened={DahboardOpend} onClick={() => setDahboardOpend(!DahboardOpend)} hiddenFrom="xl" size="sm" />
                 </Group>
-                <Text size="xl" fw={900} style={{color:'white'}}>
-                    {'SHIPING'}<IconPlaneInflight stroke={1} /> {'MATE'}
+                <Text size="xl" fw={900} style={{ color: 'White', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    {'SUIVI'}
+                </Text>
+                <Text size="xl" fw={900} style={{ color: 'teal', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <IconClick stroke={2} />{'EXPRESS'}
                 </Text>
             </AppShell.Header>
 
