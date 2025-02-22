@@ -1580,23 +1580,21 @@ import {
 
 
               <Paper style={styleCard}>
-                    <Flex gap="sm" align="center">
-                    {
-                      TaskOrder ? 
-                      <>
-                        <Button onClick={()=>{changeOrderTask()}} fullWidth leftSection={<IconList stroke={2} />} variant="outline" color="red" >
-                          Tasks
-                        </Button>
-                      </>
-                      :
-                      <>
-                        <Button onClick={()=>{changeOrderTask()}} fullWidth leftSection={<IconPackage stroke={2} />} variant="outline" color="blue" >
-                          Orders
-                        </Button>
-                      </>
-                    }
-                    </Flex>
+                <Flex gap="sm" align="center">
+                  <Button
+                    onClick={changeOrderTask}
+                    fullWidth
+                    leftSection={loading ? <Loader size="sm" color="gray" /> : TaskOrder ? <IconList stroke={2} /> : <IconPackage stroke={2} />}
+                    variant="outline"
+                    color={TaskOrder ? "red" : "blue"}
+                    disabled={loading} // Disable button while loading
+                  >
+                    {loading ? "Loading..." : TaskOrder ? "Tasks" : "Orders"}
+                  </Button>
+                </Flex>
               </Paper>
+
+
 
 
               {/* search */}
