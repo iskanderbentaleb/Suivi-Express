@@ -40,6 +40,7 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
     const { user } = useUserContext() ;
 
 
+    const [loadingExport, setLoadingExport] = useState(false);
     const [activePage, setActivePage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [elements, setElements] = useState([]);
@@ -91,11 +92,10 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
   
     // ------------------ update Agent : id ----------------------
     const UpdateOrderForm = ({ closeModal, id }) => {
-
-      // Fetch the order data based on the provided `id`
+      // Récupérer les données de la commande en fonction de l'ID fourni
       const order = elements.find((element) => element.id === id);
     
-      // Initialize the form with the agent's existing data
+      // Initialiser le formulaire avec les données existantes du client
       const formCreate = useForm({
         initialValues: {
           client_name: order?.client_name || '',
@@ -106,134 +106,112 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
         validate: {
           client_name: (value) =>
             value.trim().length === 0
-              ? 'Client name is required'
+              ? "Le prénom du client est requis"
               : value.trim().length < 3
-              ? 'Client name must have at least 3 characters'
+              ? "Le prénom doit contenir au moins 3 caractères"
               : null,
           client_lastname: (value) =>
             value.trim().length > 0 && value.trim().length < 3
-              ? 'Client last name must have at least 3 characters'
+              ? "Le nom doit contenir au moins 3 caractères"
               : null,
           phone: (value) =>
             value.trim().length === 0
-              ? 'Phone number is required'
+              ? "Le numéro de téléphone est requis"
               : value.trim().length > 50
-              ? 'Phone number must be 50 characters or less'
+              ? "Le numéro de téléphone ne doit pas dépasser 50 caractères"
               : !/^[\d\s+-]+$/.test(value)
-              ? 'Phone number contains invalid characters'
+              ? "Le numéro de téléphone contient des caractères invalides"
               : null,
           product_url: (value) =>
-            value.trim().length > 0 && value.trim().length < 5 
-              ? 'Product url must have at least 3 characters' 
-              : null, // Nullable, so no error if empty
+            value.trim().length > 0 && value.trim().length < 5
+              ? "L'URL du produit doit contenir au moins 3 caractères"
+              : null, // Champ facultatif, donc pas d'erreur si vide
         },
       });
     
       const handleSubmit = async (values) => {
         try {
-          // Make API call to update the order
+          // Appel API pour mettre à jour la commande
           const { data } = await orders.update(id, values);
           console.log(data);
           setRerender(!Rerender);
-          // Show success notification
+          // Notification de succès
           notifications.show({
-            message: 'order updated successfully!',
-            color: 'green',
+            message: "Commande mise à jour avec succès !",
+            color: "green",
           });
     
-          // Reset form and close modal on success
+          // Réinitialiser le formulaire et fermer la modal après mise à jour
           formCreate.reset();
           closeModal();
         } catch (error) {
-          // Log the error for debugging
-          console.error('Error updating agent:', error);
+          // Affichage de l'erreur en cas d'échec
+          console.error("Erreur lors de la mise à jour :", error);
     
-          // Display failure notification
+          // Notification d'échec
           notifications.show({
-            message: error?.response?.data?.message || 'Failed to update order. Please try again.',
-            color: 'red',
+            message: error?.response?.data?.message || "Échec de la mise à jour. Veuillez réessayer.",
+            color: "red",
           });
         }
       };
     
       const handleError = (errors) => {
         notifications.show({
-          message: 'Please fix the validation errors before submitting.',
-          color: 'red',
+          message: "Veuillez corriger les erreurs de validation avant de soumettre.",
+          color: "red",
         });
       };
     
       return (
         <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
-          {/* Delivery Company */}
+          {/* Société de livraison */}
           <TextInput
             disabled
-            label="Delivery Company"
+            label="Société de livraison"
             mt="sm"
             placeholder=""
             value={order?.delivery_company.name}
           />
     
-          {/* Tracking */}
-          <TextInput
-            disabled
-            label="Tracking"
-            mt="sm"
-            value={order?.tracking}
-          />
+          {/* Suivi */}
+          <TextInput disabled label="tracking" mt="sm" value={order?.tracking} />
     
-          {/* External ID */}
+          {/* ID Externe */}
+          <TextInput disabled label="ID Externe" withAsterisk mt="sm" placeholder="web5010" value={order?.external_id} />
+    
+          {/* Prénom du client */}
           <TextInput
-            disabled
-            label="External ID"
+            label="Prénom du client"
             withAsterisk
             mt="sm"
-            placeholder="web5010"
-            value={order?.external_id}
+            placeholder="Prénom"
+            {...formCreate.getInputProps("client_name")}
           />
     
-          {/* Client Name */}
-          <TextInput
-            label="Client Name"
-            withAsterisk
-            mt="sm"
-            placeholder="First Name"
-            {...formCreate.getInputProps('client_name')}
-          />
+          {/* Nom du client */}
+          <TextInput label="Nom du client" mt="sm" placeholder="Nom" {...formCreate.getInputProps("client_lastname")} />
     
-          {/* Client Lastname */}
+          {/* Téléphone du client */}
           <TextInput
-            label="Client Lastname"
-            mt="sm"
-            placeholder="Last Name"
-            {...formCreate.getInputProps('client_lastname')}
-          />
-    
-          {/* Client Phone */}
-          <TextInput
-            label="Client Phone"
+            label="Téléphone du client"
             withAsterisk
             mt="sm"
             placeholder="0501010011"
-            {...formCreate.getInputProps('phone')}
+            {...formCreate.getInputProps("phone")}
           />
-
-          {/* Product URL */}
-          <TextInput
-            label="Product URL"
-            mt="sm"
-            placeholder="Product URL"
-            {...formCreate.getInputProps('product_url')}
-          />
-
-          {/* Submit Button */}
+    
+          {/* URL du produit */}
+          <TextInput label="URL du produit" mt="sm" placeholder="URL du produit" {...formCreate.getInputProps("product_url")} />
+    
+          {/* Bouton de soumission */}
           <Button type="submit" fullWidth mt="md">
-            Update
+            Mettre à jour
           </Button>
     
-          {/* Cancel Button */}
+          {/* Bouton d'annulation */}
           <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
-            Cancel
+            Annuler
           </Button>
         </form>
       );
@@ -241,11 +219,12 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
     
     const UpdateOrderModal = (id) => {
       modals.open({
-        title: 'Update Order',
+        title: "Mettre à jour la commande",
         centered: true,
         children: <UpdateOrderForm id={id} closeModal={() => modals.closeAll()} />,
       });
     };
+    
     // ------------------ update Agent : id ----------------------
   
 
@@ -279,7 +258,7 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
         setLoading(false);
       } catch (error) {
         setLoading(false);
-        notifications.show({ message: 'Error fetching orders :' + error , color: 'red' });
+        notifications.show({ message: 'Erreur lors de la récupération des commandes :' + error , color: 'red' });
       }
     };
     // ------------------- feetch task today  -------------------
@@ -297,7 +276,7 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
           setLoading(false);
         } catch (error) {
           setLoading(false);
-          notifications.show({ message: 'Error fetching orders :' + error , color: 'red' });
+          notifications.show({ message: 'Erreur lors de la récupération des commandes :' + error , color: 'red' });
         }
     };
     // ------------------- feetch agents -------------------
@@ -305,17 +284,20 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
 
     // ------------------- export orders -------------------
     const exportOrders = async () => {
+      setLoadingExport(true);
       try {
           const response = await orders.exportOrders();
           const url = window.URL.createObjectURL(new Blob([response.data]));
           const link = document.createElement('a');
           link.href = url;
-          link.setAttribute('download', 'orders.xlsx');
+          link.setAttribute('download', 'commandes.xlsx');
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
+          setLoadingExport(false);
       } catch (error) {
-          console.error('Error exporting orders:', error);
+          console.error("Erreur lors de l'exportation des commandes :", error);
+          setLoadingExport(false);
       }
     };
     // ------------------- export orders -------------------
@@ -326,28 +308,28 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
 
   
   // ------------------ get status order ----------------------
-    const getStatusOrders = async () => {
-      setLoading(true);
-      try {
-        const response = await statusOrders.index();
-        const statusOrdersdata = response.data.map((status) => ({
-          value: status.id.toString(), // Use `id` as the value
-          label: status.status,         // Use `name` as the label
-          colorHex: status.colorHex,
-        }));
-        setStatusOrdersdata(statusOrdersdata);
-
-        const filteredStatusOrders = statusOrdersdata.map((item) => ({
-          value: item.value, // Keep the original value
-          label: item.label, // Keep the original label
-          disabled: item.label === "Tentative échouée" || item.label === "En attente du client" || item.label === "Échec livraison", // Disable specific items
-        }));
-        setStatusOrderIndex(filteredStatusOrders);
-
-      } catch (error) {
-        notifications.show({ message: 'Error get status orders data:' + error , color: 'red' });
-      }
-    };
+  const getStatusOrders = async () => {
+    setLoading(true); // Démarre le chargement
+    try {
+      const response = await statusOrders.index(); // Récupère les données des statuts de commande
+      const statusOrdersdata = response.data.map((status) => ({
+        value: status.id.toString(), // Utilise l'`id` comme valeur
+        label: status.status,         // Utilise le `statut` comme libellé
+        colorHex: status.colorHex,    // Utilise le code couleur hexadécimal
+      }));
+      setStatusOrdersdata(statusOrdersdata); // Met à jour les données des statuts de commande
+  
+      const filteredStatusOrders = statusOrdersdata.map((item) => ({
+        value: item.value, // Garde la valeur d'origine
+        label: item.label, // Garde le libellé d'origine
+        disabled: item.label === "Tentative échouée" || item.label === "En attente du client" || item.label === "Échec livraison", // Désactive certains éléments spécifiques
+      }));
+      setStatusOrderIndex(filteredStatusOrders); // Met à jour les statuts de commande filtrés
+  
+    } catch (error) {
+      notifications.show({ message: 'Erreur lors de la récupération des données des statuts de commande : ' + error , color: 'red' }); // Affiche une notification d'erreur
+    }
+  };
   // ------------------ get status order  ----------------------
 
 
@@ -359,40 +341,40 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
   // ------------------ update status order  -------------------
   const UpdateOrderStatus = async (orderId, statusId) => {
     try {
-      // Step 1: Update the order status
+      // Étape 1 : Mettre à jour le statut de la commande
       const updateStatusRequest = orders.updateStausOrder(orderId, { statusId });
   
-      // Step 2: Create a new HistoryOrder with status_order_id, history_judge = false, and order_id
+      // Étape 2 : Créer un nouvel historique de commande avec status_order_id, history_judge = false, et order_id
       const historyData = {
-        status_order_id: statusId,
-        order_id: orderId,
-        history_judge: false,
-        note: "Order status updated", // Optional: You can add additional notes here
-        timetook: "00:00:00", // Optional: If you want to set a time, adjust accordingly
+        status_order_id: statusId, // ID du statut de la commande
+        order_id: orderId,         // ID de la commande
+        history_judge: false,     // Jugement de l'historique (faux par défaut)
+        note: "Statut de la commande mis à jour", // Optionnel : Vous pouvez ajouter des notes supplémentaires ici
+        timetook: "00:00:00",      // Optionnel : Si vous souhaitez définir un temps, ajustez en conséquence
       };
   
       const createHistoryRequest = historyOrders.post(historyData);
   
-      // Wait for both requests to be successful
+      // Attendre que les deux requêtes aboutissent
       const [statusData, historyDataResponse] = await Promise.all([updateStatusRequest, createHistoryRequest]);
   
-      // If both requests are successful, trigger re-render
+      // Si les deux requêtes réussissent, déclencher un re-rendu
       console.log(statusData);
       console.log(historyDataResponse);
   
-      // Step 3: Trigger re-render (assuming you want to refresh some UI state)
+      // Étape 3 : Déclencher un re-rendu (en supposant que vous souhaitez rafraîchir l'état de l'interface utilisateur)
       setRerender(!Rerender);
   
-      // Show success notification
+      // Afficher une notification de succès
       notifications.show({
-        message: 'Order status updated and history created successfully!',
+        message: 'Statut de la commande mis à jour et historique créé avec succès !',
         color: 'green',
       });
       
     } catch (error) {
-      // Handle error and show notification
+      // Gérer l'erreur et afficher une notification
       notifications.show({
-        message: `Failed to update order status or create history: ${error.message}`,
+        message: `Échec de la mise à jour du statut de la commande ou de la création de l'historique : ${error.message}`,
         color: 'red',
       });
     }
@@ -405,63 +387,63 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
 
   // ------------------ Call Model ----------------------
   const CallModelComponent = ({ closeModal, id }) => {
-    const [history, setHistory] = useState([]);
-    const [reasonCalls, setReasonCalls] = useState([]); 
-    const [loadingHistory, setLoadingHistory] = useState(false); 
-    const [statusOrder , setStatusOrder] = useState([]);
-    const [selectedStatus, setSelectedStatus] = useState('');
+    const [history, setHistory] = useState([]); // Historique des commandes
+    const [reasonCalls, setReasonCalls] = useState([]); // Raisons d'appel
+    const [loadingHistory, setLoadingHistory] = useState(false); // État de chargement
+    const [statusOrder, setStatusOrder] = useState([]); // Statuts de commande
+    const [selectedStatus, setSelectedStatus] = useState(''); // Statut sélectionné
 
+    // Initialisation du formulaire
     const formCreate = useForm({
       initialValues: {
-        status_order_id: '',
-        reason_id: '',
-        note: '',
-        history_judge:true,
-        order_id:id,
-        timetook: "00:00:00",
+        status_order_id: '', // ID du statut de la commande
+        reason_id: '',       // ID de la raison d'appel
+        note: '',            // Note de l'agent
+        history_judge: true, // Jugement de l'historique
+        order_id: id,         // ID de la commande
+        timetook: "00:00:00", // Temps pris
       },
       validate: {
         status_order_id: (value) =>
-          value.trim().length === 0 ? 'Status is required' : null,
+          value.trim().length === 0 ? 'Le statut est requis' : null, // Validation du statut
         note: (value) =>
           value.trim().length < 2
-            ? 'note must be at least 2 characters long'
-            : null,
+            ? 'La note doit contenir au moins 2 caractères'
+            : null, // Validation de la note
       },
     });
 
-    // Fetch history orders
+    // Récupérer l'historique des commandes
     const fetchHistory = async () => {
       setLoadingHistory(true);
       try {
         const { data } = await orders.order_history(id);
-        setHistory(data.data); // Use the correct response structure
+        setHistory(data.data); // Utiliser la structure correcte de la réponse
       } catch (error) {
-        console.error('Error fetching order history:', error.message)
+        console.error('Erreur lors de la récupération de l\'historique des commandes :', error.message);
       } finally {
         setLoadingHistory(false);
       }
     };
 
-    // Fetch calls Resons
+    // Récupérer les raisons d'appel
     const fetchReasonscalls = async () => {
       setLoadingHistory(true);
       try {
         const response = await orders.ReasonsCall();
         const formattedData = response.data.map((item) => ({
-          value: item.id.toString(), // Use the correct field for value
-          label: item.reason, // Use the correct field for label
+          value: item.id.toString(), // Utiliser le champ correct pour la valeur
+          label: item.reason,        // Utiliser le champ correct pour le libellé
         }));
-        setReasonCalls(formattedData); // Update state with formatted data
+        setReasonCalls(formattedData); // Mettre à jour l'état avec les données formatées
       } catch (error) {
-        console.error('Error fetching order history:', error.message)
+        console.error('Erreur lors de la récupération des raisons d\'appel :', error.message);
       } finally {
         setLoadingHistory(false);
       }
     };
 
-
-    // handle status orders data (filtered)
+    // Gérer les données des statuts de commande (filtrées)
     const handleStatusOrdersData = () => {
       const filteredStatusOrders = StatusOrdersdata.filter(
         (item) =>
@@ -473,123 +455,119 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
       setStatusOrder((prevState) => [...prevState, ...filteredStatusOrders]);
     };
 
-    // handle submit call form
+    // Soumettre le formulaire d'appel
     const handleSubmit = async (values) => {
       try {
-        // Make API call add history order
+        // Appel API pour ajouter un historique de commande
         await historyOrders.post(values);
 
-        // Make API call update order status
-        await orders.updateStausOrder(id , { statusId : values.status_order_id});
+        // Appel API pour mettre à jour le statut de la commande
+        await orders.updateStausOrder(id, { statusId: values.status_order_id });
     
-        // Show success notification
+        // Afficher une notification de succès
         notifications.show({
-          message: 'History Order created successfully!',
+          message: 'Historique de commande créé avec succès !',
           color: 'green',
         });
         
-        setRerender(!Rerender);
+        setRerender(!Rerender); // Déclencher un re-rendu
     
-        // Reset form and close modal on success
+        // Réinitialiser le formulaire et fermer la modal en cas de succès
         formCreate.reset();
         closeModal();
       } catch (error) {
-        // Log the error for debugging
-        console.error('Error creating order:', error);
+        // Journaliser l'erreur pour le débogage
+        console.error('Erreur lors de la création de la commande :', error);
     
-        // Display failure notification
+        // Afficher une notification d'échec
         notifications.show({
-          message: error?.response?.data?.message || 'Failed to create order. Please try again.',
+          message: error?.response?.data?.message || 'Échec de la création de la commande. Veuillez réessayer.',
           color: 'red',
         });
       }
     };
 
+    // Effet pour réinitialiser le champ "reason" lorsque le statut change
     useEffect(() => {
-      console.log(selectedStatus)
+      console.log(selectedStatus);
       formCreate.setFieldValue('reason', '');
     }, [selectedStatus]);
     
-
+    // Effet pour charger les données initiales
     useEffect(() => {
       handleStatusOrdersData();
       fetchReasonscalls();
       fetchHistory();
     }, []);
 
-
     return (
       <div>
         {loadingHistory ? (
           <Center style={{ height: '10vh' }}>
-            <Loader color="blue" type="bars" />
+            <Loader color="blue" type="bars" /> {/* Afficher un indicateur de chargement */}
           </Center>
         ) : (
           <>
             <form onSubmit={formCreate.onSubmit(handleSubmit)}>
+              {/* Sélection du statut de la commande */}
+              <NativeSelect
+                label="Statut de la commande"
+                placeholder="Sélectionner un statut"
+                withAsterisk
+                data={[{ value: '', label: 'Sélectionner un statut', disabled: true }, ...statusOrder]} // Ajouter une option vide
+                value={formCreate.values.status_order_id || ''} // Assurer que la valeur par défaut est une chaîne vide
+                onChange={(event) => {
+                  const selectedValue = event.currentTarget.value; // Obtenir la valeur sélectionnée
+                  const selectedLabel = statusOrder.find((item) => item.value === selectedValue)?.label || ''; // Trouver le libellé correspondant
 
-                  <NativeSelect
-                    label="Status Order"
-                    placeholder="Select status"
-                    withAsterisk
-                    data={[{ value: '', label: 'Select status' , disabled: true }, ...statusOrder]} // Add an empty option
-                    value={formCreate.values.status_order_id || ''} // Ensure value defaults to an empty string
-                    onChange={(event) => {
-                      const selectedValue = event.currentTarget.value; // Get the selected value
-                      const selectedLabel = statusOrder.find((item) => item.value === selectedValue)?.label || ''; // Find the corresponding label
+                  setSelectedStatus(selectedLabel); // Mettre à jour l'état du libellé
+                  formCreate.setFieldValue('status_order_id', selectedValue); // Mettre à jour la valeur du champ du formulaire
+                }}
+              />
 
-                      setSelectedStatus(selectedLabel); // Update custom label state
-                      formCreate.setFieldValue('status_order_id', selectedValue); // Update form field value
-                    }}
-                  />
+              {/* Raison (affiché uniquement pour certains statuts) */}
+              {['Échec livraison', 'Tentative échouée'].includes(selectedStatus) && (
+                <NativeSelect
+                  label="Raison"
+                  placeholder="Sélectionner une raison"
+                  withAsterisk
+                  data={reasonCalls} // Source de données pour la liste déroulante
+                  value={formCreate.values.reason_id || ''} // Lier explicitement le champ du formulaire
+                  onChange={(event) => formCreate.setFieldValue('reason_id', event.currentTarget.value)} // Mettre à jour la valeur du formulaire
+                  mt="sm"
+                />
+              )}
 
+              {/* Note de l'agent */}
+              <Textarea
+                label="Note"
+                placeholder="Ajouter votre note ici..."
+                withAsterisk
+                mt="sm"
+                {...formCreate.getInputProps('note')}
+              />
 
-                  {/* Reason */}
-                  {['Échec livraison', 'Tentative échouée'].includes(selectedStatus) && (
-                    <NativeSelect
-                      label="Reason"
-                      placeholder="Select Reason"
-                      withAsterisk
-                      data={reasonCalls} // The data source for the dropdown
-                      value={formCreate.values.reason_id || ''} // Explicitly bind the form field
-                      onChange={(event) => formCreate.setFieldValue('reason_id', event.currentTarget.value)} // Update form value
-                      mt="sm"
-                    />
-                  )}
-
-                  {/* Agent Note */}
-                  <Textarea
-                    label="Note"
-                    placeholder="Add your note here..."
-                    withAsterisk
-                    mt="sm"
-                    {...formCreate.getInputProps('note')}
-                  />
-
-
-                  {/* Buttons */}
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', whiteSpace: 'nowrap', marginTop: '1rem' }}>
-                    <Button fullWidth variant="outline" onClick={closeModal}>
-                      Cancel
-                    </Button>
-                    <Button fullWidth type="submit">
-                      Submit
-                    </Button>
-                  </div>
-
+              {/* Boutons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', whiteSpace: 'nowrap', marginTop: '1rem' }}>
+                <Button fullWidth variant="outline" onClick={closeModal}>
+                  Annuler
+                </Button>
+                <Button fullWidth type="submit">
+                  Soumettre
+                </Button>
+              </div>
             </form>
 
-
-            {/* History Timeline */}
+            {/* Historique des commandes */}
             <div>
               <Paper withBorder radius="md" shadow="sm" p="xl" mt={20}>
                 {history.length === 0 ? (
-                  // Display this message if history is empty
+                  // Afficher ce message si l'historique est vide
                   <Text color="dimmed" size="sm" align="center">
-                    No history yet.
+                    Aucun historique pour le moment.
                   </Text>
                 ) : (
-                  // Render the Timeline if there are history items
+                  // Afficher la timeline s'il y a des éléments dans l'historique
                   <Timeline radius={'sm'} lineWidth={0.5} bulletSize={35} active={history.length} style={{ maxHeight: '40vh', overflowY: 'auto' }}>
                     {history.map((item) => (
                       <Timeline.Item
@@ -597,11 +575,11 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
                         title={
                           <Group spacing="sm">
                             <Text weight={700} size="lg">
-                            {
-                              item.status?.status ? 
-                                `${item.status.status}${item.reason?.reason ? ` (${item.reason.reason})` : ''}`
-                              : 'No status provided'
-                            }
+                              {
+                                item.status?.status ? 
+                                  `${item.status.status}${item.reason?.reason ? ` (${item.reason.reason})` : ''}`
+                                : 'Aucun statut fourni'
+                              }
                             </Text>
                             <Text size="xs" color="dimmed">
                               {item.created_at}
@@ -639,17 +617,17 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
                             )
                           }
                           <Text weight={500} size="md">
-                            {item.agent?.name || 'Unknown Agent'}
+                            {item.agent?.name || 'Agent inconnu'}
                           </Text>
                             {
                               (
                                  item.history_judge == true && item.validator !== null ? 
                                     (
-                                      <Badge variant="light" color="green" radius="sm">validate by: {item.validator?.name}</Badge>
+                                      <Badge variant="light" color="green" radius="sm">Validé par : {item.validator?.name}</Badge>
                                     )
                                   : item.history_judge == true ?
                                   (
-                                      <Badge variant="light" color="yellow" radius="sm">Pending validation...</Badge>
+                                      <Badge variant="light" color="yellow" radius="sm">Validation en attente...</Badge>
                                   ) : null
                               )
                             }
@@ -659,27 +637,11 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
                           item.history_judge == true ? (
                             <>
                               <Text color="dimmed" size="sm" mt="xs">
-                                {item.note || 'No additional notes available'}
+                                {item.note || 'Aucune note supplémentaire disponible'}
                               </Text>
-                              {/* 
-                              <Text size="sm" mt="xs">
-                                <strong>Time Taken:</strong>{' '}
-                                <span
-                                  style={{
-                                    background: '#4c6ef5',
-                                    padding: '4px 8px',
-                                    borderRadius: '8px',
-                                    color: '#fff',
-                                  }}
-                                >
-                                  {item.timetook || 'N/A'}
-                                </span>
-                              </Text> 
-                              */}
                             </>
                           ) : null
                         }
-                        
                       </Timeline.Item>
                     ))}
                   </Timeline>
@@ -687,16 +649,15 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
               </Paper>
             </div>
           </>
-        )
-        
-        }
+        )}
       </div>
     );
   };
 
+  // Composant pour ouvrir la modal
   const CallModal = (id) => {
     modals.open({
-      title: 'Order History',
+      title: 'Historique de la commande',
       centered: true,
       children: (
         <CallModelComponent closeModal={() => modals.closeAll()} id={id} />
@@ -725,56 +686,60 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
   
     //---------------- data of orders ---------------------
     const rows = elements.map((row) => {
+      const Iduser = user.id;
+      const isAuthorized = Iduser === row.affected_to.id; // Check if user can edit
+    
       return (
-        <Table.Tr key={row.id}>
-
+        <Table.Tr 
+          key={row.id} 
+          style={{
+            background: isAuthorized ? 'inherit' : '#f0f0f0', 
+            opacity: isAuthorized ? 1 : 0.6
+          }}
+        >
+          {/* Colonne : Société de livraison */}
           <Table.Td>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span
-                  style={{
-                    background: row.delivery_company.colorHex,
-                    border: '0.5px solid black',
-                    padding: '2px 12px',
-                    borderRadius: '5px',
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {row.delivery_company.name} 
-                </span>
+              <span
+                style={{
+                  background: row.delivery_company.colorHex,
+                  border: '0.5px solid black',
+                  padding: '2px 12px',
+                  borderRadius: '5px',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {row.delivery_company.name}
+              </span>
             </div>
-          </Table.Td>          
-
+          </Table.Td>
+    
+          {/* Colonne : tracking */}
           <Table.Td>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              
-              {/* Copy button */}
-              <CopyButton value={row.tracking} timeout={2000}>
-                {({ copied, copy }) => (
-                  <Tooltip label={copied ? 'Copied!' : 'Copy tracking'} withArrow position="right">
-                    <ActionIcon
-                      color={copied ? 'teal' : 'gray'}
-                      variant="light"
-                      onClick={copy}
-                      style={{
-                        border: copied ? '0.5px solid teal' : '0.5px solid gray',
-                        padding: '5px',
-                        borderRadius: '8px',
-                      }}
-                    >
-                      {copied ? (
-                        <IconCheck style={{ width: rem(18), height: rem(18) }} />
-                      ) : (
-                        <IconCopy style={{ width: rem(18), height: rem(18) }} />
-                      )}
-                    </ActionIcon>
-                  </Tooltip>
-                )}
-              </CopyButton>
-              
-              {/* Badge for delivery company */}
+              {isAuthorized && (
+                <CopyButton value={row.tracking} timeout={2000}>
+                  {({ copied, copy }) => (
+                    <Tooltip label={copied ? 'Copié !' : 'Copier le tracking'} withArrow position="right">
+                      <ActionIcon
+                        color={copied ? 'teal' : 'gray'}
+                        variant="light"
+                        onClick={copy}
+                        style={{
+                          border: copied ? '0.5px solid teal' : '0.5px solid gray',
+                          padding: '5px',
+                          borderRadius: '8px',
+                        }}
+                      >
+                        {copied ? <IconCheck style={{ width: rem(18), height: rem(18) }} /> : <IconCopy style={{ width: rem(18), height: rem(18) }} />}
+                      </ActionIcon>
+                    </Tooltip>
+                  )}
+                </CopyButton>
+              )}
               <span
                 style={{
                   background: '#dee2e6',
@@ -791,135 +756,113 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
               </span>
             </div>
           </Table.Td>
-
+    
+          {/* Colonne : Statut de la commande */}
           <Table.Td>
-            <Group  style={{ flexWrap: 'nowrap' }}>
-              <ActionIcon style={{background:'#dee2e6' , border: '0.1px dashed #222426'}} variant="subtle" color="gray" onClick={()=>{ CallModal(row.id) }}>
-                  <IconHistory style={{ width: '16px', height: '16px' }} stroke={1.5} />
-              </ActionIcon>
-                    
-                  {
-                    row.archive === 0 ? (
-                    <NativeSelect
-                      placeholder=""
-                      defaultValue={row.status.id.toString()}
-                      data={StatusOrderIndex}
-                      onChange={(event) => {
-                        const selectedValue = event.currentTarget.value; // Get the selected value
-                        UpdateOrderStatus(row.id, selectedValue); // Call your function with the necessary parameters
-                      }}
-                      styles={() => ({
-                        input: {
-                          borderRadius: '8px',
-                          display: "flex",
-                          background: `${row.status.colorHex}1A`,
-                          border: `1px solid ${row.status.colorHex}`,
-                          color: row.status.colorHex,
-                          width: '200px',
-                        },
-                      })}
-                    />
-                  ) : 
-                    <div
-                      style={{
+            <Group style={{ flexWrap: 'nowrap' }}>
+              
+              {isAuthorized ? (
+                row.archive === 0 ? (
+                  <NativeSelect
+                    defaultValue={row.status.id.toString()}
+                    data={StatusOrderIndex}
+                    onChange={(event) => UpdateOrderStatus(row.id, event.currentTarget.value)}
+                    styles={() => ({
+                      input: {
                         borderRadius: '8px',
-                        display: 'flex',
-                        background: `${row.status.colorHex}1A`, // Background with 10% opacity
-                        border: `1px solid ${row.status.colorHex}`, // Border color
-                        color: row.status.colorHex, // Text color
+                        display: "flex",
+                        background: `${row.status.colorHex}1A`,
+                        border: `1px solid ${row.status.colorHex}`,
+                        color: row.status.colorHex,
                         width: '200px',
-                        height: '35px',
-                        alignItems: 'center', // Vertically center text
-                        paddingLeft: '12px', // Add some padding for text
-                      }}
-                    >
-                      {row.status.status}
-                    </div>
-                  }  
+                      },
+                    })}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      borderRadius: '8px',
+                      display: 'flex',
+                      background: `${row.status.colorHex}1A`,
+                      border: `1px solid ${row.status.colorHex}`,
+                      color: row.status.colorHex,
+                      width: '200px',
+                      height: '35px',
+                      alignItems: 'center',
+                      paddingLeft: '12px',
+                    }}
+                  >
+                    {row.status.status}
+                  </div>
+                )
+              ) : (
+                <div
+                  style={{
+                    borderRadius: '8px',
+                    display: 'flex',
+                    background: `${row.status.colorHex}1A`,
+                    border: `1px solid ${row.status.colorHex}`,
+                    color: row.status.colorHex,
+                    width: '200px',
+                    height: '35px',
+                    alignItems: 'center',
+                    paddingLeft: '12px',
+                  }}
+                >
+                  {row.status.status}
+                </div>
+              )}
+              {isAuthorized && (
+                <ActionIcon style={{ background: '#dee2e6', border: '0.1px dashed #222426' }} variant="subtle" color="gray" onClick={() => CallModal(row.id)}>
+                  <IconHistory style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                </ActionIcon>
+              )}
             </Group>
           </Table.Td>
-
-          <Table.Td 
-            style={{
-              whiteSpace: 'nowrap',
-            }}
-          >
-              {row.external_id}
-          </Table.Td>
-
-
-          <Table.Td
-              style={{
-              whiteSpace: 'nowrap',
-            }}
-          >
-              {row.client_name}
-          </Table.Td>
-
-          <Table.Td
-            style={{
-              whiteSpace: 'nowrap',
-            }}
-          >
-              {row.client_lastname}
-          </Table.Td>
-
-
-          <Table.Td
-            style={{
-              whiteSpace: 'nowrap',
-            }}
-          >
-              {row.phone}
-          </Table.Td>
-
+    
+          {/* Autres colonnes en lecture seule */}
+          <Table.Td style={{ whiteSpace: 'nowrap' }}>{row.external_id}</Table.Td>
+          <Table.Td style={{ whiteSpace: 'nowrap' }}>{row.client_name}</Table.Td>
+          <Table.Td style={{ whiteSpace: 'nowrap' }}>{row.client_lastname}</Table.Td>
+          <Table.Td style={{ whiteSpace: 'nowrap' }}>{row.phone}</Table.Td>
+    
+          {/* Colonne : Créé par */}
           <Table.Td>
-            <span style={{border:'black dashed 1px' , padding:5 , borderRadius:8 , color:'black' , whiteSpace: 'nowrap',}}>
+            <span style={{ border: 'black dashed 1px', padding: 5, borderRadius: 8, color: 'black', whiteSpace: 'nowrap' }}>
               {row.created_by.name}
             </span>
           </Table.Td>
-
+    
+          {/* Colonne : Actions */}
           <Table.Td>
             <Group gap={5} justify="flex-start" style={{ flexWrap: 'nowrap' }}>
-            
-              { row.product_url !== null ?
-                <ActionIcon color="gray" onClick={()=>{ window.open(row.product_url, '_blank'); }}>
+              {row.product_url !== null ? (
+                <ActionIcon color="gray" onClick={() => window.open(row.product_url, '_blank')}>
                   <IconUnlink style={{ width: '16px', height: '16px' }} stroke={1.5} />
                 </ActionIcon>
-                : 
-                <ActionIcon color='black'>
+              ) : (
+                <ActionIcon color="black">
                   <IconLinkOff style={{ width: '16px', height: '16px' }} stroke={1.5} />
                 </ActionIcon>
-              }
-              
-              {
+              )}
+    
+              {isAuthorized ? (
                 row.archive === 0 ? (
-                    <ActionIcon variant="subtle" color="gray" onClick={() => { UpdateOrderModal(row.id) }}>
-                        <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
-                    </ActionIcon>
+                  <ActionIcon variant="subtle" color="gray" onClick={() => UpdateOrderModal(row.id)}>
+                    <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                  </ActionIcon>
                 ) : (
-                    <Badge
-                        variant="filled"
-                        color="black"
-                        leftSection={<IconArchive style={{ width: '14px', height: '14px' }} />}
-                        styles={{
-                            root: {
-                                padding: '4px 8px',
-                                height: 'auto',
-                                borderRadius: '4px',
-                                cursor: 'default',
-                            },
-                        }}
-                    >
-                        Archived
-                    </Badge>
+                  <Badge variant="filled" color="black" leftSection={<IconArchive style={{ width: '14px', height: '14px' }} />}>
+                    Archivé
+                  </Badge>
                 )
-              }
+              ) : null}
             </Group>
           </Table.Td>
         </Table.Tr>
       );
     });
+    
     //---------------- data of orders ---------------------
   
   
@@ -980,84 +923,78 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
     return (
       <>
         <Text fw={700} fz="xl" mb="md">
-          Orders Management
+          Gestion des commandes
         </Text>
         <SimpleGrid cols={{ base: 1, sm: 1 }} spacing="lg">
           {/* Actions Section */}
-          <SimpleGrid cols={{ base: 1, sm: 2 }} >
-            
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
+            {/* Ajouter des commandes */}
+            <Paper style={styleCard}>
+              <Flex gap="sm" align="center">
+                {/* Bouton d'exportation avec indicateur de chargement */}
+                <Button 
+                  onClick={exportOrders} 
+                  fullWidth 
+                  variant="outline" 
+                  loading={loadingExport}
+                >
+                  Exporter
+                </Button>
 
+                {/* Bouton de bascule entre tâches et commandes avec indicateur de chargement */}
+                <Button
+                  onClick={changeOrderTask}
+                  fullWidth
+                  leftSection={loading ? <Loader size="sm" color="gray" /> : TaskOrder ? <IconList stroke={2} /> : <IconPackage stroke={2} />}
+                  variant="outline"
+                  color={TaskOrder ? "red" : "blue"}
+                  disabled={loading} // Désactiver le bouton pendant le chargement
+                >
+                  {loading ? "Chargement..." : TaskOrder ? "Tâches" : "Commandes"}
+                </Button>
+              </Flex>
+            </Paper>
 
-              {/* add orders */}
-              <Paper style={styleCard}>
-                <Flex gap="sm" align="center">
-                  {/* Export Button with Loader */}
-                  <Button 
-                    onClick={exportOrders} 
-                    fullWidth 
-                    variant="outline" 
-                  >
-                    Export
-                  </Button>
-
-                  {/* Task/Order Toggle Button with Loader */}
-                  <Button
-                    onClick={changeOrderTask}
-                    fullWidth
-                    leftSection={loading ? <Loader size="sm" color="gray" /> : TaskOrder ? <IconList stroke={2} /> : <IconPackage stroke={2} />}
-                    variant="outline"
-                    color={TaskOrder ? "red" : "blue"}
-                    disabled={loading} // Disable button while loading
-                  >
-                    {loading ? "Loading..." : TaskOrder ? "Tasks" : "Orders"}
-                  </Button>
-                </Flex>
-              </Paper>
-
-
-
-
-              {/* search */}
-              <Paper style={styleCard}>
-                  <form style={{ width: '100%' }} onSubmit={formSearch.onSubmit(handleSearch)}>
-                    <TextInput
-                      size="sm"
-                      radius="md"
-                      placeholder="Search for orders..."
-                      rightSectionWidth={42}
-                      leftSection={<IconSearch size={18} stroke={1.5} />}
-                      {...formSearch.getInputProps('search')}
-                      rightSection={
-                        <ActionIcon size={28} radius="xl" variant="filled" type="submit">
-                          <IconArrowRight size={18} stroke={1.5} />
-                        </ActionIcon>
-                      }
-                    />
-                  </form>
-              </Paper>
-
+            {/* Recherche */}
+            <Paper style={styleCard}>
+              <form style={{ width: '100%' }} onSubmit={formSearch.onSubmit(handleSearch)}>
+                <TextInput
+                  size="sm"
+                  radius="md"
+                  placeholder="Rechercher des commandes..."
+                  rightSectionWidth={42}
+                  leftSection={<IconSearch size={18} stroke={1.5} />}
+                  {...formSearch.getInputProps('search')}
+                  rightSection={
+                    <ActionIcon size={28} radius="xl" variant="filled" type="submit">
+                      <IconArrowRight size={18} stroke={1.5} />
+                    </ActionIcon>
+                  }
+                />
+              </form>
+            </Paper>
           </SimpleGrid>
 
 
 
               {
                 loading ? (
-                  <Table.ScrollContainer style={styleCard} minWidth={800}>            
+                  <Table.ScrollContainer style={styleCard} minWidth={800}>
                     <Table striped highlightOnHover verticalSpacing="xs">
                       <Table.Thead>
                         <Table.Tr>
-                          <Table.Th>Delivery Company</Table.Th>
-                          <Table.Th>Tracking</Table.Th>
-                          <Table.Th>status</Table.Th>
-                          <Table.Th>External Id</Table.Th>
-                          <Table.Th>Name</Table.Th>
-                          <Table.Th>Lastname</Table.Th>
-                          <Table.Th>Phone</Table.Th>
-                          <Table.Th>creator</Table.Th>
+                          <Table.Th>Société de livraison</Table.Th> {/* Société de livraison */}
+                          <Table.Th>tracking</Table.Th> {/* tracking */}
+                          <Table.Th>Statut</Table.Th> {/* Statut */}
+                          <Table.Th>ID externe</Table.Th> {/* ID externe */}
+                          <Table.Th>Nom</Table.Th> {/* Nom */}
+                          <Table.Th>Prénom</Table.Th> {/* Prénom */}
+                          <Table.Th>Téléphone</Table.Th> {/* Téléphone */}
+                          <Table.Th>Créateur</Table.Th> {/* Créateur */}
                         </Table.Tr>
                       </Table.Thead>
                       <Table.Tbody>
-                        {renderSkeletons()} {/* Call the renderSkeletons function */}
+                        {renderSkeletons()} {/* Appeler la fonction renderSkeletons */}
                       </Table.Tbody>
                     </Table>
                   </Table.ScrollContainer>
@@ -1066,26 +1003,25 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
                 
 
 
-
-                <Table.ScrollContainer style={styleCard} minWidth={800}>
-                        <Table striped highlightOnHover verticalSpacing="xs">
-                            <Table.Thead>
-                                <Table.Tr>
-                                <Table.Th>Delivery Company</Table.Th>
-                                <Table.Th>Tracking</Table.Th>
-                                <Table.Th>status</Table.Th>
-                                <Table.Th>External Id</Table.Th>
-                                <Table.Th>Name</Table.Th>
-                                <Table.Th>Lastname</Table.Th>
-                                <Table.Th>Phone</Table.Th>
-                                <Table.Th>creator</Table.Th>
-                                </Table.Tr>
-                            </Table.Thead>
-                            <Table.Tbody height={80}>
-                                { rows } 
-                            </Table.Tbody>
-                        </Table>
-                    </Table.ScrollContainer>
+              <Table.ScrollContainer style={styleCard} minWidth={800}>
+                <Table striped highlightOnHover verticalSpacing="xs">
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>Société de livraison</Table.Th> {/* Société de livraison */}
+                      <Table.Th>tracking</Table.Th> {/* tracking */}
+                      <Table.Th>Statut</Table.Th> {/* Statut */}
+                      <Table.Th>ID externe</Table.Th> {/* ID externe */}
+                      <Table.Th>Nom</Table.Th> {/* Nom */}
+                      <Table.Th>Prénom</Table.Th> {/* Prénom */}
+                      <Table.Th>Téléphone</Table.Th> {/* Téléphone */}
+                      <Table.Th>Créateur</Table.Th> {/* Créateur */}
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody height={80}>
+                    {rows} {/* Afficher les lignes du tableau */}
+                  </Table.Tbody>
+                </Table>
+              </Table.ScrollContainer>
             
 
 
@@ -1093,42 +1029,42 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
                 </>
                 ): (
                 ( (search.length > 0 && elements.length === 0) || (search.length === 0 && elements.length === 0)) && (
-                    <>
+                  <>
                     <Table.ScrollContainer style={styleCard} minWidth={800}>
-                        <Table striped highlightOnHover verticalSpacing="xs">
+                      <Table striped highlightOnHover verticalSpacing="xs">
                         <Table.Thead>
-                            <Table.Tr>
-                              <Table.Th>Delivery Company</Table.Th>
-                              <Table.Th>Tracking</Table.Th>
-                              <Table.Th>status</Table.Th>
-                              <Table.Th>External Id</Table.Th>
-                              <Table.Th>Name</Table.Th>
-                              <Table.Th>Lastname</Table.Th>
-                              <Table.Th>Phone</Table.Th>
-                              <Table.Th>creator</Table.Th>
-                            </Table.Tr>
+                          <Table.Tr>
+                            <Table.Th>Société de livraison</Table.Th> {/* Société de livraison */}
+                            <Table.Th>tracking</Table.Th> {/* tracking */}
+                            <Table.Th>Statut</Table.Th> {/* Statut */}
+                            <Table.Th>ID externe</Table.Th> {/* ID externe */}
+                            <Table.Th>Nom</Table.Th> {/* Nom */}
+                            <Table.Th>Prénom</Table.Th> {/* Prénom */}
+                            <Table.Th>Téléphone</Table.Th> {/* Téléphone */}
+                            <Table.Th>Créateur</Table.Th> {/* Créateur */}
+                          </Table.Tr>
                         </Table.Thead>
-                        </Table>
-                        <div 
+                      </Table>
+                      <div 
                         style={{ 
-                            backgroundColor: '#dfdddd4c', 
-                            height: '500px', 
-                            display: 'flex', 
-                            justifyContent: 'center', 
-                            alignItems: 'center',
-                            borderRadius:'2px'
+                          backgroundColor: '#dfdddd4c', // Fond gris clair avec opacité
+                          height: '500px', // Hauteur fixe
+                          display: 'flex', 
+                          justifyContent: 'center', // Centrer horizontalement
+                          alignItems: 'center', // Centrer verticalement
+                          borderRadius: '2px' // Bordures arrondies
                         }}
-                        >
+                      >
                         <Text 
-                            size="lg" 
-                            weight={500} 
-                            style={{ color: '#7d7d7d' }}
+                          size="lg" 
+                          weight={500} 
+                          style={{ color: '#7d7d7d' }} // Couleur du texte gris
                         >
-                            No results found. Try adjusting your search criteria.
+                          Aucun résultat trouvé. Essayez d'ajuster vos critères de recherche.
                         </Text>
-                        </div>
+                      </div>
                     </Table.ScrollContainer>
-                    </>
+                  </>
                 )
                 )
                 
@@ -1148,10 +1084,7 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
               </Paper>
   
   
-          </SimpleGrid>
-  
-  
-  
+        </SimpleGrid>
       </>
     );
   }

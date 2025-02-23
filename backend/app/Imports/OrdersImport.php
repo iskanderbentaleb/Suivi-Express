@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Models\{Order, Agent, StatusOrder, DeliveryCompany};
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, WithEvents
 {
@@ -23,17 +24,13 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
 
     public function collection(Collection $rows)
     {
-        // Get the authenticated user's ID
         $authUserId = auth()->id();
 
         foreach ($rows as $index => $row) {
-
-            // Skip empty rows
             if ($this->isRowEmpty($row)) {
                 continue;
             }
 
-            // Convert the row (Collection) to an array before logging
             Log::info('Processing row:', $row->toArray());
 
             // Validate the row
@@ -47,19 +44,19 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
                 'status' => 'required|string|exists:status_orders,status',
                 'affected_to' => 'nullable|string|exists:agents,name',
                 'delivery_company' => 'nullable|string|exists:delivery_companies,name',
+                'archived' => 'nullable|boolean', // New validation
+                'created_at' => 'nullable|date_format:Y-m-d H:i:s',
             ]);
 
             if ($validator->fails()) {
-                // Add validation errors to the $errors array
                 $this->errors[] = [
-                    'row' => $index + 2, // Row number in the Excel file (add 2 for header row and 1-based index)
+                    'row' => $index + 2,
                     'errors' => $validator->errors()->toArray(),
                 ];
-                continue; // Skip invalid rows
+                continue;
             }
 
             try {
-                // Fetch related models
                 $affectedTo = $row['affected_to']
                     ? Agent::where('name', $row['affected_to'])->first()
                     : null;
@@ -68,7 +65,6 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
                     ? DeliveryCompany::where('name', $row['delivery_company'])->first()
                     : null;
 
-                // Create the order
                 Order::create([
                     'tracking' => $row['tracking'],
                     'external_id' => $row['external_id'],
@@ -77,21 +73,25 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
                     'phone' => $row['phone'],
                     'product_url' => $row['product_url'],
                     'status_id' => $status->id,
-                    'created_by' => $authUserId, // Automatically set the authenticated user's ID
+                    'created_by' => $authUserId,
                     'affected_to' => $affectedTo ? $affectedTo->id : null,
                     'delivery_company_id' => $deliveryCompany ? $deliveryCompany->id : null,
+                    'archived' => isset($row['archived']) ? (int) $row['archived'] : 0, // Default to 0
+                    'created_at' => isset($row['created_at']) && is_numeric($row['created_at'])
+                    ? Date::excelToDateTimeObject($row['created_at'])->format('Y-m-d H:i:s')
+                    : (is_string($row['created_at']) ? $row['created_at'] : now()->format('Y-m-d H:i:s')),
                 ]);
 
-                Log::info('Order created successfully for row:', $row->toArray());
+                // Log::info('Order created successfully for row:', $row->toArray());
             } catch (\Exception $e) {
-                // Add the error to the $errors array
                 $this->errors[] = [
-                    'row' => $index + 2, // Row number in the Excel file
+                    'row' => $index + 2,
                     'error' => $e->getMessage(),
                 ];
             }
         }
     }
+
 
     public function sheets(): array
     {

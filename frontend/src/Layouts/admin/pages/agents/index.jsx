@@ -56,91 +56,82 @@ export default function Index() {
 
 
   // ------------------ update Agent : id ----------------------
-  const UpdateAgentForm = ({ closeModal , id }) => {
-
+  const UpdateAgentForm = ({ closeModal, id }) => {
     const Agent = elements.find((element) => element.id === id);
-
+  
     const formCreate = useForm({
       initialValues: {
         name: Agent.name,
-        email: Agent.email
+        email: Agent.email,
       },
       validate: {
         name: (value) =>
-          value.length < 3 ? 'Name must have at least 3 letters' : null,
+          value.length < 3 ? 'Le nom doit comporter au moins 3 lettres' : null,
         email: (value) =>
-          /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
+          /^\S+@\S+$/.test(value) ? null : 'Adresse e-mail invalide',
       },
     });
   
     const handleSubmit = async (values) => {
       try {
-        // Make API call to create the agent
-        const { data } = await agents.update(id , values);
-    
+        // Make API call to update the agent
+        const { data } = await agents.update(id, values);
+  
         console.log(data);
         setRerender(!Rerender);
         // Show success notification
         notifications.show({
-          message: 'Agent updated successfully!',
+          message: 'Agent mis à jour avec succès !',
           color: 'green',
         });
-    
+  
         // Reset form and close modal on success
         formCreate.reset();
         closeModal();
       } catch (error) {
         // Log the error for debugging
-        console.error('Error updating agent:', error);
-    
+        console.error('Erreur lors de la mise à jour de l\'agent :', error);
+  
         // Display failure notification
         notifications.show({
-          message: error?.response?.data?.message || 'Failed to update agent. Please try again.',
+          message: error?.response?.data?.message || 'Échec de la mise à jour de l\'agent. Veuillez réessayer.',
           color: 'red',
         });
       }
     };
-    
   
     const handleError = (errors) => {
-      // console.log('Validation errors:', errors);
       notifications.show({
-        message: 'Please fix the validation errors before submitting.',
+        message: 'Veuillez corriger les erreurs de validation avant de soumettre.',
         color: 'red',
       });
     };
   
     return (
       <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
-        
         <TextInput
-          label="Name"
+          label="Nom"
           withAsterisk
           mt="sm"
-          placeholder="example"
+          placeholder="exemple"
           data-autofocus
           {...formCreate.getInputProps('name')}
         />
-
+  
         <TextInput
-          label="Email"
+          label="E-mail"
           withAsterisk
           mt="sm"
-          placeholder="example@example.com"
+          placeholder="exemple@exemple.com"
           {...formCreate.getInputProps('email')}
         />
-
+  
         <Button type="submit" fullWidth mt="md">
-          Update
+          Mettre à jour
         </Button>
-
-        <Button
-          fullWidth
-          mt="md"
-          variant="outline"
-          onClick={closeModal}
-        >
-          Cancel
+  
+        <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
+          Annuler
         </Button>
       </form>
     );
@@ -148,11 +139,9 @@ export default function Index() {
   
   const UpdateAgentModal = (id) => {
     modals.open({
-      title: 'Update Agent',
+      title: 'Mettre à jour l\'agent',
       centered: true,
-      children: (
-        <UpdateAgentForm id={id} closeModal={() => modals.closeAll()} />
-      ),
+      children: <UpdateAgentForm id={id} closeModal={() => modals.closeAll()} />,
     });
   };
   // ------------------ update Agent : id ----------------------
@@ -172,13 +161,13 @@ export default function Index() {
       },
       validate: {
         name: (value) =>
-          value.length < 3 ? 'Name must have at least 3 letters' : null,
+          value.length < 3 ? 'Le nom doit comporter au moins 3 lettres' : null,
         email: (value) =>
-          /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
+          /^\S+@\S+$/.test(value) ? null : 'Adresse e-mail invalide',
         password: (value) =>
-          value.length < 6 ? 'Password must be at least 6 characters' : null,
+          value.length < 6 ? 'Le mot de passe doit comporter au moins 6 caractères' : null,
         password_confirmation: (value, values) =>
-          value !== values.password ? 'Passwords do not match' : null,
+          value !== values.password ? 'Les mots de passe ne correspondent pas' : null,
       },
     });
   
@@ -186,35 +175,33 @@ export default function Index() {
       try {
         // Make API call to create the agent
         const { data } = await agents.post(values);
-    
+  
         console.log(data);
         setRerender(!Rerender);
         // Show success notification
         notifications.show({
-          message: 'Agent created successfully!',
+          message: 'Agent créé avec succès !',
           color: 'green',
         });
-    
+  
         // Reset form and close modal on success
         formCreate.reset();
         closeModal();
       } catch (error) {
         // Log the error for debugging
-        console.error('Error creating agent:', error);
-    
+        console.error('Erreur lors de la création de l\'agent :', error);
+  
         // Display failure notification
         notifications.show({
-          message: error?.response?.data?.message || 'Failed to create agent. Please try again.',
+          message: error?.response?.data?.message || 'Échec de la création de l\'agent. Veuillez réessayer.',
           color: 'red',
         });
       }
     };
-    
   
     const handleError = (errors) => {
-      // console.log('Validation errors:', errors);
       notifications.show({
-        message: 'Please fix the validation errors before submitting.',
+        message: 'Veuillez corriger les erreurs de validation avant de soumettre.',
         color: 'red',
       });
     };
@@ -222,46 +209,41 @@ export default function Index() {
     return (
       <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
         <TextInput
-          label="Name"
+          label="Nom"
           withAsterisk
           mt="sm"
-          placeholder="example"
+          placeholder="exemple"
           data-autofocus
           {...formCreate.getInputProps('name')}
         />
         <TextInput
-          label="Email"
+          label="E-mail"
           withAsterisk
           mt="sm"
-          placeholder="example@example.com"
+          placeholder="exemple@exemple.com"
           {...formCreate.getInputProps('email')}
         />
         <PasswordInput
-          label="Password"
+          label="Mot de passe"
           withAsterisk
           type="password"
           mt="sm"
-          placeholder="Enter password"
+          placeholder="Entrez un mot de passe"
           {...formCreate.getInputProps('password')}
         />
         <PasswordInput
-          label="Password Confirmation"
+          label="Confirmation du mot de passe"
           withAsterisk
           type="password"
           mt="sm"
-          placeholder="Confirm password"
+          placeholder="Confirmez le mot de passe"
           {...formCreate.getInputProps('password_confirmation')}
         />
         <Button type="submit" fullWidth mt="md">
-          Submit
+          Soumettre
         </Button>
-        <Button
-          fullWidth
-          mt="md"
-          variant="outline"
-          onClick={closeModal}
-        >
-          Cancel
+        <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
+          Annuler
         </Button>
       </form>
     );
@@ -269,11 +251,9 @@ export default function Index() {
   
   const CreateAgentModal = () => {
     modals.open({
-      title: 'Create New Agent',
+      title: 'Créer un nouvel agent',
       centered: true,
-      children: (
-        <CreateAgentForm closeModal={() => modals.closeAll()} />
-      ),
+      children: <CreateAgentForm closeModal={() => modals.closeAll()} />,
     });
   };
   // ------------------ create New Agent ----------------------
@@ -308,14 +288,14 @@ export default function Index() {
         setLoading(false);
       } catch (error) {
         setLoading(false);
-        notifications.show({ message: 'Error fetching data:' + error , color: 'red' });
+        notifications.show({ message: 'Erreur lors de la récupération des données:' + error , color: 'red' });
       }
     };
   // ------------------- feetch agents -------------------
 
 
-    // --------------------- export agents ---------------------  
-    const exportAgents = async () => {
+  // --------------------- export agents ---------------------  
+  const exportAgents = async () => {
       try {
           const response = await agents.exportAgent();
           // Create a URL for the downloaded file
@@ -327,7 +307,7 @@ export default function Index() {
           link.click();
           document.body.removeChild(link);
       } catch (error) {
-          console.error('Error exporting agents:', error);
+          console.error("Erreur lors de l'exportation des agents:", error);
       }
   };
   // --------------------- export agents --------------------- 
@@ -338,41 +318,40 @@ export default function Index() {
 
   // --------------------- delete actions --------------------- 
   const DeleteAgentModal = (id) => modals.openConfirmModal({
-    title: 'Confirm Deletion',
+    title: 'Confirmer la suppression',
     centered: true,
     children: (
       <Text size="sm">
-        Are you sure you want to delete this agent? <br />
-        NOTE : This action cannot be undone.
+        Êtes-vous sûr de vouloir supprimer cet agent ? <br />
+        REMARQUE : Cette action est irréversible.
       </Text>
     ),
-    labels: { confirm: 'Confirm', cancel: 'Cancel' },
-    onCancel: () => console.log('Cancel'),
+    labels: { confirm: 'Confirmer', cancel: 'Annuler' },
+    onCancel: () => console.log('Annulation'),
     onConfirm: () => {
       handleDelete(id);
     },
   });
   
-
   const handleDelete = async (id) => {
     try {
       const response = await agents.delete(id);
   
-      // Adjust pagination or fetch agents based on current conditions
+      // Ajuster la pagination ou récupérer les agents en fonction des conditions actuelles
       if (elements.length === 1 && activePage > 1) {
         setActivePage(activePage - 1);
       } else if (elements.length === 1 && activePage === 1) {
-        feetchAgents(1); // Refresh the first page
+        feetchAgents(1); // Actualiser la première page
         setActivePage(1);
       } else {
-        setElements(elements.filter(el => el.id !== id)); // Remove the deleted element from the list
+        setElements(elements.filter(el => el.id !== id)); // Supprimer l'élément supprimé de la liste
       }
   
-      // Show success notification
+      // Afficher une notification de succès
       notifications.show({ message: response.data.message, color: 'green' });
     } catch (error) {
-      // Show error notification
-      notifications.show({ message: error.response?.data?.message || 'An error occurred', color: 'red' });
+      // Afficher une notification d'erreur
+      notifications.show({ message: error.response?.data?.message || 'Une erreur s’est produite', color: 'red' });
     }
   };
   // --------------------- delete actions --------------------- 
@@ -392,7 +371,7 @@ export default function Index() {
 
 
   //---------------- data of agent ---------------------
-    const rows = elements.map((row) => {
+  const rows = elements.map((row) => {
     const totalOrders = row.Orders.retour + row.Orders.livré;
     const livréOrders = (row.Orders.livré / totalOrders) * 100;
     const retourOrders = (row.Orders.retour / totalOrders) * 100;
@@ -400,28 +379,30 @@ export default function Index() {
     return (
       <Table.Tr key={row.id}>
         <Table.Td>
-          <Anchor component="button" fz="sm">
-          {row.id + ' / '} {row.name}
-          </Anchor>
+            {row.name}
         </Table.Td>
         <Table.Td>{Intl.NumberFormat().format(row.Orders.orders_count)}</Table.Td>
         <Table.Td>
-          <Anchor component="button" fz="sm">
             {row.email}
-          </Anchor>
+        </Table.Td>
+        <Table.Td style={{color:'white' , background:'teal'}}>
+            {row.Orders.livré}
+        </Table.Td>
+        <Table.Td style={{color:'white' , background:'red'}}>
+            {row.Orders.retour}
         </Table.Td>
         <Table.Td>
           <Group justify="space-between">
-            <Text fz="xs" c="teal" fw={700}>
+            <Text fz="xs" c="teal.6" fw={700}>
               {livréOrders.toFixed(0)}%
             </Text>
-            <Text fz="xs" c="red" fw={700}>
+            <Text fz="xs" c="red.6" fw={700}>
               {retourOrders.toFixed(0)}%
             </Text>
           </Group>
           <Progress.Root>
-            <Progress.Section value={livréOrders} color="teal" />
-            <Progress.Section value={retourOrders} color="red" />
+            <Progress.Section value={livréOrders} color="teal.6" />
+            <Progress.Section value={retourOrders} color="red.6" />
           </Progress.Root>
         </Table.Td>
 
@@ -460,6 +441,12 @@ export default function Index() {
           <Skeleton height={16} width="60%" />
         </Table.Td>
         <Table.Td style={{ width: "30%" }}>
+          <Skeleton height={16} width="60%" />
+        </Table.Td>
+        <Table.Td style={{ width: "30%" }}>
+          <Skeleton height={16} width="60%" />
+        </Table.Td>
+        <Table.Td style={{ width: "30%" }}>
           <Group style={{ alignItems: "center" }}>
             <Skeleton height={16} width="70%" />
           </Group>
@@ -478,23 +465,23 @@ export default function Index() {
   return (
     <>
       <Text fw={700} fz="xl" mb="md">
-        Agents Management
+        Gestion des agents
       </Text>
+
       <SimpleGrid cols={{ base: 1, sm: 1 }} spacing="lg">
         {/* Actions Section */}
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
           
           <Paper style={styleCard}>
             <Flex gap="sm" align="center">
-              <Button onClick={CreateAgentModal} fullWidth variant="filled" color="blue" >
+              <Button onClick={CreateAgentModal} fullWidth variant="filled" color="blue">
                 <IconUserPlus stroke={2} />
               </Button>
               <Button onClick={exportAgents} fullWidth variant="outline">
-                Export
+                Exporter
               </Button>
             </Flex>
           </Paper>
-
 
 
 
@@ -504,7 +491,7 @@ export default function Index() {
               <TextInput
                 size="sm"
                 radius="md"
-                placeholder="Search for agents..."
+                placeholder="Rechercher des agents..."
                 rightSectionWidth={42}
                 leftSection={<IconSearch size={18} stroke={1.5} />}
                 {...formSearch.getInputProps('search')}
@@ -516,7 +503,7 @@ export default function Index() {
               />
             </form>
           </Paper>
-          
+
         </SimpleGrid>
 
             {
@@ -525,27 +512,32 @@ export default function Index() {
                   <Table striped highlightOnHover verticalSpacing="xs">
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th>Id/Name</Table.Th>
-                        <Table.Th>Total Orders</Table.Th>
+                        <Table.Th>Nom</Table.Th>
+                        <Table.Th>Total des commandes</Table.Th>
                         <Table.Th>Email</Table.Th>
-                        <Table.Th>Delivery Rate</Table.Th>
+                        <Table.Th>Total des commandes livrées</Table.Th>
+                        <Table.Th>Total des commandes retournées</Table.Th>
+                        <Table.Th>Taux de livraison</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
-                      {renderSkeletons()} {/* Call the renderSkeletons function */}
+                      {renderSkeletons()} {/* Appel de la fonction renderSkeletons */}
                     </Table.Tbody>
                   </Table>
                 </Table.ScrollContainer>
+
               ) : elements.length > 0 ? (
               <>
-              <Table.ScrollContainer style={styleCard} minWidth={800}>
+                <Table.ScrollContainer style={styleCard} minWidth={800}>
                   <Table striped highlightOnHover verticalSpacing="xs">
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th>Id/Name</Table.Th>
-                        <Table.Th>Total Orders</Table.Th>
+                        <Table.Th>Nom</Table.Th>
+                        <Table.Th>Total des commandes</Table.Th>
                         <Table.Th>Email</Table.Th>
-                        <Table.Th>Delivery Rate</Table.Th>
+                        <Table.Th>Total des commandes livrées</Table.Th>
+                        <Table.Th>Total des commandes retournées</Table.Th>
+                        <Table.Th>Taux de livraison</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody height={80}>
@@ -557,36 +549,38 @@ export default function Index() {
               ): (
           ( (search.length > 0 && elements.length === 0) || (search.length === 0 && elements.length === 0)) && (
               <>
-                <Table.ScrollContainer style={styleCard} minWidth={800}>
-                  <Table striped highlightOnHover verticalSpacing="xs">
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>Id/Name</Table.Th>
-                        <Table.Th>Total Orders</Table.Th>
-                        <Table.Th>Email</Table.Th>
-                        <Table.Th>Delivery Rate</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                  </Table>
-                  <div 
-                    style={{ 
-                      backgroundColor: '#dfdddd4c', 
-                      height: '500px', 
-                      display: 'flex', 
-                      justifyContent: 'center', 
-                      alignItems: 'center',
-                      borderRadius:'2px'
-                    }}
+              <Table.ScrollContainer style={styleCard} minWidth={800}>
+                <Table striped highlightOnHover verticalSpacing="xs">
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>Nom</Table.Th>
+                      <Table.Th>Total des commandes</Table.Th>
+                      <Table.Th>Email</Table.Th>
+                      <Table.Th>Total des commandes livrées</Table.Th>
+                      <Table.Th>Total des commandes retournées</Table.Th>
+                      <Table.Th>Taux de livraison</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                </Table>
+                <div 
+                  style={{ 
+                    backgroundColor: '#dfdddd4c', 
+                    height: '500px', 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    borderRadius: '2px'
+                  }}
+                >
+                  <Text 
+                    size="lg" 
+                    weight={500} 
+                    style={{ color: '#7d7d7d' }}
                   >
-                    <Text 
-                      size="lg" 
-                      weight={500} 
-                      style={{ color: '#7d7d7d' }}
-                    >
-                      No results found. Try adjusting your search criteria.
-                    </Text>
-                  </div>
-                </Table.ScrollContainer>
+                    Aucun résultat trouvé. Essayez d'ajuster vos critères de recherche.
+                  </Text>
+                </div>
+              </Table.ScrollContainer>
               </>
             )
           )

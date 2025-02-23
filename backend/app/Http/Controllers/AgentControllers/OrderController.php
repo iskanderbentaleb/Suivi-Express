@@ -24,8 +24,8 @@ class OrderController extends Controller
 
         // Build the query
         $query = Order::with(['status:id,status,colorHex', 'deliveryCompany:id,name,colorHex', 'affectedTo:id,name', 'createdBy:id,name'])
-            ->orderBy('created_at', 'desc')
-            ->where('affected_to', '=', auth()->id());
+            ->orderBy('created_at', 'desc');
+            // ->where('affected_to', '=', auth()->id());
 
         // Apply search filter if a search term exists
         if ($search) {
@@ -60,7 +60,7 @@ class OrderController extends Controller
 
     public function export()
     {
-        return Excel::download(new OrdersExport, 'orders.xlsx');
+        return Excel::download(new OrdersExport, 'commandes.xlsx');
     }
 
     public function tasktoday(Request $request)
@@ -150,38 +150,38 @@ class OrderController extends Controller
         return OrderResource::collection($orders);
     }
 
-
     public function update(Request $request, Order $order)
     {
+        // Ensure the order is assigned to the authenticated user
+        if ($order->affected_to !== auth()->id()) {
+            return response()->json([
+                'error' => 'Unauthorized action. This order is not assigned to you.'
+            ], 403);
+        }
+
         // Define validation rules
         $rules = [
-            'client_name' => ['required', 'string', 'min:3'], // At least 3 characters
-            'client_lastname' => ['nullable', 'string', 'min:3'], // Nullable but at least 3 characters if provided
-            'phone' => ['required', 'string', 'max:50', 'regex:/^[\d\s+-]+$/'], // Allows digits, spaces, '+' and '-'
-            'product_url' => ['nullable', 'string', 'min:3'], // Nullable but at least 3 characters if provided
+            'client_name' => ['required', 'string', 'min:3'],
+            'client_lastname' => ['nullable', 'string', 'min:3'],
+            'phone' => ['required', 'string', 'max:50', 'regex:/^[\d\s+-]+$/'],
+            'product_url' => ['nullable', 'string', 'min:3'],
         ];
 
-        // Validate the request data
         $validator = Validator::make($request->all(), $rules);
 
-        // If validation fails, throw an exception
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
 
-        // Get validated data
         $validated = $validator->validated();
 
-
-        // Update the order with validated data
         $order->update([
             'client_name' => $validated['client_name'],
-            'client_lastname' => $validated['client_lastname'] ?? null, // Use null if not provided
+            'client_lastname' => $validated['client_lastname'] ?? null,
             'phone' => $validated['phone'],
             'product_url' => $validated['product_url'],
         ]);
 
-        // Return a success response (e.g., JSON or redirect)
         return response()->json([
             'message' => 'Order updated successfully',
             'order' => $order,
@@ -190,26 +190,31 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
-        // Validate the incoming request data
+        // Ensure the order is assigned to the authenticated user
+        if ($order->affected_to !== auth()->id()) {
+            return response()->json([
+                'error' => 'Unauthorized action. This order is not assigned to you.'
+            ], 403);
+        }
+
+        // Validate the request
         $validator = Validator::make($request->all(), [
-            'statusId' => 'required|exists:status_orders,id', // 'status_orders' should be the table name for status options
+            'statusId' => 'required|exists:status_orders,id',
         ]);
 
-        // If validation fails, return errors
         if ($validator->fails()) {
             return response()->json([
                 'error' => $validator->errors()
             ], 400);
         }
 
-        // Update the order's status
         try {
-            $order->status_id = $request->statusId; // Ensure 'statusId' is correctly used here
+            $order->status_id = $request->statusId;
             $order->save();
 
             return response()->json([
                 'message' => 'Order status updated successfully',
-                'order' => $order // You can return the updated order details if needed
+                'order' => $order
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -218,12 +223,20 @@ class OrderController extends Controller
         }
     }
 
+
     public function getOrderHistory(Order $order)
     {
+        // Ensure the order is assigned to the authenticated user
+        if ($order->affected_to !== auth()->id()) {
+            return response()->json([
+                'error' => 'Unauthorized action. This order is not assigned to you.'
+            ], 403);
+        }
+
         $historyOrders = HistoryOrders::with(['reason', 'agent'])
-        ->where('order_id', $order->id)
-        ->orderBy('id', 'desc')
-        ->get();
+            ->where('order_id', $order->id)
+            ->orderBy('id', 'desc')
+            ->get();
 
         if ($historyOrders->isEmpty()) {
             return response()->json([
@@ -236,6 +249,5 @@ class OrderController extends Controller
             'message' => 'History orders retrieved successfully.',
         ], 200);
     }
-
 
 }

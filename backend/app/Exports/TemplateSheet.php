@@ -12,14 +12,14 @@ class TemplateSheet implements FromArray, WithStyles , WithTitle
     public function array(): array
     {
         return [
-            ['tracking', 'external_id', 'client_name', 'client_lastname', 'phone', 'product_url', 'status', 'affected_to', 'delivery_company'],
+            ['tracking', 'external_id', 'client_name', 'client_lastname', 'phone', 'product_url', 'status', 'affected_to', 'delivery_company' , 'archived' , 'created_at'],
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Apply styles to the header row
-        $sheet->getStyle('A1:I1')->applyFromArray([
+        $sheet->getStyle('A1:K1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -49,6 +49,8 @@ class TemplateSheet implements FromArray, WithStyles , WithTitle
         $sheet->getColumnDimension('G')->setWidth(20);
         $sheet->getColumnDimension('H')->setWidth(20);
         $sheet->getColumnDimension('I')->setWidth(20);
+        $sheet->getColumnDimension('J')->setWidth(20);
+        $sheet->getColumnDimension('K')->setWidth(20);
     }
 
     public function title(): string

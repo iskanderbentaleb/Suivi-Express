@@ -6,6 +6,7 @@ use App\Http\Controllers\MailController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReasonController;
 use App\Http\Controllers\StatusOrderController;
+use App\Http\Controllers\DashboardController;
 
 use App\Http\Controllers\AgentControllers\OrderController as OrderAgentController;
 use App\Http\Controllers\AgentControllers\ReasonController as ReasonAgentController;
@@ -13,7 +14,10 @@ use App\Http\Controllers\AgentControllers\StatusOrderController as StatusOrderAg
 use App\Http\Controllers\HistoryOrdersController;
 use App\Http\Controllers\AgentControllers\HistoryOrdersController as HistoryOrdersAgentController;
 use App\Http\Controllers\AgentControllers\MailController as MailControllerAgentController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AgentControllers\DashboardController as DashboardControllerAgentController;
+
+
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
@@ -47,6 +51,7 @@ Route::middleware(['auth:sanctum' , 'ability:admin'])->prefix('admin')->group(st
     Route::post('mails/sent-message', [MailController::class, 'sentMessages']);
 
 
+    // dashboard
     Route::get('dashboard', [DashboardController::class, 'index']);
     Route::post('dashboard', action: [DashboardController::class, 'getOrdersByYear']);
     Route::get('dashboard/getMinYear', [DashboardController::class, 'getMinYear']);
@@ -79,6 +84,10 @@ Route::middleware(['auth:sanctum' , 'ability:agent'])->prefix('agent')->group(st
     Route::get('mails/{orderId}', [MailControllerAgentController::class, 'selectedOrderMessagesInbox']); // Get all mails
     Route::post('mails/sent-message', [MailControllerAgentController::class, 'sentMessages']);
 
+    // dashboard
+    Route::get('dashboard', [DashboardControllerAgentController::class, 'index']);
+    Route::post('dashboard', action: [DashboardControllerAgentController::class, 'getOrdersByYear']);
+    Route::get('dashboard/getMinYear', [DashboardControllerAgentController::class, 'getMinYear']);
 
 });
 

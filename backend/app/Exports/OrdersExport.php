@@ -17,10 +17,17 @@ class OrdersExport implements FromCollection, WithHeadings, WithMapping, WithSty
      */
     public function collection()
     {
-        return Order::with(['status', 'createdBy', 'affectedTo', 'deliveryCompany'])
-        ->where('created_by', Auth::id()) // Filter orders for the authenticated user
-        ->get();
+        $query = Order::with(['status', 'createdBy', 'affectedTo', 'deliveryCompany']);
+
+        if (Auth::guard('agent')->check()) {
+            // The authenticated user is an agent
+            $query->where('affected_to', Auth::guard('agent')->id());
+        }
+        return $query->get();
     }
+
+
+
 
     /**
      * Define the headers for the Excel file.

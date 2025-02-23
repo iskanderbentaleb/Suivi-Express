@@ -38,7 +38,11 @@ class AgentController extends Controller
             },
             'orders as retour_count' => function ($q) {
                 $q->whereHas('status', function ($statusQuery) {
-                    $statusQuery->where('status', 'Retourné au vendeur');
+                    $statusQuery->where('status', [
+                        'Retourné au vendeur',
+                        'Retourné vers vendeur',
+                        'Retour à retirer'
+                    ]);
                 });
             },
             'orders as orders_count',

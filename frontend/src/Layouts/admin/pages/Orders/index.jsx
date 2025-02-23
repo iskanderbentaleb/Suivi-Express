@@ -46,6 +46,7 @@ import {
     const { user } = useUserContext() ;
 
 
+    const [loadingExport, setLoadingExport] = useState(false);
     const [activePage, setActivePage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [elements, setElements] = useState([]);
@@ -93,11 +94,9 @@ import {
   
     // ------------------ update Agent : id ----------------------
     const UpdateOrderForm = ({ closeModal, id }) => {
-
       // Fetch the order data based on the provided `id`
       const order = elements.find((element) => element.id === id);
-
-
+    
       const [deleveryCompaniesElement, setdeleveryCompaniesElement] = useState([]);
       const [agentsElement, setagentsElement] = useState([]);
     
@@ -112,13 +111,12 @@ import {
           setdeleveryCompaniesElement(companies);
         } catch (error) {
           notifications.show({
-            message: 'Error fetching delivery companies: ' + error,
+            message: 'Erreur lors de la récupération des sociétés de livraison : ' + error,
             color: 'red',
           });
         }
       };
-
-
+    
       const getAgent = async (search = '', page = 1) => {
         try {
           const response = await agents.index(page, search);
@@ -129,7 +127,7 @@ import {
           setagentsElement(data);
         } catch (error) {
           notifications.show({
-            message: 'Error fetching agents: ' + error,
+            message: 'Erreur lors de la récupération des agents : ' + error,
             color: 'red',
           });
         }
@@ -137,7 +135,7 @@ import {
     
       useEffect(() => {
         getDeleveryCompanies();
-        getAgent(order?.affected_to.name , 1);
+        getAgent(order?.affected_to.name, 1);
       }, []);
     
       // Initialize the form with the agent's existing data
@@ -154,37 +152,35 @@ import {
         },
         validate: {
           deleveryCompany: (value) =>
-            value.trim().length === 0 ? 'Delivery company is required' : null,
+            value.trim().length === 0 ? 'La société de livraison est requise' : null,
           tracking: (value) =>
-            value.trim().length === 0 ? 'Tracking is required' : null,
+            value.trim().length === 0 ? 'Le Tracking est requis' : null,
           external_id: (value) =>
-            value.trim().length > 255 ? 'External ID must not exceed 255 characters' : null,
+            value.trim().length > 255 ? 'L\'ID externe ne doit pas dépasser 255 caractères' : null,
           client_name: (value) =>
             value.trim().length === 0
-              ? 'Client name is required'
+              ? 'Le nom du client est requis'
               : value.trim().length < 3
-              ? 'Client name must have at least 3 characters'
+              ? 'Le nom du client doit comporter au moins 3 caractères'
               : null,
           client_lastname: (value) =>
             value.trim().length > 0 && value.trim().length < 3
-              ? 'Client last name must have at least 3 characters'
+              ? 'Le Prénom du client doit comporter au moins 3 caractères'
               : null,
           phone: (value) =>
             value.trim().length === 0
-              ? 'Phone number is required'
+              ? 'Le numéro de téléphone est requis'
               : value.trim().length > 50
-              ? 'Phone number must be 50 characters or less'
+              ? 'Le numéro de téléphone doit comporter 50 caractères ou moins'
               : !/^[\d\s+-]+$/.test(value)
-              ? 'Phone number contains invalid characters'
+              ? 'Le numéro de téléphone contient des caractères invalides'
               : null,
           affected_to: (value) =>
-            value.trim().length === 0 ? 'Affected to is required' : null,
-
+            value.trim().length === 0 ? 'L\'affectation est requise' : null,
           product_url: (value) =>
-            value.trim().length > 0 && value.trim().length < 5 
-              ? 'Product url must have at least 3 characters' 
+            value.trim().length > 0 && value.trim().length < 5
+              ? 'L\'URL du produit doit comporter au moins 3 caractères'
               : null, // Nullable, so no error if empty
-            
         },
       });
     
@@ -196,7 +192,7 @@ import {
           setRerender(!Rerender);
           // Show success notification
           notifications.show({
-            message: 'Agent updated successfully!',
+            message: 'Commande mise à jour avec succès !',
             color: 'green',
           });
     
@@ -205,11 +201,11 @@ import {
           closeModal();
         } catch (error) {
           // Log the error for debugging
-          console.error('Error updating agent:', error);
+          console.error('Erreur lors de la mise à jour de la commande :', error);
     
           // Display failure notification
           notifications.show({
-            message: error?.response?.data?.message || 'Failed to update agent. Please try again.',
+            message: error?.response?.data?.message || 'Échec de la mise à jour de la commande. Veuillez réessayer.',
             color: 'red',
           });
         }
@@ -217,7 +213,7 @@ import {
     
       const handleError = (errors) => {
         notifications.show({
-          message: 'Please fix the validation errors before submitting.',
+          message: 'Veuillez corriger les erreurs de validation avant de soumettre.',
           color: 'red',
         });
       };
@@ -226,14 +222,14 @@ import {
         <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
           {/* Delivery Company */}
           <Select
-            label="Delivery Company"
+            label="Société de livraison"
             withAsterisk
-            placeholder="Select a Delivery Company"
+            placeholder="Sélectionnez une société de livraison"
             checkIconPosition="right"
             data={deleveryCompaniesElement}
             searchable
             mt="sm"
-            nothingFoundMessage="Nothing found..."
+            nothingFoundMessage="Aucun résultat trouvé..."
             {...formCreate.getInputProps('deleveryCompany')}
           />
     
@@ -248,7 +244,7 @@ import {
     
           {/* External ID */}
           <TextInput
-            label="External ID"
+            label="ID externe"
             withAsterisk
             mt="sm"
             placeholder="web5010"
@@ -257,24 +253,24 @@ import {
     
           {/* Client Name */}
           <TextInput
-            label="Client Name"
+            label="Nom du client"
             withAsterisk
             mt="sm"
-            placeholder="First Name"
+            placeholder="Prénom"
             {...formCreate.getInputProps('client_name')}
           />
     
           {/* Client Lastname */}
           <TextInput
-            label="Client Lastname"
+            label="Prénom du client"
             mt="sm"
-            placeholder="Last Name"
+            placeholder="Prénom"
             {...formCreate.getInputProps('client_lastname')}
           />
     
           {/* Client Phone */}
           <TextInput
-            label="Client Phone"
+            label="Téléphone du client"
             withAsterisk
             mt="sm"
             placeholder="0501010011"
@@ -283,34 +279,34 @@ import {
     
           {/* Affected To */}
           <Select
-            label="Affected To"
+            label="Affecté à"
             withAsterisk
-            placeholder="Select an Agent"
+            placeholder="Sélectionnez un agent"
             checkIconPosition="right"
             data={agentsElement}
             searchable
             mt="sm"
             onSearchChange={(search) => getAgent(search)} // Pass the search value
-            nothingFoundMessage="Nothing found..."
+            nothingFoundMessage="Aucun résultat trouvé..."
             {...formCreate.getInputProps('affected_to')}
           />
-
+    
           {/* Product URL */}
           <TextInput
-            label="Product URL"
+            label="URL du produit"
             mt="sm"
-            placeholder="Product URL"
+            placeholder="URL du produit"
             {...formCreate.getInputProps('product_url')}
           />
     
           {/* Submit Button */}
           <Button type="submit" fullWidth mt="md">
-            Update
+            Mettre à jour
           </Button>
     
           {/* Cancel Button */}
           <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
-            Cancel
+            Annuler
           </Button>
         </form>
       );
@@ -318,12 +314,11 @@ import {
     
     const UpdateOrderModal = (id) => {
       modals.open({
-        title: 'Update Order',
+        title: 'Mettre à jour la commande',
         centered: true,
         children: <UpdateOrderForm id={id} closeModal={() => modals.closeAll()} />,
       });
     };
-    
     // ------------------ update Agent : id ----------------------
   
 
@@ -339,13 +334,13 @@ import {
     
         // Show success notification
         notifications.show({
-          message: 'Order archive status updated successfully!',
+          message: 'Statut d\'archivage de la commande mis à jour avec succès !',
           color: 'green',
         });
       } catch (error) {
         // Show error notification
         notifications.show({
-          message: `Failed to update order archive status: ${error.message}`,
+          message: `Échec de la mise à jour du statut d\'archivage de la commande : ${error.message}`,
           color: 'red',
         });
       }
@@ -357,11 +352,9 @@ import {
   
     // ------------------ create New Order ----------------------
     const CreateOrderForm = ({ closeModal }) => {
-      
       const [deleveryCompaniesElement, setdeleveryCompaniesElement] = useState([]);
       const [agentsElement, setagentsElement] = useState([]);
-      
-      
+    
       const formCreate = useForm({
         initialValues: {
           deleveryCompany: '',
@@ -373,223 +366,212 @@ import {
           affected_to: '',
           product_url: '',
         },
-        validate: {  
+        validate: {
           deleveryCompany: (value) =>
-            value.trim().length === 0 ? 'Delivery company is required' : null,
-
-          tracking: (value) => 
-            value.trim().length === 0 ? 'Tracking is required' : null,
-            
+            value.trim().length === 0 ? 'La société de livraison est requise' : null,
+    
+          tracking: (value) =>
+            value.trim().length === 0 ? 'Le Tracking est requis' : null,
+    
           external_id: (value) =>
-            value.trim().length > 255 ? 'External ID must not exceed 255 characters' : null,
-            
+            value.trim().length > 255 ? 'L\'ID externe ne doit pas dépasser 255 caractères' : null,
+    
           client_name: (value) =>
-            value.trim().length === 0 ? 'Client name is required' : 
-            value.trim().length < 3 ? 'Client name must have at least 3 characters' : null,
-      
-          client_lastname: (value) =>
-            value.trim().length > 0 && value.trim().length < 3 
-              ? 'Client last name must have at least 3 characters' 
-              : null, // Nullable, so no error if empty
-            
-          phone: (value) => 
-            value.trim().length === 0 
-              ? 'Phone number is required' 
-              : value.trim().length > 50 
-              ? 'Phone number must be 50 characters or less' 
-              : !/^[\d\s+-]+$/.test(value) 
-              ? 'Phone number contains invalid characters' 
+            value.trim().length === 0
+              ? 'Le nom du client est requis'
+              : value.trim().length < 3
+              ? 'Le nom du client doit comporter au moins 3 caractères'
               : null,
-
-          affected_to: (value) =>
-            value.trim().length === 0 ? 'Affected to is required' : null,
-
-          product_url: (value) =>
-            value.trim().length > 0 && value.trim().length < 5 
-              ? 'Product url must have at least 3 characters' 
+    
+          client_lastname: (value) =>
+            value.trim().length > 0 && value.trim().length < 3
+              ? 'Le Prénom du client doit comporter au moins 3 caractères'
               : null, // Nullable, so no error if empty
-            
+    
+          phone: (value) =>
+            value.trim().length === 0
+              ? 'Le numéro de téléphone est requis'
+              : value.trim().length > 50
+              ? 'Le numéro de téléphone doit comporter 50 caractères ou moins'
+              : !/^[\d\s+-]+$/.test(value)
+              ? 'Le numéro de téléphone contient des caractères invalides'
+              : null,
+    
+          affected_to: (value) =>
+            value.trim().length === 0 ? 'L\'affectation est requise' : null,
+    
+          product_url: (value) =>
+            value.trim().length > 0 && value.trim().length < 5
+              ? 'L\'URL du produit doit comporter au moins 3 caractères'
+              : null, // Nullable, so no error if empty
         },
       });
-      
     
-
       const handleSubmit = async (values) => {
         try {
           // Make API call to create the agent
           const { data } = await orders.post(values);
-      
+    
           console.log(data);
           setRerender(!Rerender);
           // Show success notification
           notifications.show({
-            message: 'Order created successfully!',
+            message: 'Commande créée avec succès !',
             color: 'green',
           });
-      
+    
           // Reset form and close modal on success
           formCreate.reset();
           closeModal();
         } catch (error) {
           // Log the error for debugging
-          console.error('Error creating order:', error);
-      
+          console.error('Erreur lors de la création de la commande :', error);
+    
           // Display failure notification
           notifications.show({
-            message: error?.response?.data?.message || 'Failed to create order. Please try again.',
+            message: error?.response?.data?.message || 'Échec de la création de la commande. Veuillez réessayer.',
             color: 'red',
           });
         }
       };
-      
     
       const handleError = (errors) => {
-        // console.log('Validation errors:', errors);
         notifications.show({
-          message: 'Please fix the validation errors before submitting.',
+          message: 'Veuillez corriger les erreurs de validation avant de soumettre.',
           color: 'red',
         });
       };
-
-
-
+    
       const getDeleveryCompanies = async () => {
         try {
           const response = await deleveryCompanies.index();
           const companies = response.data.map((company) => ({
             value: company.id.toString(), // Use `id` as the value
-            label: company.name,         // Use `name` as the label
+            label: company.name, // Use `name` as the label
           }));
           setdeleveryCompaniesElement(companies);
         } catch (error) {
-          notifications.show({ message: 'Error Delevery Companies data:' + error , color: 'red' });
+          notifications.show({ message: 'Erreur lors de la récupération des sociétés de livraison : ' + error, color: 'red' });
         }
       };
-
-      const getAgent = async (search = '' , page = 1) => {
+    
+      const getAgent = async (search = '', page = 1) => {
         try {
           const response = await agents.index(page, search); // Pass search value
           const data = response.data.data.map((agent) => ({
             value: agent.id.toString(), // Use `id` as the value
-            label: agent.name,         // Use `name` as the label
+            label: agent.name, // Use `name` as the label
           }));
           setagentsElement(data); // Update the `agentsElement` state
         } catch (error) {
-          notifications.show({ message: 'Error fetching agents: ' + error, color: 'red' });
+          notifications.show({ message: 'Erreur lors de la récupération des agents : ' + error, color: 'red' });
         }
       };
-
-
+    
       useEffect(() => {
         getDeleveryCompanies();
-        getAgent('',1)
+        getAgent('', 1);
       }, []);
-
-
-
     
       return (
-          <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
-            {/* Delivery Company */}
-            <Select
-              label="Delivery Company"
-              withAsterisk
-              placeholder="Select a Delivery Company"
-              checkIconPosition="right"
-              data={deleveryCompaniesElement}
-              searchable
-              mt="sm"
-              nothingFoundMessage="Nothing found..."
-              {...formCreate.getInputProps('deleveryCompany')}
-            />
-
-            {/* Tracking */}
-            <TextInput
-              label="Tracking"
-              withAsterisk
-              mt="sm"
-              placeholder="YAL-TAXKXD"
-              {...formCreate.getInputProps('tracking')}
-            />
-
-            {/* External ID */}
-            <TextInput
-              label="External ID"
-              withAsterisk
-              mt="sm"
-              placeholder="web5010"
-              {...formCreate.getInputProps('external_id')}
-            />
-
-            {/* Client Name */}
-            <TextInput
-              label="Client Name"
-              withAsterisk
-              mt="sm"
-              placeholder="First Name"
-              {...formCreate.getInputProps('client_name')}
-            />
-
-            {/* Client Lastname */}
-            <TextInput
-              label="Client Lastname"
-              mt="sm"
-              placeholder="Last Name"
-              {...formCreate.getInputProps('client_lastname')}
-            />
-
-            {/* Client Phone */}
-            <TextInput
-              label="Client Phone"
-              withAsterisk
-              mt="sm"
-              placeholder="0501010011"
-              {...formCreate.getInputProps('phone')}
-            />
-
-            {/* Affected To */}
-            <Select
-              label="Affected To"
-              withAsterisk
-              placeholder="Select an Agent"
-              checkIconPosition="right"
-              data={agentsElement}
-              searchable
-              mt="sm"
-              onSearchChange={(search) => getAgent(search)} // Pass the search value
-              nothingFoundMessage="Nothing found..."
-              {...formCreate.getInputProps('affected_to')}
-            />
-            
-            {/* Product URL */}
-            <TextInput
-              label="Product URL"
-              mt="sm"
-              placeholder="Product URL"
-              {...formCreate.getInputProps('product_url')}
-            />
-
-
-            {/* Submit Button */}
-            <Button type="submit" fullWidth mt="md">
-              Submit
-            </Button>
-
-            {/* Cancel Button */}
-            <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
-              Cancel
-            </Button>
-          </form>
+        <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
+          {/* Delivery Company */}
+          <Select
+            label="Société de livraison"
+            withAsterisk
+            placeholder="Sélectionnez une société de livraison"
+            checkIconPosition="right"
+            data={deleveryCompaniesElement}
+            searchable
+            mt="sm"
+            nothingFoundMessage="Aucun résultat trouvé..."
+            {...formCreate.getInputProps('deleveryCompany')}
+          />
+    
+          {/* Tracking */}
+          <TextInput
+            label="Tracking"
+            withAsterisk
+            mt="sm"
+            placeholder="YAL-TAXKXD"
+            {...formCreate.getInputProps('tracking')}
+          />
+    
+          {/* External ID */}
+          <TextInput
+            label="ID externe"
+            withAsterisk
+            mt="sm"
+            placeholder="web5010"
+            {...formCreate.getInputProps('external_id')}
+          />
+    
+          {/* Client Name */}
+          <TextInput
+            label="Nom du client"
+            withAsterisk
+            mt="sm"
+            placeholder="Prénom"
+            {...formCreate.getInputProps('client_name')}
+          />
+    
+          {/* Client Lastname */}
+          <TextInput
+            label="Prénom du client"
+            mt="sm"
+            placeholder="Prénom"
+            {...formCreate.getInputProps('client_lastname')}
+          />
+    
+          {/* Client Phone */}
+          <TextInput
+            label="Téléphone du client"
+            withAsterisk
+            mt="sm"
+            placeholder="0501010011"
+            {...formCreate.getInputProps('phone')}
+          />
+    
+          {/* Affected To */}
+          <Select
+            label="Affecté à"
+            withAsterisk
+            placeholder="Sélectionnez un agent"
+            checkIconPosition="right"
+            data={agentsElement}
+            searchable
+            mt="sm"
+            onSearchChange={(search) => getAgent(search)} // Pass the search value
+            nothingFoundMessage="Aucun résultat trouvé..."
+            {...formCreate.getInputProps('affected_to')}
+          />
+    
+          {/* Product URL */}
+          <TextInput
+            label="URL du produit"
+            mt="sm"
+            placeholder="URL du produit"
+            {...formCreate.getInputProps('product_url')}
+          />
+    
+          {/* Submit Button */}
+          <Button type="submit" fullWidth mt="md">
+            Soumettre
+          </Button>
+    
+          {/* Cancel Button */}
+          <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
+            Annuler
+          </Button>
+        </form>
       );
     };
     
     const CreateOrderModal = () => {
       modals.open({
-        title: 'Create New Order',
+        title: 'Créer une nouvelle commande',
         centered: true,
-        children: (
-          <CreateOrderForm closeModal={() => modals.closeAll()} />
-        ),
+        children: <CreateOrderForm closeModal={() => modals.closeAll()} />,
       });
     };
     // ------------------ create New Order ----------------------
@@ -620,11 +602,11 @@ import {
         const { data } = await orders.tasktoday(page, search);
         // console.log(data.data)
         setElements(data.data);
-        setTotalPages(data.meta.last_page || 1); // Update total pages
+        setTotalPages(data.meta.last_page || 1); // Mettre à jour le nombre total de pages
         setLoading(false);
       } catch (error) {
         setLoading(false);
-        notifications.show({ message: 'Error fetching orders :' + error , color: 'red' });
+        notifications.show({ message: 'Erreur lors de la récupération des commandes : ' + error, color: 'red' });
       }
     };
     // ------------------- feetch task today  -------------------
@@ -632,35 +614,38 @@ import {
 
   
     // ------------------- feetch orders -------------------
-      const feetchOrders = async (page = 1) => {
-        setLoading(true);
-        try {
-          const { data } = await orders.index(page, search);
-          // console.log(data.data)
-          setElements(data.data);
-          setTotalPages(data.meta.last_page || 1); // Update total pages
-          setLoading(false);
-        } catch (error) {
-          setLoading(false);
-          notifications.show({ message: 'Error fetching orders :' + error , color: 'red' });
-        }
-      };
+    const feetchOrders = async (page = 1) => {
+      setLoading(true);
+      try {
+        const { data } = await orders.index(page, search);
+        // console.log(data.data)
+        setElements(data.data);
+        setTotalPages(data.meta.last_page || 1); // Mettre à jour le nombre total de pages
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        notifications.show({ message: 'Erreur lors de la récupération des commandes : ' + error, color: 'red' });
+      }
+    };
     // ------------------- feetch orders -------------------
   
 
     // ------------------- export orders -------------------
     const exportOrders = async () => {
+      setLoadingExport(true)
       try {
-          const response = await orders.exportOrders();
-          const url = window.URL.createObjectURL(new Blob([response.data]));
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', 'orders.xlsx');
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+        const response = await orders.exportOrders();
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'commandes.xlsx'); // Changed "orders.xlsx" to "commandes.xlsx"
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setLoadingExport(false);
       } catch (error) {
-          console.error('Error exporting orders:', error);
+        console.error('Erreur lors de l\'exportation des commandes :', error);
+        setLoadingExport(false);
       }
     };
     // ------------------- export orders -------------------
@@ -674,142 +659,141 @@ import {
       const [error, setError] = useState(null);
       const [success, setSuccess] = useState(null);
       const [errors, setErrors] = useState([]);
-  
+    
       // API request function
       const importOrders = async () => {
-          if (!file) {
-              setError('Please select a file to upload.');
-              return;
-          }
-  
-          const formData = new FormData();
-          formData.append('file', file);
-  
-          try {
-              setLoading(true);
-              setError(null);
-              setSuccess(null);
-  
-              const response = await orders.importOrders(file);
-              console.log(response.data);
-  
-              if (response.data.errors) {
-                  // If there are errors, display them
-                  setError(response.data.message);
-                  setErrors(response.data.errors); // Store the errors for detailed display
-              } else {
-                  // If no errors, show success message
-                  setSuccess(response.data.message || 'File imported successfully.');
-              }
-          } catch (err) {
-              setError(err.response?.data?.error || 'Failed to import orders. Please try again.');
-          } finally {
-              setLoading(false);
-              setRerender(!Rerender);
-              setFile(null);
-          }
-      };
-  
-      const handleDrop = (files) => {
-          if (files.length > 0) {
-              setFile(files[0]);
-              setError(null);
-          }
-      };
-  
-      const handleReject = () => {
-          setFile(null);
-          setError('Invalid file type. Please upload a valid Excel file (.xlsx).');
-      };
-
-
-      const exportOrdersTemplate = async () => {
+        if (!file) {
+          setError('Veuillez sélectionner un fichier à importer.');
+          return;
+        }
+    
+        const formData = new FormData();
+        formData.append('file', file);
+    
         try {
-            const response = await orders.exportOrdersTemplate();
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'order_template.xlsx');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            console.error('Error exporting order template:', error);
+          setLoading(true);
+          setError(null);
+          setSuccess(null);
+    
+          const response = await orders.importOrders(file);
+          console.log(response.data);
+    
+          if (response.data.errors) {
+            // If there are errors, display them
+            setError(response.data.message);
+            setErrors(response.data.errors); // Store the errors for detailed display
+          } else {
+            // If no errors, show success message
+            setSuccess(response.data.message || 'Fichier importé avec succès.');
+          }
+        } catch (err) {
+          setError(err.response?.data?.error || 'Échec de l\'importation des commandes. Veuillez réessayer.');
+        } finally {
+          setLoading(false);
+          setRerender(!Rerender);
+          setFile(null);
         }
       };
-
+    
+      const handleDrop = (files) => {
+        if (files.length > 0) {
+          setFile(files[0]);
+          setError(null);
+        }
+      };
+    
+      const handleReject = () => {
+        setFile(null);
+        setError('Type de fichier invalide. Veuillez télécharger un fichier Excel valide (.xlsx).');
+      };
+    
+      const exportOrdersTemplate = async () => {
+        try {
+          const response = await orders.exportOrdersTemplate();
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'modele_commande.xlsx'); // Changed "order_template.xlsx" to "modele_commande.xlsx"
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch (error) {
+          console.error('Erreur lors de l\'exportation du modèle de commande :', error);
+        }
+      };
+    
       return (
-          <>
-              <Dropzone
-                  onDrop={handleDrop}
-                  onReject={handleReject}
-                  accept={MS_EXCEL_MIME_TYPE}
-                  maxSize={5 * 1024 * 1024} // 5MB file size limit
-              >
-                  <Group justify="center" gap="xl" mih={220} style={{ pointerEvents: 'none' }}>
-                      <Dropzone.Accept>
-                          <IconUpload style={{ width: 52, height: 52, color: 'var(--mantine-color-blue-6)' }} stroke={1.5} />
-                      </Dropzone.Accept>
-                      <Dropzone.Reject>
-                          <IconX style={{ width: 52, height: 52, color: 'var(--mantine-color-red-6)' }} stroke={1.5} />
-                      </Dropzone.Reject>
-                      <Dropzone.Idle>
-                          <IconFileUpload style={{ width: 52, height: 52, color: 'var(--mantine-color-dimmed)' }} stroke={1.5} />
-                      </Dropzone.Idle>
-  
-                      <div>
-                          <Text size="sm" inline>
-                              Drag Excel (.xlsx) file here or click to select files
-                          </Text>
-                          <Text size="xs" color="dimmed">
-                              File size should not exceed 5MB
-                          </Text>
-                      </div>
-                  </Group>
-              </Dropzone>
-  
-              {/* Error and Success Alerts */}
-              {file !== null && (<Alert color="green" mt="md">File {file.name} has been successfully uploaded.</Alert>)}
-              {error && <Alert color="red" mt="md">{error}</Alert>}
-              {success && <Alert color="green" mt="md">{success}</Alert>}
-
-              {errors.length > 0 && (
-                <Alert color="red" mt="md">
-                    <List size="sm" spacing="xs"> {/* Make the list smaller and reduce spacing */}
-                        {errors.map((error, index) => (
-                            <List.Item key={index}>
-                                <Text size="sm">Row {error.row}:</Text> {/* Smaller text size */}
-                                {Object.entries(error.errors).map(([field, messages]) => (
-                                    <Text size="sm" key={field}> {/* Smaller text size */}
-                                        {field}: {messages.join(', ')}
-                                    </Text>
-                                ))}
-                            </List.Item>
-                        ))}
-                    </List>
-                </Alert>
-            )}
-  
-              {/* Submit and Cancel Buttons */}
-              <Button fullWidth mt="md" onClick={importOrders} disabled={loading}>
-                  {loading ? <Loader size="sm" /> : 'Submit'}
-              </Button>
-              <Button onClick={exportOrdersTemplate} fullWidth mt="md" variant="outline" color='red'>
-                  Download template
-              </Button>
-              <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
-                  Cancel
-              </Button>
-          </>
+        <>
+          <Dropzone
+            onDrop={handleDrop}
+            onReject={handleReject}
+            accept={MS_EXCEL_MIME_TYPE}
+            maxSize={5 * 1024 * 1024} // 5MB file size limit
+          >
+            <Group justify="center" gap="xl" mih={220} style={{ pointerEvents: 'none' }}>
+              <Dropzone.Accept>
+                <IconUpload style={{ width: 52, height: 52, color: 'var(--mantine-color-blue-6)' }} stroke={1.5} />
+              </Dropzone.Accept>
+              <Dropzone.Reject>
+                <IconX style={{ width: 52, height: 52, color: 'var(--mantine-color-red-6)' }} stroke={1.5} />
+              </Dropzone.Reject>
+              <Dropzone.Idle>
+                <IconFileUpload style={{ width: 52, height: 52, color: 'var(--mantine-color-dimmed)' }} stroke={1.5} />
+              </Dropzone.Idle>
+    
+              <div>
+                <Text size="sm" inline>
+                  Glissez un fichier Excel (.xlsx) ici ou cliquez pour sélectionner un fichier
+                </Text>
+                <Text size="xs" color="dimmed">
+                  La taille du fichier ne doit pas dépasser 5 Mo
+                </Text>
+              </div>
+            </Group>
+          </Dropzone>
+    
+          {/* Error and Success Alerts */}
+          {file !== null && <Alert color="green" mt="md">Le fichier {file.name} a été téléchargé avec succès.</Alert>}
+          {error && <Alert color="red" mt="md">{error}</Alert>}
+          {success && <Alert color="green" mt="md">{success}</Alert>}
+    
+          {errors.length > 0 && (
+            <Alert color="red" mt="md">
+              <List size="sm" spacing="xs">
+                {errors.map((error, index) => (
+                  <List.Item key={index}>
+                    <Text size="sm">Ligne {error.row} :</Text>
+                    {Object.entries(error.errors).map(([field, messages]) => (
+                      <Text size="sm" key={field}>
+                        {field} : {messages.join(', ')}
+                      </Text>
+                    ))}
+                  </List.Item>
+                ))}
+              </List>
+            </Alert>
+          )}
+    
+          {/* Submit and Cancel Buttons */}
+          <Button fullWidth mt="md" onClick={importOrders} disabled={loading}>
+            {loading ? <Loader size="sm" /> : 'Soumettre'}
+          </Button>
+          <Button onClick={exportOrdersTemplate} fullWidth mt="md" variant="outline" color="red">
+            Télécharger le modèle
+          </Button>
+          <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
+            Annuler
+          </Button>
+        </>
       );
     };
-  
+    
     const ImportOrdersModal = () => {
-        modals.open({
-            title: 'Import Orders',
-            centered: true,
-            children: <ImportOrdersForm closeModal={() => modals.closeAll()} />,
-        });
+      modals.open({
+        title: 'Importer des commandes',
+        centered: true,
+        children: <ImportOrdersForm closeModal={() => modals.closeAll()} />,
+      });
     };
     // ------------------- import orders -------------------
 
@@ -817,22 +801,21 @@ import {
   
     // --------------------- delete actions --------------------- 
     const DeleteOrderModal = (id) => modals.openConfirmModal({
-      title: 'Confirm Deletion',
+      title: 'Confirmer la suppression',
       centered: true,
       children: (
         <Text size="sm">
-          Are you sure you want to delete this order ? <br />
-          NOTE : This action cannot be undone.
+          Êtes-vous sûr de vouloir supprimer cette commande ? <br />
+          REMARQUE : Cette action est irréversible.
         </Text>
       ),
-      labels: { confirm: 'Confirm', cancel: 'Cancel' },
-      onCancel: () => console.log('Cancel'),
+      labels: { confirm: 'Confirmer', cancel: 'Annuler' },
+      onCancel: () => console.log('Annuler'),
       onConfirm: () => {
         handleDelete(id);
       },
     });
     
-  
     const handleDelete = async (id) => {
       try {
         const response = await orders.delete(id);
@@ -852,7 +835,7 @@ import {
         notifications.show({ message: response.data.message, color: 'green' });
       } catch (error) {
         // Show error notification
-        notifications.show({ message: error.response?.data?.message || 'An error occurred', color: 'red' });
+        notifications.show({ message: error.response?.data?.message || 'Une erreur s\'est produite', color: 'red' });
       }
     };
     // --------------------- delete actions --------------------- 
@@ -881,7 +864,7 @@ import {
         setStatusOrderIndex(filteredStatusOrders);
 
       } catch (error) {
-        notifications.show({ message: 'Error get status orders data:' + error , color: 'red' });
+        notifications.show({ message: 'Erreur lors de la récupération des données du statut des commandes : ' + error, color: 'red' });
       }
     };
   // ------------------ get status order  ----------------------
@@ -893,46 +876,45 @@ import {
 
 
   // ------------------ update status order  -------------------
-    const UpdateOrderStatus = async (orderId, statusId) => {
-      try {
-        // Step 1: Update the order status
-        const updateStatusRequest = orders.updateStausOrder(orderId, { statusId });
-    
-        // Step 2: Create a new HistoryOrder with status_order_id, history_judge = false, and order_id
-        const historyData = {
-          status_order_id: statusId,
-          order_id: orderId,
-          history_judge: false,
-          note: "Order status updated", // Optional: You can add additional notes here
-          timetook: "00:00:00", // Optional: If you want to set a time, adjust accordingly
-        };
-    
-        const createHistoryRequest = historyOrders.post(historyData);
-    
-        // Wait for both requests to be successful
-        const [statusData, historyDataResponse] = await Promise.all([updateStatusRequest, createHistoryRequest]);
-    
-        // If both requests are successful, trigger re-render
-        console.log(statusData);
-        console.log(historyDataResponse);
-    
-        // Step 3: Trigger re-render (assuming you want to refresh some UI state)
-        setRerender(!Rerender);
-    
-        // Show success notification
-        notifications.show({
-          message: 'Order status updated and history created successfully!',
-          color: 'green',
-        });
-        
-      } catch (error) {
-        // Handle error and show notification
-        notifications.show({
-          message: `Failed to update order status or create history: ${error.message}`,
-          color: 'red',
-        });
-      }
-    };
+  const UpdateOrderStatus = async (orderId, statusId) => {
+    try {
+      // Step 1: Update the order status
+      const updateStatusRequest = orders.updateStausOrder(orderId, { statusId });
+  
+      // Step 2: Create a new HistoryOrder with status_order_id, history_judge = false, and order_id
+      const historyData = {
+        status_order_id: statusId,
+        order_id: orderId,
+        history_judge: false,
+        note: "Statut de la commande mis à jour", // Optional: You can add additional notes here
+        timetook: "00:00:00", // Optional: If you want to set a time, adjust accordingly
+      };
+  
+      const createHistoryRequest = historyOrders.post(historyData);
+  
+      // Wait for both requests to be successful
+      const [statusData, historyDataResponse] = await Promise.all([updateStatusRequest, createHistoryRequest]);
+  
+      // If both requests are successful, trigger re-render
+      console.log(statusData);
+      console.log(historyDataResponse);
+  
+      // Step 3: Trigger re-render (assuming you want to refresh some UI state)
+      setRerender(!Rerender);
+  
+      // Show success notification
+      notifications.show({
+        message: 'Statut de la commande mis à jour et historique créé avec succès !',
+        color: 'green',
+      });
+    } catch (error) {
+      // Handle error and show notification
+      notifications.show({
+        message: `Échec de la mise à jour du statut de la commande ou de la création de l'historique : ${error.message}`,
+        color: 'red',
+      });
+    }
+  };
   // ------------------ update status order  -------------------
   
   
@@ -940,320 +922,278 @@ import {
 
 
   // ------------------ Call Model ----------------------
-    const CallModelComponent = ({ closeModal, id }) => {
-      const [history, setHistory] = useState([]);
-      const [reasonCalls, setReasonCalls] = useState([]); 
-      const [loadingHistory, setLoadingHistory] = useState(false); 
-      const [LoadingValidate, setLoadingValidate] = useState(false); 
-      const [statusOrder , setStatusOrder] = useState([]);
-      const [selectedStatus, setSelectedStatus] = useState('');
-
-      const formCreate = useForm({
-        initialValues: {
-          status_order_id: '',
-          reason_id: '',
-          note: '',
-          history_judge:true,
-          order_id:id,
-          timetook: "00:00:00",
-        },
-        validate: {
-          status_order_id: (value) =>
-            value.trim().length === 0 ? 'Status is required' : null,
-          note: (value) =>
-            value.trim().length < 2
-              ? 'note must be at least 2 characters long'
-              : null,
-        },
-      });
-
-      // Fetch history orders
-      const fetchHistory = async () => {
-        setLoadingHistory(true);
-        try {
-          const { data } = await orders.order_history(id);
-          setHistory(data.data); // Use the correct response structure
-        } catch (error) {
-          console.error('Error fetching order history:', error.message)
-        } finally {
-          setLoadingHistory(false);
-        }
-      };
-
-      // Fetch calls Resons
-      const fetchReasonscalls = async () => {
-        setLoadingHistory(true);
-        try {
-          const response = await orders.ReasonsCall();
-          const formattedData = response.data.map((item) => ({
-            value: item.id.toString(), // Use the correct field for value
-            label: item.reason, // Use the correct field for label
-          }));
-          setReasonCalls(formattedData); // Update state with formatted data
-        } catch (error) {
-          console.error('Error fetching order history:', error.message)
-        } finally {
-          setLoadingHistory(false);
-        }
-      };
-    
-      // handle validate
-      const handle_validate = async (id) => {
-        setLoadingHistory(true);
-        setLoadingValidate(!LoadingValidate)
-        try {
-          await historyOrders.update_history_validator(id);
-        } catch (error) {
-          console.error('Error fetching order history:', error.message)
-        } finally {
-          setLoadingHistory(false);
-          setLoadingValidate(!LoadingValidate)
-          setRerender(!Rerender);
-        }
-      };
-
-      // handle status orders data (filtered)
-      const handleStatusOrdersData = () => {
-        const filteredStatusOrders = StatusOrdersdata.filter(
-          (item) =>
-            item.label === "Tentative échouée" ||
-            item.label === "En attente du client" ||
-            item.label === "Échec livraison"
-        );
-      
-        setStatusOrder((prevState) => [...prevState, ...filteredStatusOrders]);
-      };
-
-      // handle submit call form
-      const handleSubmit = async (values) => {
-        try {
-          // Make API call add history order
-          await historyOrders.post(values);
-
-          // Make API call update order status
-          await orders.updateStausOrder(id , { statusId : values.status_order_id});
-      
-          // Show success notification
-          notifications.show({
-            message: 'History Order created successfully!',
-            color: 'green',
-          });
-          
-          setRerender(!Rerender);
-      
-          // Reset form and close modal on success
-          formCreate.reset();
-          closeModal();
-        } catch (error) {
-          // Log the error for debugging
-          console.error('Error creating order:', error);
-      
-          // Display failure notification
-          notifications.show({
-            message: error?.response?.data?.message || 'Failed to create order. Please try again.',
-            color: 'red',
-          });
-        }
-      };
-
-      useEffect(() => {
-        console.log(selectedStatus)
-        formCreate.setFieldValue('reason', '');
-      }, [selectedStatus]);
-      
-
-      useEffect(() => {
-        handleStatusOrdersData();
-        fetchReasonscalls();
-        fetchHistory();
-      }, [LoadingValidate]);
-
-
-      return (
-        <div>
-          {loadingHistory ? (
-            <Center style={{ height: '10vh' }}>
-              <Loader color="blue" type="bars" />
-            </Center>
-          ) : (
-            <>
-              <form onSubmit={formCreate.onSubmit(handleSubmit)}>
-
-                    <NativeSelect
-                      label="Status Order"
-                      placeholder="Select status"
-                      withAsterisk
-                      data={[{ value: '', label: 'Select status' , disabled: true }, ...statusOrder]} // Add an empty option
-                      value={formCreate.values.status_order_id || ''} // Ensure value defaults to an empty string
-                      onChange={(event) => {
-                        const selectedValue = event.currentTarget.value; // Get the selected value
-                        const selectedLabel = statusOrder.find((item) => item.value === selectedValue)?.label || ''; // Find the corresponding label
-
-                        setSelectedStatus(selectedLabel); // Update custom label state
-                        formCreate.setFieldValue('status_order_id', selectedValue); // Update form field value
-                      }}
-                    />
-
-
-                    {/* Reason */}
-                    {['Échec livraison', 'Tentative échouée'].includes(selectedStatus) && (
-                      <NativeSelect
-                        label="Reason"
-                        placeholder="Select Reason"
-                        withAsterisk
-                        data={reasonCalls} // The data source for the dropdown
-                        value={formCreate.values.reason_id || ''} // Explicitly bind the form field
-                        onChange={(event) => formCreate.setFieldValue('reason_id', event.currentTarget.value)} // Update form value
-                        mt="sm"
-                      />
-                    )}
-
-                    {/* Agent Note */}
-                    <Textarea
-                      label="Note"
-                      placeholder="Add your note here..."
-                      withAsterisk
-                      mt="sm"
-                      {...formCreate.getInputProps('note')}
-                    />
-
-
-                    {/* Buttons */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', whiteSpace: 'nowrap', marginTop: '1rem' }}>
-                      <Button fullWidth variant="outline" onClick={closeModal}>
-                        Cancel
-                      </Button>
-                      <Button fullWidth type="submit">
-                        Submit
-                      </Button>
-                    </div>
-
-              </form>
-
-
-              {/* History Timeline */}
-              <div>
-                <Paper withBorder radius="md" shadow="sm" p="xl" mt={20}>
-                  {history.length === 0 ? (
-                    // Display this message if history is empty
-                    <Text color="dimmed" size="sm" align="center">
-                      No history yet.
-                    </Text>
-                  ) : (
-                    // Render the Timeline if there are history items
-                    <Timeline radius={'sm'} lineWidth={0.5} bulletSize={35} active={history.length} style={{ maxHeight: '40vh', overflowY: 'auto' }}>
-                      {history.map((item) => (
-                        <Timeline.Item
-                          key={item.id}
-                          title={
-                            <Group spacing="sm">
-                              <Text weight={700} size="lg">
-                              {
-                                item.status?.status ? 
-                                  `${item.status.status}${item.reason?.reason ? ` (${item.reason.reason})` : ''}`
-                                : 'No status provided'
-                              }
-                              </Text>
-                              <Text size="xs" color="dimmed">
-                                {item.created_at}
-                              </Text>
-                            </Group>
-                          }
-                          bullet={
-                              item.validator !== null || (item.validator === null && item.history_judge == false) ?
-                              <>
-                                <ThemeIcon>
-                                  <IconRosetteDiscountCheck size="18rem" />
-                                </ThemeIcon>
-                              </>
-                              : null
-                            }
-                        >
-                          <Group align="center" spacing="sm" mt="xs">
-                            {
-                              item.agent?.role === 'admin' ? (
-                                <Avatar size={30} radius="sm" color="green">
-                                  {
-                                    item.agent?.name
-                                      ? item.agent.name.charAt(0).toUpperCase() + item.agent.name.charAt(item.agent.name.length - 1).toUpperCase()
-                                      : ''
-                                  }
-                                </Avatar>
-                              ) : (
-                                <Avatar size={30} radius="sm" color="blue">
-                                  {
-                                    item.agent?.name
-                                      ? item.agent.name.charAt(0).toUpperCase() + item.agent.name.charAt(item.agent.name.length - 1).toUpperCase()
-                                      : ''
-                                  }
-                                </Avatar>
-                              )
-                            }
-                            <Text weight={500} size="md">
-                              {item.agent?.name || 'Unknown Agent'}
-                            </Text>
-                              {
-                                item.validator == null && item.history_judge == true ? (
-                                  <Button size='xs' color='pink' variant="light" onClick={()=>{handle_validate(item.id)}}>VALIDATE</Button>
-                                ) : (
-                                   item.history_judge == true ? 
-                                      (
-                                        <Badge variant="light" color="green" radius="sm">validate by: {item.validator?.name}</Badge>
-                                      )
-                                    : null
-                                )
-                              }
-                          </Group>
-
-                          {
-                            item.history_judge == true ? (
-                              <>
-                                <Text color="dimmed" size="sm" mt="xs">
-                                  {item.note || 'No additional notes available'}
-                                </Text>
-                                {/* 
-                                <Text size="sm" mt="xs">
-                                  <strong>Time Taken:</strong>{' '}
-                                  <span
-                                    style={{
-                                      background: '#4c6ef5',
-                                      padding: '4px 8px',
-                                      borderRadius: '8px',
-                                      color: '#fff',
-                                    }}
-                                  >
-                                    {item.timetook || 'N/A'}
-                                  </span>
-                                </Text> 
-                                */}
-                              </>
-                            ) : null
-                          }
-                          
-                        </Timeline.Item>
-                      ))}
-                    </Timeline>
-                  )}
-                </Paper>
-              </div>
-            </>
-          )
-          
-          }
-        </div>
+  const CallModelComponent = ({ closeModal, id }) => {
+    const [history, setHistory] = useState([]);
+    const [reasonCalls, setReasonCalls] = useState([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [LoadingValidate, setLoadingValidate] = useState(false);
+    const [statusOrder, setStatusOrder] = useState([]);
+    const [selectedStatus, setSelectedStatus] = useState('');
+  
+    const formCreate = useForm({
+      initialValues: {
+        status_order_id: '',
+        reason_id: '',
+        note: '',
+        history_judge: true,
+        order_id: id,
+        timetook: "00:00:00",
+      },
+      validate: {
+        status_order_id: (value) =>
+          value.trim().length === 0 ? 'Le statut est requis' : null,
+        note: (value) =>
+          value.trim().length < 2
+            ? 'La note doit comporter au moins 2 caractères'
+            : null,
+      },
+    });
+  
+    // Fetch history orders
+    const fetchHistory = async () => {
+      setLoadingHistory(true);
+      try {
+        const { data } = await orders.order_history(id);
+        setHistory(data.data); // Use the correct response structure
+      } catch (error) {
+        console.error('Erreur lors de la récupération de l\'historique des commandes :', error.message);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+  
+    // Fetch calls Reasons
+    const fetchReasonscalls = async () => {
+      setLoadingHistory(true);
+      try {
+        const response = await orders.ReasonsCall();
+        const formattedData = response.data.map((item) => ({
+          value: item.id.toString(), // Use the correct field for value
+          label: item.reason, // Use the correct field for label
+        }));
+        setReasonCalls(formattedData); // Update state with formatted data
+      } catch (error) {
+        console.error('Erreur lors de la récupération des raisons d\'appel :', error.message);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+  
+    // Handle validate
+    const handle_validate = async (id) => {
+      setLoadingHistory(true);
+      setLoadingValidate(!LoadingValidate);
+      try {
+        await historyOrders.update_history_validator(id);
+      } catch (error) {
+        console.error('Erreur lors de la validation de l\'historique :', error.message);
+      } finally {
+        setLoadingHistory(false);
+        setLoadingValidate(!LoadingValidate);
+        setRerender(!Rerender);
+      }
+    };
+  
+    // Handle status orders data (filtered)
+    const handleStatusOrdersData = () => {
+      const filteredStatusOrders = StatusOrdersdata.filter(
+        (item) =>
+          item.label === "Tentative échouée" ||
+          item.label === "En attente du client" ||
+          item.label === "Échec livraison"
       );
+  
+      setStatusOrder((prevState) => [...prevState, ...filteredStatusOrders]);
     };
-
-    const CallModal = (id) => {
-      modals.open({
-        title: 'Order History',
-        centered: true,
-        children: (
-          <CallModelComponent closeModal={() => modals.closeAll()} id={id} />
-        ),
-      });
+  
+    // Handle submit call form
+    const handleSubmit = async (values) => {
+      try {
+        // Make API call add history order
+        await historyOrders.post(values);
+  
+        // Make API call update order status
+        await orders.updateStausOrder(id, { statusId: values.status_order_id });
+  
+        // Show success notification
+        notifications.show({
+          message: 'Historique de commande créé avec succès !',
+          color: 'green',
+        });
+  
+        setRerender(!Rerender);
+  
+        // Reset form and close modal on success
+        formCreate.reset();
+        closeModal();
+      } catch (error) {
+        // Log the error for debugging
+        console.error('Erreur lors de la création de la commande :', error);
+  
+        // Display failure notification
+        notifications.show({
+          message: error?.response?.data?.message || 'Échec de la création de la commande. Veuillez réessayer.',
+          color: 'red',
+        });
+      }
     };
-
+  
+    useEffect(() => {
+      console.log(selectedStatus);
+      formCreate.setFieldValue('reason', '');
+    }, [selectedStatus]);
+  
+    useEffect(() => {
+      handleStatusOrdersData();
+      fetchReasonscalls();
+      fetchHistory();
+    }, [LoadingValidate]);
+  
+    return (
+      <div>
+        {loadingHistory ? (
+          <Center style={{ height: '10vh' }}>
+            <Loader color="blue" type="bars" />
+          </Center>
+        ) : (
+          <>
+            <form onSubmit={formCreate.onSubmit(handleSubmit)}>
+              <NativeSelect
+                label="Statut de la commande"
+                placeholder="Sélectionnez un statut"
+                withAsterisk
+                data={[{ value: '', label: 'Sélectionnez un statut', disabled: true }, ...statusOrder]} // Add an empty option
+                value={formCreate.values.status_order_id || ''} // Ensure value defaults to an empty string
+                onChange={(event) => {
+                  const selectedValue = event.currentTarget.value; // Get the selected value
+                  const selectedLabel = statusOrder.find((item) => item.value === selectedValue)?.label || ''; // Find the corresponding label
+  
+                  setSelectedStatus(selectedLabel); // Update custom label state
+                  formCreate.setFieldValue('status_order_id', selectedValue); // Update form field value
+                }}
+              />
+  
+              {/* Reason */}
+              {['Échec livraison', 'Tentative échouée'].includes(selectedStatus) && (
+                <NativeSelect
+                  label="Raison"
+                  placeholder="Sélectionnez une raison"
+                  withAsterisk
+                  data={reasonCalls} // The data source for the dropdown
+                  value={formCreate.values.reason_id || ''} // Explicitly bind the form field
+                  onChange={(event) => formCreate.setFieldValue('reason_id', event.currentTarget.value)} // Update form value
+                  mt="sm"
+                />
+              )}
+  
+              {/* Agent Note */}
+              <Textarea
+                label="Note"
+                placeholder="Ajoutez votre note ici..."
+                withAsterisk
+                mt="sm"
+                {...formCreate.getInputProps('note')}
+              />
+  
+              {/* Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', whiteSpace: 'nowrap', marginTop: '1rem' }}>
+                <Button fullWidth variant="outline" onClick={closeModal}>
+                  Annuler
+                </Button>
+                <Button fullWidth type="submit">
+                  Soumettre
+                </Button>
+              </div>
+            </form>
+  
+            {/* History Timeline */}
+            <div>
+              <Paper withBorder radius="md" shadow="sm" p="xl" mt={20}>
+                {history.length === 0 ? (
+                  // Display this message if history is empty
+                  <Text color="dimmed" size="sm" align="center">
+                    Aucun historique pour le moment.
+                  </Text>
+                ) : (
+                  // Render the Timeline if there are history items
+                  <Timeline radius={'sm'} lineWidth={0.5} bulletSize={35} active={history.length} style={{ maxHeight: '40vh', overflowY: 'auto' }}>
+                    {history.map((item) => (
+                      <Timeline.Item
+                        key={item.id}
+                        title={
+                          <Group spacing="sm">
+                            <Text weight={700} size="lg">
+                              {item.status?.status
+                                ? `${item.status.status}${item.reason?.reason ? ` (${item.reason.reason})` : ''}`
+                                : 'Aucun statut fourni'}
+                            </Text>
+                            <Text size="xs" color="dimmed">
+                              {item.created_at}
+                            </Text>
+                          </Group>
+                        }
+                        bullet={
+                          item.validator !== null || (item.validator === null && item.history_judge == false) ? (
+                            <ThemeIcon>
+                              <IconRosetteDiscountCheck size="18rem" />
+                            </ThemeIcon>
+                          ) : null
+                        }
+                      >
+                        <Group align="center" spacing="sm" mt="xs">
+                          {item.agent?.role === 'admin' ? (
+                            <Avatar size={30} radius="sm" color="green">
+                              {item.agent?.name
+                                ? item.agent.name.charAt(0).toUpperCase() + item.agent.name.charAt(item.agent.name.length - 1).toUpperCase()
+                                : ''}
+                            </Avatar>
+                          ) : (
+                            <Avatar size={30} radius="sm" color="blue">
+                              {item.agent?.name
+                                ? item.agent.name.charAt(0).toUpperCase() + item.agent.name.charAt(item.agent.name.length - 1).toUpperCase()
+                                : ''}
+                            </Avatar>
+                          )}
+                          <Text weight={500} size="md">
+                            {item.agent?.name || 'Agent inconnu'}
+                          </Text>
+                          {item.validator == null && item.history_judge == true ? (
+                            <Button size="xs" color="pink" variant="light" onClick={() => handle_validate(item.id)}>
+                              VALIDER
+                            </Button>
+                          ) : item.history_judge == true ? (
+                            <Badge variant="light" color="green" radius="sm">
+                              validé par : {item.validator?.name}
+                            </Badge>
+                          ) : null}
+                        </Group>
+  
+                        {item.history_judge == true ? (
+                          <>
+                            <Text color="dimmed" size="sm" mt="xs">
+                              {item.note || 'Aucune note supplémentaire disponible'}
+                            </Text>
+                          </>
+                        ) : null}
+                      </Timeline.Item>
+                    ))}
+                  </Timeline>
+                )}
+              </Paper>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+  
+  const CallModal = (id) => {
+    modals.open({
+      title: 'Historique de la commande',
+      centered: true,
+      children: <CallModelComponent closeModal={() => modals.closeAll()} id={id} />,
+    });
+  };
   // ------------------ Call Model ----------------------
 
   
@@ -1278,35 +1218,32 @@ import {
     //---------------- data of orders ---------------------
     const rows = elements.map((row) => {
       return (
-        <Table.Tr key={row.id} 
-        >
-
+        <Table.Tr key={row.id}>
           <Table.Td>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span
-                  style={{
-                    background: row.delivery_company.colorHex,
-                    border: '0.5px solid black',
-                    padding: '2px 12px',
-                    borderRadius: '5px',
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {row.delivery_company.name} 
-                </span>
+              <span
+                style={{
+                  background: row.delivery_company.colorHex,
+                  border: '0.5px solid black',
+                  padding: '2px 12px',
+                  borderRadius: '5px',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {row.delivery_company.name}
+              </span>
             </div>
-          </Table.Td>          
-
+          </Table.Td>
+    
           <Table.Td>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              
               {/* Copy button */}
               <CopyButton value={row.tracking} timeout={2000}>
                 {({ copied, copy }) => (
-                  <Tooltip label={copied ? 'Copied!' : 'Copy tracking'} withArrow position="right">
+                  <Tooltip label={copied ? 'Copié !' : 'Copier le Tracking'} withArrow position="right">
                     <ActionIcon
                       color={copied ? 'teal' : 'gray'}
                       variant="light"
@@ -1326,7 +1263,7 @@ import {
                   </Tooltip>
                 )}
               </CopyButton>
-              
+    
               {/* Badge for delivery company */}
               <span
                 style={{
@@ -1344,143 +1281,117 @@ import {
               </span>
             </div>
           </Table.Td>
-
+    
           <Table.Td>
-            <Group  style={{ flexWrap: 'nowrap' }}>
-              <ActionIcon style={{background:'#dee2e6' , border: '0.1px dashed #222426'}} variant="subtle" color="gray" onClick={()=>{ CallModal(row.id) }}>
-                  <IconHistory style={{ width: '16px', height: '16px' }} stroke={1.5} />
+            <Group style={{ flexWrap: 'nowrap' }}>
+              <ActionIcon style={{ background: '#dee2e6', border: '0.1px dashed #222426' }} variant="subtle" color="gray" onClick={() => { CallModal(row.id) }}>
+                <IconHistory style={{ width: '16px', height: '16px' }} stroke={1.5} />
               </ActionIcon>
-
-                  {
-                    row.archive === 0 ? (
-                    <NativeSelect
-                      placeholder=""
-                      defaultValue={row.status.id.toString()}
-                      data={StatusOrderIndex}
-                      onChange={(event) => {
-                        const selectedValue = event.currentTarget.value; // Get the selected value
-                        UpdateOrderStatus(row.id, selectedValue); // Call your function with the necessary parameters
-                      }}
-                      styles={() => ({
-                        input: {
-                          borderRadius: '8px',
-                          display: "flex",
-                          background: `${row.status.colorHex}1A`,
-                          border: `1px solid ${row.status.colorHex}`,
-                          color: row.status.colorHex,
-                          width: '200px',
-                        },
-                      })}
-                    />
-                  ) : 
-                    <div
-                      style={{
-                        borderRadius: '8px',
-                        display: 'flex',
-                        background: `${row.status.colorHex}1A`, // Background with 10% opacity
-                        border: `1px solid ${row.status.colorHex}`, // Border color
-                        color: row.status.colorHex, // Text color
-                        width: '200px',
-                        height: '35px',
-                        alignItems: 'center', // Vertically center text
-                        paddingLeft: '12px', // Add some padding for text
-                      }}
-                    >
-                      {row.status.status}
-                    </div>
-                  }  
-
+    
+              {row.archive === 0 ? (
+                <NativeSelect
+                  placeholder=""
+                  defaultValue={row.status.id.toString()}
+                  data={StatusOrderIndex}
+                  onChange={(event) => {
+                    const selectedValue = event.currentTarget.value; // Get the selected value
+                    UpdateOrderStatus(row.id, selectedValue); // Call your function with the necessary parameters
+                  }}
+                  styles={() => ({
+                    input: {
+                      borderRadius: '8px',
+                      display: "flex",
+                      background: `${row.status.colorHex}1A`,
+                      border: `1px solid ${row.status.colorHex}`,
+                      color: row.status.colorHex,
+                      width: '200px',
+                    },
+                  })}
+                />
+              ) : (
+                <div
+                  style={{
+                    borderRadius: '8px',
+                    display: 'flex',
+                    background: `${row.status.colorHex}1A`, // Background with 10% opacity
+                    border: `1px solid ${row.status.colorHex}`, // Border color
+                    color: row.status.colorHex, // Text color
+                    width: '200px',
+                    height: '35px',
+                    alignItems: 'center', // Vertically center text
+                    paddingLeft: '12px', // Add some padding for text
+                  }}
+                >
+                  {row.status.status}
+                </div>
+              )}
             </Group>
           </Table.Td>
-
-          <Table.Td 
-            style={{
-              whiteSpace: 'nowrap',
-            }}
-          >
-              {row.external_id}
+    
+          <Table.Td style={{ whiteSpace: 'nowrap' }}>
+            {row.external_id}
           </Table.Td>
-
-
-          <Table.Td
-              style={{
-              whiteSpace: 'nowrap',
-            }}
-          >
-              {row.client_name}
+    
+          <Table.Td style={{ whiteSpace: 'nowrap' }}>
+            {row.client_name}
           </Table.Td>
-
-          <Table.Td
-            style={{
-              whiteSpace: 'nowrap',
-            }}
-          >
-              {row.client_lastname}
+    
+          <Table.Td style={{ whiteSpace: 'nowrap' }}>
+            {row.client_lastname}
           </Table.Td>
-
-
-          <Table.Td
-            style={{
-              whiteSpace: 'nowrap',
-            }}
-          >
-              {row.phone}
+    
+          <Table.Td style={{ whiteSpace: 'nowrap' }}>
+            {row.phone}
           </Table.Td>
-
-
+    
           <Table.Td>
-            <span style={{border:'black dashed 1px' , padding:5 , borderRadius:8 , color:'black' , whiteSpace: 'nowrap',}}>
-              {user.id === row.created_by.id ? 'Me' : row.created_by.name}
+            <span style={{ border: 'black dashed 1px', padding: 5, borderRadius: 8, color: 'black', whiteSpace: 'nowrap' }}>
+              {user.id === row.created_by.id ? 'Moi' : row.created_by.name}
             </span>
           </Table.Td>
-          
+    
           <Table.Td>
-            <span style={{border:'black dashed 1px' , padding:5 , borderRadius:8 , color:'black' ,whiteSpace: 'nowrap',}}>
+            <span style={{ border: 'black dashed 1px', padding: 5, borderRadius: 8, color: 'black', whiteSpace: 'nowrap' }}>
               {row.affected_to.name}
             </span>
           </Table.Td>
-
+    
           <Table.Td>
             <Group gap={5} justify="flex-start" style={{ flexWrap: 'nowrap' }}>
-              
-              { row.product_url !== null ?
-                <ActionIcon color="gray" onClick={()=>{ window.open(row.product_url, '_blank'); }}>
+              {row.product_url !== null ? (
+                <ActionIcon color="gray" onClick={() => { window.open(row.product_url, '_blank'); }}>
                   <IconUnlink style={{ width: '16px', height: '16px' }} stroke={1.5} />
                 </ActionIcon>
-                : 
-                <ActionIcon color='black'>
+              ) : (
+                <ActionIcon color="black">
                   <IconLinkOff style={{ width: '16px', height: '16px' }} stroke={1.5} />
                 </ActionIcon>
-              }
-              
-              {
-                row.archive === 0 ? (
-                  <ActionIcon variant="subtle" color="gray" onClick={()=>{ UpdateOrderModal(row.id) }}>
-                    <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
-                  </ActionIcon>
-                ): null
-              }
-
-              { row.status.status === "En préparation" ?
-                <>
-                  <ActionIcon variant="subtle" color="red" onClick={()=>{ DeleteOrderModal(row.id) }}>
-                    <IconTrash style={{ width: '16px', height: '16px' }} stroke={1.5}  />
-                  </ActionIcon>
-                </>
-                : null
-              }
+              )}
+    
+              {row.archive === 0 ? (
+                <ActionIcon variant="subtle" color="gray" onClick={() => { UpdateOrderModal(row.id) }}>
+                  <IconPencil style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                </ActionIcon>
+              ) : null}
+    
+              {row.status.status === "En préparation" ? (
+                <ActionIcon variant="subtle" color="red" onClick={() => { DeleteOrderModal(row.id) }}>
+                  <IconTrash style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                </ActionIcon>
+              ) : null}
+    
               {/* Archive button */}
-                {row.status && (row.status.status === "Livré" || row.status.status === "Retourné au vendeur") ? (
-                  row.archive === 0 ? (
-                    <ActionIcon variant="subtle" color="gray" onClick={() => updateArchive(row.id, true)}>
-                      <IconArchive style={{ width: '16px', height: '16px' }} stroke={1.5} />
-                    </ActionIcon>
-                  ) : row.archive === 1 ? (
-                    <ActionIcon variant="subtle" color="black" onClick={() => updateArchive(row.id, false)}>
-                      <IconArchiveOff style={{ width: '16px', height: '16px' }} stroke={1.5} />
-                    </ActionIcon>
-                  ) : null
-                ) : null}
+              {row.status && (row.status.status === "Livré" || row.status.status === "Retourné au vendeur") ? (
+                row.archive === 0 ? (
+                  <ActionIcon variant="subtle" color="gray" onClick={() => updateArchive(row.id, true)}>
+                    <IconArchive style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                  </ActionIcon>
+                ) : row.archive === 1 ? (
+                  <ActionIcon variant="subtle" color="black" onClick={() => updateArchive(row.id, false)}>
+                    <IconArchiveOff style={{ width: '16px', height: '16px' }} stroke={1.5} />
+                  </ActionIcon>
+                ) : null
+              ) : null}
             </Group>
           </Table.Td>
         </Table.Tr>
@@ -1555,7 +1466,7 @@ import {
     return (
       <>
         <Text fw={700} fz="xl" mb="md">
-          Orders Management
+          Gestion des commandes
         </Text>
         <SimpleGrid cols={{ base: 1, sm: 1 }} spacing="lg">
           {/* Actions Section */}
@@ -1565,17 +1476,17 @@ import {
 
               {/* add orders */}
               <Paper style={styleCard}>
-                    <Flex gap="sm" align="center">
-                        <Button onClick={CreateOrderModal} fullWidth variant="filled" color="blue" >
-                          <IconPlus stroke={2} />
-                        </Button>
-                        <Button onClick={ImportOrdersModal} fullWidth variant="outline" color='red'>
-                          Import
-                        </Button>
-                        <Button onClick={exportOrders} fullWidth variant="outline">
-                          Export
-                        </Button>
-                    </Flex>
+                <Flex gap="sm" align="center">
+                  <Button onClick={CreateOrderModal} fullWidth variant="filled" color="blue">
+                    <IconPlus stroke={2} />
+                  </Button>
+                  <Button onClick={ImportOrdersModal} fullWidth variant="outline" color="red">
+                    Importer
+                  </Button>
+                  <Button onClick={exportOrders} fullWidth variant="outline" loading={loadingExport}>
+                    Exporter
+                  </Button>
+                </Flex>
               </Paper>
 
 
@@ -1587,9 +1498,9 @@ import {
                     leftSection={loading ? <Loader size="sm" color="gray" /> : TaskOrder ? <IconList stroke={2} /> : <IconPackage stroke={2} />}
                     variant="outline"
                     color={TaskOrder ? "red" : "blue"}
-                    disabled={loading} // Disable button while loading
+                    disabled={loading} // Désactiver le bouton pendant le chargement
                   >
-                    {loading ? "Loading..." : TaskOrder ? "Tasks" : "Orders"}
+                    {loading ? "Chargement..." : TaskOrder ? "Tâches" : "Commandes"}
                   </Button>
                 </Flex>
               </Paper>
@@ -1597,24 +1508,24 @@ import {
 
 
 
-              {/* search */}
-              <Paper style={styleCard}>
-                  <form style={{ width: '100%' }} onSubmit={formSearch.onSubmit(handleSearch)}>
-                    <TextInput
-                      size="sm"
-                      radius="md"
-                      placeholder="Search for orders..."
-                      rightSectionWidth={42}
-                      leftSection={<IconSearch size={18} stroke={1.5} />}
-                      {...formSearch.getInputProps('search')}
-                      rightSection={
-                        <ActionIcon size={28} radius="xl" variant="filled" type="submit">
-                          <IconArrowRight size={18} stroke={1.5} />
-                        </ActionIcon>
-                      }
-                    />
-                  </form>
-              </Paper>
+            {/* search */}
+            <Paper style={styleCard}>
+              <form style={{ width: '100%' }} onSubmit={formSearch.onSubmit(handleSearch)}>
+                <TextInput
+                  size="sm"
+                  radius="md"
+                  placeholder="Rechercher des commandes..."
+                  rightSectionWidth={42}
+                  leftSection={<IconSearch size={18} stroke={1.5} />}
+                  {...formSearch.getInputProps('search')}
+                  rightSection={
+                    <ActionIcon size={28} radius="xl" variant="filled" type="submit">
+                      <IconArrowRight size={18} stroke={1.5} />
+                    </ActionIcon>
+                  }
+                />
+              </form>
+            </Paper>
 
           </SimpleGrid>
 
@@ -1622,23 +1533,23 @@ import {
 
               {
                 loading ? (
-                  <Table.ScrollContainer style={styleCard} minWidth={800}>            
+                  <Table.ScrollContainer style={styleCard} minWidth={800}>
                     <Table striped highlightOnHover verticalSpacing="xs">
                       <Table.Thead>
                         <Table.Tr>
-                          <Table.Th>Delivery Company</Table.Th>
+                          <Table.Th>Société de livraison</Table.Th>
                           <Table.Th>Tracking</Table.Th>
-                          <Table.Th>status</Table.Th>
-                          <Table.Th>External Id</Table.Th>
-                          <Table.Th>Name</Table.Th>
-                          <Table.Th>Lastname</Table.Th>
-                          <Table.Th>Phone</Table.Th>
-                          <Table.Th>creator</Table.Th>
+                          <Table.Th>Statut</Table.Th>
+                          <Table.Th>ID externe</Table.Th>
+                          <Table.Th>Nom</Table.Th>
+                          <Table.Th>Prénom</Table.Th>
+                          <Table.Th>Téléphone</Table.Th>
+                          <Table.Th>Créateur</Table.Th>
                           <Table.Th>Agent</Table.Th>
                         </Table.Tr>
                       </Table.Thead>
                       <Table.Tbody>
-                        {renderSkeletons()} {/* Call the renderSkeletons function */}
+                        {renderSkeletons()} {/* Appeler la fonction renderSkeletons */}
                       </Table.Tbody>
                     </Table>
                   </Table.ScrollContainer>
@@ -1647,71 +1558,69 @@ import {
                 
 
 
-
-                  <Table.ScrollContainer style={styleCard} minWidth={800}>
-                        <Table striped highlightOnHover verticalSpacing="xs">
-                            <Table.Thead>
-                                <Table.Tr>
-                                <Table.Th>Delivery Company</Table.Th>
-                                <Table.Th>Tracking</Table.Th>
-                                <Table.Th>status</Table.Th>
-                                <Table.Th>External Id</Table.Th>
-                                <Table.Th>Name</Table.Th>
-                                <Table.Th>Lastname</Table.Th>
-                                <Table.Th>Phone</Table.Th>
-                                <Table.Th>creator</Table.Th>
-                                <Table.Th>Agent</Table.Th>
-                                </Table.Tr>
-                            </Table.Thead>
-                            <Table.Tbody height={80}>
-                                { rows } 
-                            </Table.Tbody>
-                        </Table>
-                    </Table.ScrollContainer>
-            
+                <Table.ScrollContainer style={styleCard} minWidth={800}>
+                  <Table striped highlightOnHover verticalSpacing="xs">
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Société de livraison</Table.Th>
+                        <Table.Th>Tracking</Table.Th>
+                        <Table.Th>Statut</Table.Th>
+                        <Table.Th>ID externe</Table.Th>
+                        <Table.Th>Nom</Table.Th>
+                        <Table.Th>Prénom</Table.Th>
+                        <Table.Th>Téléphone</Table.Th>
+                        <Table.Th>Créateur</Table.Th>
+                        <Table.Th>Agent</Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody height={80}>
+                      {rows}
+                    </Table.Tbody>
+                  </Table>
+                </Table.ScrollContainer>
 
 
             
                 </>
                 ): (
                 ( (search.length > 0 && elements.length === 0) || (search.length === 0 && elements.length === 0)) && (
-                    <>
+                  <>
                     <Table.ScrollContainer style={styleCard} minWidth={800}>
-                        <Table striped highlightOnHover verticalSpacing="xs">
+                      <Table striped highlightOnHover verticalSpacing="xs">
                         <Table.Thead>
-                            <Table.Tr>
-                              <Table.Th>Delivery Company</Table.Th>
-                              <Table.Th>Tracking</Table.Th>
-                              <Table.Th>status</Table.Th>
-                              <Table.Th>External Id</Table.Th>
-                              <Table.Th>Name</Table.Th>
-                              <Table.Th>Lastname</Table.Th>
-                              <Table.Th>Phone</Table.Th>
-                              <Table.Th>creator</Table.Th>
-                              <Table.Th>Agent</Table.Th>
-                            </Table.Tr>
+                          <Table.Tr>
+                            <Table.Th>Société de livraison</Table.Th>
+                            <Table.Th>Tracking</Table.Th>
+                            <Table.Th>Statut</Table.Th>
+                            <Table.Th>ID externe</Table.Th>
+                            <Table.Th>Nom</Table.Th>
+                            <Table.Th>Prénom</Table.Th>
+                            <Table.Th>Téléphone</Table.Th>
+                            <Table.Th>Créateur</Table.Th>
+                            <Table.Th>Agent</Table.Th>
+                          </Table.Tr>
                         </Table.Thead>
-                        </Table>
-                        <div 
-                        style={{ 
-                            backgroundColor: '#dfdddd4c', 
-                            height: '500px', 
-                            display: 'flex', 
-                            justifyContent: 'center', 
-                            alignItems: 'center',
-                            borderRadius:'2px'
+                      </Table>
+                      <div
+                        style={{
+                          backgroundColor: '#dfdddd4c',
+                          height: '500px',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          borderRadius: '2px',
                         }}
+                      >
+                        <Text
+                          size="lg"
+                          weight={500}
+                          style={{ color: '#7d7d7d' }}
                         >
-                        <Text 
-                            size="lg" 
-                            weight={500} 
-                            style={{ color: '#7d7d7d' }}
-                        >
-                            No results found. Try adjusting your search criteria.
+                          Aucun résultat trouvé. Essayez d'ajuster vos critères de recherche.
                         </Text>
-                        </div>
+                      </div>
                     </Table.ScrollContainer>
-                    </>
+                  </>
                 )
                 )
                 

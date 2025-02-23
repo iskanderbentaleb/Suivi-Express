@@ -21,13 +21,13 @@ export default function Navbar() {
 
   const {setDahboardOpend , DahboardOpend , user } = useUserContext();
 
-  const [active, setActive] = useState('Billing');
+  const [active, setActive] = useState('Tableau de bord');
 
   const data = [
-    { link: AGENT_DASHBOARD_ROUTE , label: 'Dashboard', icon: IconLayoutDashboard },
+    { link: AGENT_DASHBOARD_ROUTE , label: 'Tableau de bord', icon: IconLayoutDashboard },
     { link: AGENT_NOTIFICATIONS_ROUTE , label: 'Messages', icon: IconBrandWechat },
-    { link: AGENT_ORDERS_ROUTE , label: 'Orders', icon: IconPackage },
-    { link: AGENT_SETTING_ROUTE , label: 'Settings', icon: IconSettings },
+    { link: AGENT_ORDERS_ROUTE , label: 'Commandes', icon: IconPackage },
+    // { link: AGENT_SETTING_ROUTE , label: 'Autres paramètres', icon: IconSettings },
   ];
 
 

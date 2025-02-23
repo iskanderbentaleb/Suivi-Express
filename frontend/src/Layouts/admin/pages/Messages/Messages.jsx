@@ -7,6 +7,7 @@ import {
   Flex,
   Grid,
   Group,
+  Loader,
   Modal,
   Pagination,
   Paper,
@@ -50,7 +51,7 @@ const styleCard = {
   boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
 };
 
-const DesktopViewMessages = ({ selectedMessages  , setSelectedMessages}) => {
+const DesktopViewMessages = ({ selectedMessages  , setSelectedMessages , loadingMessages}) => {
   const theme = useMantineTheme();
   
   return (
@@ -60,26 +61,34 @@ const DesktopViewMessages = ({ selectedMessages  , setSelectedMessages}) => {
         shadow="sm"
         style={{ height: "100%", backgroundColor: theme.white, position: "relative" }}
       >
-        {selectedMessages ? (
+        {selectedMessages && loadingMessages === false? (
           <>
-            <UserInfo selectedMessages={selectedMessages} />
-            <MessagesList selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages} />
+            <ParcelInfo selectedMessages={selectedMessages} />
+            <MessagesList
+              selectedMessages={selectedMessages}
+              setSelectedMessages={setSelectedMessages}
+              loadingMessages={loadingMessages}
+            />
             <ResponseSection orderTracking={selectedMessages[0].order.tracking} />
           </>
+        ) : selectedMessages && loadingMessages === true || loadingMessages === true  ? (
+          // Show Skeleton Loaders
+          <Box style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+            <Loader size="lg" color="blue" type="dots" />
+          </Box>
         ) : (
-          <NoMessageSelected/>
+          // Show "No Message Selected" when loading is false
+          <NoMessageSelected />
         )}
       </Paper>
     </Grid.Col>
   );
 };
 
-const PhoneViewMessages = ({ selectedMessages, setSelectedMessages }) => {
-  const theme = useMantineTheme();
-
+const PhoneViewMessages = ({ selectedMessages, setSelectedMessages , loadingMessages}) => {
   return (
     <Modal
-      opened={!!selectedMessages}
+      opened={!!selectedMessages || loadingMessages}
       onClose={() => setSelectedMessages(null)}
       title="Message"
       fullScreen
@@ -102,18 +111,28 @@ const PhoneViewMessages = ({ selectedMessages, setSelectedMessages }) => {
         },
       }}
     >
-      {Array.isArray(selectedMessages) && selectedMessages.length > 0 && (
         <>
-          <UserInfo selectedMessages={selectedMessages} />
-          <MessagesList selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages} />
-          <ResponseSection orderTracking={selectedMessages[0].order.tracking} />
+        {selectedMessages && loadingMessages === false? (
+          <>
+            <ParcelInfo selectedMessages={selectedMessages} />
+            <MessagesList selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages} />
+            <ResponseSection orderTracking={selectedMessages[0].order.tracking} />
+          </>
+        ) : selectedMessages && loadingMessages === true || loadingMessages === true  ? (
+          // Show Skeleton Loaders
+          <Box style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+            <Loader size="lg" color="blue" type="dots" />
+          </Box>
+        ) : (
+          // Show "No Message Selected" when loading is false
+          <NoMessageSelected />
+        )}
         </>
-      )}
     </Modal>
   );
 };
 
-const UserInfo = ({ selectedMessages }) => {
+const ParcelInfo = ({ selectedMessages }) => {
   const theme = useMantineTheme();
   
   return (
@@ -281,7 +300,7 @@ const ResponseSection = ({ orderTracking }) => {
   const theme = useMantineTheme();
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 768px)"); // Detect mobile devices
+  const isMobile = useMediaQuery("(max-width: 768px)"); // Détecter les appareils mobiles
 
   const handleResponseChange = (event) => {
     setResponse(event.target.value);
@@ -299,16 +318,16 @@ const ResponseSection = ({ orderTracking }) => {
         message: trimmedResponse,
       });
 
-      console.log("Message sent:", data);
+      console.log("Message envoyé :", data);
       // notifications.show({
-      //   message: "Message sent successfully!",
+      //   message: "Message envoyé avec succès !",
       //   color: "green",
       // });
       setResponse("");
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Erreur lors de l'envoi du message :", error);
       notifications.show({
-        message: "Message sent failed!",
+        message: "Échec de l'envoi du message !",
         color: "red",
       });
     } finally {
@@ -319,7 +338,7 @@ const ResponseSection = ({ orderTracking }) => {
   return (
     <Box
       style={{
-        position: isMobile ? "fixed" : "absolute", // Fixed on mobile, absolute on desktop
+        position: isMobile ? "fixed" : "absolute", // Fixe sur mobile, absolu sur ordinateur
         bottom: 0,
         left: 0,
         right: 0,
@@ -327,19 +346,19 @@ const ResponseSection = ({ orderTracking }) => {
         borderTop: `1px solid ${theme.colors.gray[3]}`,
         backgroundColor: theme.colors.gray[0],
         display: "flex",
-        flexDirection: "row", // Change to row for inline layout
+        flexDirection: "row", // Changer en ligne pour une disposition en ligne
         gap: "12px",
-        alignItems: "center", // Align items vertically
+        alignItems: "center", // Aligner les éléments verticalement
       }}
     >
       <TextInput
-        placeholder="Type your response..."
+        placeholder="Tapez votre réponse..."
         value={response}
         onChange={handleResponseChange}
         radius="md"
         size="md"
         disabled={loading}
-        style={{ flex: 1 }} // Take up remaining space
+        style={{ flex: 1 }} // Prendre l'espace restant
         styles={{
           input: {
             backgroundColor: theme.white,
@@ -355,19 +374,19 @@ const ResponseSection = ({ orderTracking }) => {
         loading={loading}
         styles={{
           root: {
-            backgroundColor: "#323d49", // Dark color matching the bubble
+            backgroundColor: "#323d49", // Couleur sombre correspondant à la bulle
             color: theme.white,
             "&:hover": {
-              backgroundColor: "#2a333d", // Slightly darker on hover
+              backgroundColor: "#2a333d", // Légèrement plus sombre au survol
             },
             "&:disabled": {
-              backgroundColor: theme.colors.gray[5], // Gray when disabled
+              backgroundColor: theme.colors.gray[5], // Gris lorsqu'il est désactivé
               color: theme.colors.gray[7],
             },
           },
         }}
       >
-        Send
+        Envoyer
       </Button>
     </Box>
   );
@@ -381,7 +400,7 @@ const NoMessageSelected = () => (
     style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100%" }}
   >
     <img src="/select-message.svg" alt="No messages" style={{ width: "300px" }} />
-    Select a message to view and respond
+    Sélectionnez un message pour le consulter et y répondre
   </Text>
 );
 
@@ -394,6 +413,8 @@ export default function Messages() {
   // const [selectedTab, setSelectedTab] = useState("receive");
   const [loading, setLoading] = useState(true);
   
+  const [loadingMessages, setLoadingMessages] = useState(false);
+
   const [search, setSearch] = useState("");
   const [selectedMessages, setSelectedMessages] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -423,10 +444,17 @@ export default function Messages() {
 
   // Fetch messages for the selected order
   const handleMessageSelect = async (orderId) => {
-    const { data } = await messages.selectedOrderMessagesInbox(orderId);
-    setSelectedOrder(orderId);
-    setSelectedMessages(data.data);
-    setResponse(""); // Reset response input
+    setLoadingMessages(true); // Start loading
+    try {
+      const { data } = await messages.selectedOrderMessagesInbox(orderId);
+      setSelectedOrder(orderId);
+      setSelectedMessages(data.data);
+      setResponse(""); // Reset response input
+    } catch (error) {
+      console.error("Error loading messages:", error);
+    } finally {
+      setLoadingMessages(false); // Stop loading
+    }
   };
 
   //============ Fetch messages from the API ======================
@@ -456,131 +484,116 @@ export default function Messages() {
 
   //======= here we open model for create a new message for orders======
   const CreateMessagesForm = ({ closeModal }) => {
-        
     const [Element, setElement] = useState([]);
-    
-    
+  
     const formCreate = useForm({
       initialValues: {
         tracking: '',
         message: '',
       },
-      validate: {  
+      validate: {
         tracking: (value) =>
-          value.trim().length === 0 ? 'tracking is required' : null,
-
+          value.trim().length === 0 ? 'Le Tracking est requis' : null,
+  
         message: (value) =>
-          value.trim().length === 0 ? 'message is required' : null, // Nullable, so no error if empty
+          value.trim().length === 0 ? 'Le message est requis' : null, // Nullable, so no error if empty
       },
     });
-    
-
+  
     const handleSubmit = async (values) => {
       try {
         // Make API call to create the agent
         const { data } = await messages.sendMessage(values);
-    
+  
         console.log(data);
         setRerender(!Rerender);
         // Show success notification
         notifications.show({
-          message: 'Messages sent successfully!',
+          message: 'Message envoyé avec succès !',
           color: 'green',
         });
-    
+  
         // Reset form and close modal on success
         formCreate.reset();
         closeModal();
       } catch (error) {
         // Log the error for debugging
-        console.error('Error creating order:', error);
-    
+        console.error('Erreur lors de la création du message :', error);
+  
         // Display failure notification
         notifications.show({
-          message: error?.response?.data?.message || 'Failed to create order. Please try again.',
+          message: error?.response?.data?.message || 'Échec de la création du message. Veuillez réessayer.',
           color: 'red',
         });
       }
     };
-    
-
+  
     const handleError = (errors) => {
-      // console.log('Validation errors:', errors);
       notifications.show({
-        message: 'Please fix the validation errors before submitting.',
+        message: 'Veuillez corriger les erreurs de validation avant de soumettre.',
         color: 'red',
       });
     };
-
-
-
-
-    const getOrdersDATA = async (page = 1 ,  search = '') => {
+  
+    const getOrdersDATA = async (page = 1, search = '') => {
       try {
         const response = await orders.index(page, search); // Pass search value
         const data = response.data.data.map((order) => ({
           value: order.tracking, // Use `id` as the value
-          label: order.tracking,         // Use `tracking` as the label
+          label: order.tracking, // Use `tracking` as the label
         }));
         setElement(data); // Update the `agentsElement` state
       } catch (error) {
-        notifications.show({ message: 'Error fetching agents: ' + error, color: 'red' });
+        notifications.show({ message: 'Erreur lors de la récupération des commandes : ' + error, color: 'red' });
       }
     };
-
-
+  
     useEffect(() => {
-      getOrdersDATA(1,'')
+      getOrdersDATA(1, '');
     }, []);
-
-
-
-
+  
     return (
-        <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
-          {/* Affected To */}
-          <Select
-            label="Tracking"
-            withAsterisk
-            placeholder="Tracking..."
-            checkIconPosition="right"
-            data={Element}
-            searchable
-            mt="sm"
-            onSearchChange={(search) => getOrdersDATA(1 ,search)} // Pass the search value
-            nothingFoundMessage="Nothing found..."
-            {...formCreate.getInputProps('tracking')}
-          />
-          
-          {/* Product URL */}
-          <Textarea
-            label="Message"
-            mt="sm"
-            placeholder="Message..."
-            {...formCreate.getInputProps('message')}
-          />
-
-
-          {/* Submit Button */}
-          <Button type="submit" fullWidth mt="md">
-            Send
-          </Button>
-
-          {/* Cancel Button */}
-          <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
-            Cancel
-          </Button>
-        </form>
+      <form onSubmit={formCreate.onSubmit(handleSubmit, handleError)}>
+        {/* Tracking */}
+        <Select
+          label="Tracking"
+          withAsterisk
+          placeholder="Tracking..."
+          checkIconPosition="right"
+          data={Element}
+          searchable
+          mt="sm"
+          onSearchChange={(search) => getOrdersDATA(1, search)} // Pass the search value
+          nothingFoundMessage="Aucun résultat trouvé..."
+          {...formCreate.getInputProps('tracking')}
+        />
+  
+        {/* Message */}
+        <Textarea
+          label="Message"
+          mt="sm"
+          placeholder="Message..."
+          {...formCreate.getInputProps('message')}
+        />
+  
+        {/* Submit Button */}
+        <Button type="submit" fullWidth mt="md">
+          Envoyer
+        </Button>
+  
+        {/* Cancel Button */}
+        <Button fullWidth mt="md" variant="outline" onClick={closeModal}>
+          Annuler
+        </Button>
+      </form>
     );
   };
-
+  
   const CreateMessagesModal = () => {
     modals.open({
-      title: 'Create New Message',
+      title: 'Créer un nouveau message',
       centered: true,
-      children: (
-        <CreateMessagesForm closeModal={() => modals.closeAll()} />
-      ),
+      children: <CreateMessagesForm closeModal={() => modals.closeAll()} />,
     });
   };
   //======= here we open model for create a new message for orders======
@@ -625,7 +638,7 @@ export default function Messages() {
                 color="blue"
                 onClick={() => setTypeMessage("receive")}
               >
-                RECEIVE
+                REÇUS
               </Button>
               <Button
                 fullWidth
@@ -633,7 +646,7 @@ export default function Messages() {
                 color="teal"
                 onClick={() => setTypeMessage("sent")}
               >
-                SENT
+                ENVOYÉS
               </Button>
             </Flex>
           </Paper>
@@ -673,7 +686,7 @@ export default function Messages() {
                   size="xs"
                   color="blue"
                 >
-                  All
+                  Tous
                 </Button>
                 <Button
                   variant={isRead === "read" ? "filled" : "outline"}
@@ -681,7 +694,7 @@ export default function Messages() {
                   size="xs"
                   color="blue"
                 >
-                  Read
+                  Lus
                 </Button>
                 <Button
                   variant={isRead === "unread" ? "filled" : "outline"}
@@ -689,14 +702,17 @@ export default function Messages() {
                   size="xs"
                   color="blue"
                 >
-                  Unread
+                  Non lus
                 </Button>
 
-                <Button size="xs" color="teal"
-                variant="outline"
-                onClick={CreateMessagesModal}
-                > Send Message </Button>
-              
+                <Button
+                  size="xs"
+                  color="teal"
+                  variant="outline"
+                  onClick={CreateMessagesModal}
+                >
+                  Envoyer un message
+                </Button>
               </Group>
 
               {/* Search Form */}
@@ -704,7 +720,7 @@ export default function Messages() {
                 <TextInput
                   size="sm"
                   radius="md"
-                  placeholder="Search for messages..."
+                  placeholder="Rechercher des messages..."
                   rightSectionWidth={42}
                   leftSection={<IconSearch size={18} stroke={1.5} />}
                   {...formSearch.getInputProps("search")}
@@ -716,7 +732,6 @@ export default function Messages() {
                 />
               </form>
             </Box>
-
 
 
             {/* Body */}
@@ -739,10 +754,9 @@ export default function Messages() {
                 <ScrollArea>
                   {inboxMessages.map((message) => (
                     <Box key={message.id} style={{ position: "relative", marginBottom: "16px" }}>
-                      {/* First Layer: White Paper (Stacked Effect) */} 
-                      {
-                        message.mail_count > 1 && (
-                        <Paper 
+                      {/* First Layer: White Paper (Stacked Effect) */}
+                      {message.mail_count > 1 && (
+                        <Paper
                           p="md"
                           style={{
                             backgroundColor: theme.white,
@@ -764,7 +778,7 @@ export default function Messages() {
                         onClick={() => handleMessageSelect(message.id)}
                         style={{
                           cursor: "pointer",
-                          backgroundColor: selectedMessages?.[0]?.order?.id === message?.order?.id  ? theme.colors.gray[1] : theme.white,
+                          backgroundColor: selectedMessages?.[0]?.order?.id === message?.order?.id ? theme.colors.gray[1] : theme.white,
                           border: `1px solid ${theme.colors.gray[3]}`,
                           borderRadius: theme.radius.md,
                           transition: "all 0.2s ease-in-out",
@@ -784,25 +798,23 @@ export default function Messages() {
                             color={theme.colors.gray[7]}
                             style={{ flex: 1 }}
                           >
-                            {
-                                message.latest_mail.sender_agent
+                            {message.latest_mail.sender_agent
                               ? message.latest_mail.sender_agent.name
                               : message.latest_mail.sender_admin
                               ? message.latest_mail.sender_admin.name
-                              : "Unknown Sender"
-                            }
-                          {!message.read && (
-                            <span
-                              style={{
-                                width: "8px",
-                                height: "8px",
-                                backgroundColor: "#ff3838",
-                                borderRadius: "50%",
-                                display: "inline-block",
-                                marginLeft: "8px", // Adjust spacing
-                              }}
-                            ></span>
-                          )}
+                              : "Expéditeur inconnu"}
+                            {!message.read && (
+                              <span
+                                style={{
+                                  width: "8px",
+                                  height: "8px",
+                                  backgroundColor: "#ff3838",
+                                  borderRadius: "50%",
+                                  display: "inline-block",
+                                  marginLeft: "8px", // Adjust spacing
+                                }}
+                              ></span>
+                            )}
                           </Text>
                           {/* Display message count if multiple messages exist */}
                           {message.mail_count > 1 && (
@@ -814,7 +826,7 @@ export default function Messages() {
 
                         {/* Subject */}
                         <Text size="xs" color="dimmed" weight={!message.read ? 600 : 400} style={{ marginBottom: "4px" }}>
-                          {"Order #" + message.order.tracking + " || "}
+                          {"Commande #" + message.order.tracking + " || "}
                           <span style={{ border: "gray 0.4px", padding: "3px", borderRadius: "5px" }}>
                             {message.order.status.status}
                           </span>
@@ -826,7 +838,6 @@ export default function Messages() {
                             ? message.latest_mail.message.substring(0, 15) + "..."
                             : message.latest_mail.message}
                         </Text>
-
 
                         {/* Status Badge */}
                         <Box style={{ display: "flex", justifyContent: "flex-end" }}>
@@ -849,11 +860,9 @@ export default function Messages() {
                     textAlign: "center",
                   }}
                 >
-                
                   <Text size="lg" color="gray">
-                    No messages found
+                    Aucun message trouvé
                   </Text>
-                  
                 </Box>
               )}
             </Box>
@@ -889,9 +898,9 @@ export default function Messages() {
 
         {/* Right Side: Selected Message and Response */}
         {!isMobile ? (
-          <DesktopViewMessages selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages}/>
+          <DesktopViewMessages selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages} loadingMessages={loadingMessages}/>
         ) : (
-          <PhoneViewMessages selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages}/>
+          <PhoneViewMessages selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages} loadingMessages={loadingMessages}/>
         )}
       </Grid>
     </>

@@ -13,6 +13,7 @@ class TemplateExport implements WithMultipleSheets
             'All Status' => new StatusSheet(),
             'All Agents' => new AgentsSheet(),
             'All Delivery Companies' => new DeliveryCompaniesSheet(),
+            'ReadMe' => new ReadMeSheet(), // Add the ReadMe sheet
         ];
     }
 }

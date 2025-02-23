@@ -22,15 +22,16 @@ export default function Navbar() {
 
   const {setDahboardOpend  ,DahboardOpend , user } = useUserContext();
 
-  const [active, setActive] = useState('Dashboard');
+  const [active, setActive] = useState('Tableau de bord');
 
   const data = [
-    { link: ADMIN_DASHBOARD_ROUTE , label: 'Dashboard', icon: IconLayoutDashboard },
+    { link: ADMIN_DASHBOARD_ROUTE , label: 'Tableau de bord', icon: IconLayoutDashboard },
     { link: ADMIN_NOTIFICATIONS_ROUTE , label: 'Messages', icon: IconBrandWechat },
-    { link: ADMIN_ORDERS_ROUTE , label: 'Orders', icon: IconPackage },
-    { link: ADMIN_USERS_ROUTE, label: 'Confirmation Agents', icon:   IconUsers },
-    { link: ADMIN_SETTING_ROUTE, label: 'Other Settings', icon: IconSettings },
+    { link: ADMIN_ORDERS_ROUTE , label: 'Commandes', icon: IconPackage },
+    { link: ADMIN_USERS_ROUTE, label: 'Agents de confirmation', icon: IconUsers },
+    // { link: ADMIN_SETTING_ROUTE, label: 'Autres paramètres', icon: IconSettings },
   ];
+
 
 
   const { logout , setUser , setAuthenticated} = useUserContext() ;
