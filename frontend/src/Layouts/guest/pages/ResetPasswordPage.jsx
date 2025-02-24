@@ -30,23 +30,28 @@ export default function ResetPasswordPage() {
 
 
   const form = useForm({
-    initialValues: { password: 'iskanderboss1999@gmail.com', password_confirmation: 'iskanderboss1999@gmail.com' },
+    initialValues: { 
+      password: 'iskanderboss1999@gmail.com', 
+      password_confirmation: 'iskanderboss1999@gmail.com' 
+    },
     validate: {
-      password: (value) => (value.length < 8 ? 'Password must be at least 8 characters.' : null),
+      password: (value) => (value.length < 8 ? 'Le mot de passe doit contenir au moins 8 caractères.' : null),
       password_confirmation: (value, values) =>
-        value !== values.password ? 'Passwords do not match.' : null,
+        value !== values.password ? 'Les mots de passe ne correspondent pas.' : null,
     },
   });
+  
 
 
 
   const handleError = (errors) => {
     if (errors.password) {
-      notifications.show({message: 'Password is required. Please enter your password.',color: 'red',});
-    }else if(errors.password_confirmation){
-      notifications.show({message: 'Password confermation is required. Please enter your password.',color: 'red',});
+      notifications.show({message: 'Le mot de passe est requis. Veuillez entrer votre mot de passe.', color: 'red'});
+    } else if (errors.password_confirmation) {
+      notifications.show({message: 'La confirmation du mot de passe est requise. Veuillez entrer votre mot de passe.', color: 'red'});
     }
   };
+  
 
 
 
@@ -94,25 +99,23 @@ export default function ResetPasswordPage() {
     <Container size={520} my={100}>
       <Title ta="center" className={classes.title}>
         
-        {'Reset your password'}
+        {'Réinitialisez votre mot de passe'}
 
       </Title>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-        <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
-          
-
+      <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
           <PasswordInput
             withAsterisk
-            label={'password'}
-            placeholder={'password'}
+            label={'Mot de passe'}
+            placeholder={'Mot de passe'}
             {...form.getInputProps('password')}
             mt="md"
           />
 
           <PasswordInput
             withAsterisk
-            label={'password confirmation'}
-            placeholder={'password confirmation'}
+            label={'Confirmation du mot de passe'}
+            placeholder={'Confirmation du mot de passe'}
             {...form.getInputProps('password_confirmation')}
             mt="md"
           />
@@ -123,7 +126,7 @@ export default function ResetPasswordPage() {
             onClick={()=>{
               navigate(LOGIN_ROUTE);
             }}
-            size="sm">Login ?</Anchor>
+            size="sm">Se connecter ?</Anchor>
           </Group>
           
           {isLoading ? 
@@ -132,11 +135,9 @@ export default function ResetPasswordPage() {
             </Button>
           :
             <Button type="submit" mt="xl" fullWidth>
-              Change Password
+              Changer le mot de passe
             </Button>
           }
-          
-
         </form>
       </Paper>
     </Container>

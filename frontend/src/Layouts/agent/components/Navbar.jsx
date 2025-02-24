@@ -101,7 +101,7 @@ export default function Navbar() {
       <div className={classes.footer}>
         <a href="#" className={classes.link} onClick={handleLogout}>
           <IconLogout color='red' className={classes.linkIcon} stroke={1.5} />
-          <span>Logout</span>
+          <span>Déconnexion</span>
         </a>
       </div>
     </nav>

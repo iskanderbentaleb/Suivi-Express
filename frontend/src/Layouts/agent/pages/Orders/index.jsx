@@ -687,14 +687,14 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
     //---------------- data of orders ---------------------
     const rows = elements.map((row) => {
       const Iduser = user.id;
-      const isAuthorized = Iduser === row.affected_to.id; // Check if user can edit
+      const isAuthorized = Iduser === row.affected_to?.id; // Check if user can edit
     
       return (
         <Table.Tr 
           key={row.id} 
           style={{
             background: isAuthorized ? 'inherit' : '#f0f0f0', 
-            opacity: isAuthorized ? 1 : 0.6
+            opacity: isAuthorized ? 1 : 0.7
           }}
         >
           {/* Colonne : Société de livraison */}
@@ -720,7 +720,6 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
           {/* Colonne : tracking */}
           <Table.Td>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {isAuthorized && (
                 <CopyButton value={row.tracking} timeout={2000}>
                   {({ copied, copy }) => (
                     <Tooltip label={copied ? 'Copié !' : 'Copier le tracking'} withArrow position="right">
@@ -739,7 +738,6 @@ import { historyOrders } from '../../../../services/api/agent/historyOrders';
                     </Tooltip>
                   )}
                 </CopyButton>
-              )}
               <span
                 style={{
                   background: '#dee2e6',

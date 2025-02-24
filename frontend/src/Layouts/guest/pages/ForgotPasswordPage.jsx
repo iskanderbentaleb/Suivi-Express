@@ -30,22 +30,21 @@ export default function ForgotPasswordPage() {
 
 
   const form = useForm({
-    initialValues: { email: 'iskanderboss1999@gmail.com'},
+    initialValues: { email: 'iskanderboss1999@gmail.com' },
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'email is required'),
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : "L'email est requis"),
     },
   });
-
-
-
+  
   const handleError = (errors) => {
     if (errors.email) {
-      notifications.show({message: 'Email is required. Please enter your email.', color: 'red',});
+      notifications.show({
+        message: "L'email est requis. Veuillez entrer votre email.",
+        color: 'red',
+      });
     }
   };
-
-
-
+  
 
   // Submit handler
   const handleSubmit = async ({ email }) => {
@@ -61,7 +60,7 @@ export default function ForgotPasswordPage() {
       }
     } catch (error) {
       // Handle error and show notification
-      const errorMessage = error.response?.data?.message || "An unexpected error occurred";
+      const errorMessage = error.response?.data?.message || "Une erreur inattendue s'est produite";
       notifications.show({ 
         message: errorMessage, 
         color: 'red' 
@@ -91,41 +90,38 @@ export default function ForgotPasswordPage() {
   return (
     <Container size={520} my={100}>
       <Title ta="center" className={classes.title}>
-        {'Forgot Password'}
+        {'Mot de passe oublié'}
       </Title>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-        <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
-          
-
-          <TextInput
-            withAsterisk
-            mt="sm"
-            label={'email'}
-            placeholder={'email'}
-            {...form.getInputProps('email')}
-          />
-
-
-          <Group justify="space-between" mt="lg">
-            <Anchor
-            onClick={()=>{
+      <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
+        <TextInput
+          withAsterisk
+          mt="sm"
+          label={'E-mail'}
+          placeholder={'E-mail'}
+          {...form.getInputProps('email')}
+        />
+        <Group justify="space-between" mt="lg">
+          <Anchor
+            onClick={() => {
               navigate(LOGIN_ROUTE);
             }}
-            size="sm">Login ?</Anchor>
-          </Group>
-          
-          {isLoading ? 
-            <Button disabled type="submit" mt="xl" fullWidth>
-              <Loader type="dots" />
-            </Button>
-          :
-            <Button type="submit" mt="xl" fullWidth>
-              submit
-            </Button>
-          }
-          
-
+            size="sm"
+          >
+            Se connecter ?
+          </Anchor>
+        </Group>
+        {isLoading ? (
+          <Button disabled type="submit" mt="xl" fullWidth>
+            <Loader type="dots" />
+          </Button>
+        ) : (
+          <Button type="submit" mt="xl" fullWidth>
+            Envoyer
+          </Button>
+        )}
         </form>
+
       </Paper>
     </Container>
   );

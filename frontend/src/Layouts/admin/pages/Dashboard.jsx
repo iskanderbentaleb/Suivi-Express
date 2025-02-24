@@ -200,7 +200,7 @@ import {
                     labelsType="percent"
                     withLabels
                     withTooltip
-                    strokeWidth={1}
+                    strokeWidth={2}
                     tooltipAnimationDuration={200}
                     withLegend
                     legendProps={{ layout: 'horizontal', align: 'center' }}

@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Models\{Order, Agent, StatusOrder, DeliveryCompany};
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use Carbon\Carbon;
+
 
 class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, WithEvents
 {
@@ -21,6 +23,24 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
     {
         $this->errors = &$errors;
     }
+
+
+    private function convertToDateTime($date)
+    {
+        // If it's an Excel numeric timestamp
+        if (is_numeric($date)) {
+            return Date::excelToDateTimeObject($date)->format('Y-m-d H:i:s');
+        }
+
+        // If it's a string, try to parse it
+        try {
+            return Carbon::parse($date)->format('Y-m-d H:i:s');
+        } catch (\Exception $e) {
+            return now()->format('Y-m-d H:i:s'); // Default to current time if invalid
+        }
+    }
+
+
 
     public function collection(Collection $rows)
     {
@@ -45,7 +65,7 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
                 'affected_to' => 'nullable|string|exists:agents,name',
                 'delivery_company' => 'nullable|string|exists:delivery_companies,name',
                 'archived' => 'nullable|boolean', // New validation
-                'created_at' => 'nullable|date_format:Y-m-d H:i:s',
+                'created_at' => 'nullable',
             ]);
 
             if ($validator->fails()) {
@@ -76,10 +96,10 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
                     'created_by' => $authUserId,
                     'affected_to' => $affectedTo ? $affectedTo->id : null,
                     'delivery_company_id' => $deliveryCompany ? $deliveryCompany->id : null,
-                    'archived' => isset($row['archived']) ? (int) $row['archived'] : 0, // Default to 0
-                    'created_at' => isset($row['created_at']) && is_numeric($row['created_at'])
-                    ? Date::excelToDateTimeObject($row['created_at'])->format('Y-m-d H:i:s')
-                    : (is_string($row['created_at']) ? $row['created_at'] : now()->format('Y-m-d H:i:s')),
+                    'archive' => isset($row['archived']) && in_array(strtolower((string) $row['archived']), ['true', '1'], true) ? 1 : 0,
+                    'created_at' => isset($row['created_at']) && !empty($row['created_at'])
+                    ? $this->convertToDateTime($row['created_at'])
+                    : now()->format('Y-m-d H:i:s'),
                 ]);
 
                 // Log::info('Order created successfully for row:', $row->toArray());

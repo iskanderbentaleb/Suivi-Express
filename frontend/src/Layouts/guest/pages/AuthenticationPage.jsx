@@ -37,20 +37,27 @@ export default function AuthenticationPage() {
       password: 'houdatata16@gmail.com' 
     },
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'email is required'),
-      password: (value) => (value.length < 8 ? 'password is required' : null),
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'L\'email est requis'),
+      password: (value) => (value.length < 8 ? 'Le mot de passe est requis' : null),
     },
   });
-
+  
 
 
   const handleError = (errors) => {
     if (errors.email) {
-      notifications.show({message: 'Email is required. Please enter your email.', color: 'red',});
+      notifications.show({
+        message: 'L\'email est requis. Veuillez saisir votre email.',
+        color: 'red',
+      });
     } else if (errors.password) {
-      notifications.show({message: 'Password is required. Please enter your password.',color: 'red',});
+      notifications.show({
+        message: 'Le mot de passe est requis. Veuillez saisir votre mot de passe.',
+        color: 'red',
+      });
     }
   };
+  
 
 
 
@@ -105,49 +112,48 @@ export default function AuthenticationPage() {
     <Container size={520} my={100}>
       <Title ta="center" className={classes.title}>
         
-        {'Welcome Back !'}
+      {'Bienvenue de retour !'}
 
       </Title>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
           
-
           <TextInput
             withAsterisk
             mt="sm"
-            label={'email'}
-            placeholder={'email'}
+            label={'E-mail'}
+            placeholder={'E-mail'}
             {...form.getInputProps('email')}
           />
 
-
           <PasswordInput
             withAsterisk
-            label={'password'}
-            placeholder={'password'}
+            label={'Mot de passe'}
+            placeholder={'Mot de passe'}
             {...form.getInputProps('password')}
             mt="md"
           />
 
-
           <Group justify="space-between" mt="lg">
             <Anchor
-            onClick={()=>{
-              navigate(FORGOT_PASSWORD_ROUTE);
-            }}
-            size="sm">Forgot password ?</Anchor>
+              onClick={() => {
+                navigate(FORGOT_PASSWORD_ROUTE);
+              }}
+              size="sm"
+            >
+              Mot de passe oublié ?
+            </Anchor>
           </Group>
-          
+
           {isLoading ? 
             <Button disabled type="submit" mt="xl" fullWidth>
               <Loader type="dots" />
             </Button>
           :
             <Button type="submit" mt="xl" fullWidth>
-              submit
+              Se connecter
             </Button>
           }
-          
 
         </form>
       </Paper>

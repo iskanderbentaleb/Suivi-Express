@@ -135,7 +135,7 @@ import {
     
       useEffect(() => {
         getDeleveryCompanies();
-        getAgent(order?.affected_to.name, 1);
+        getAgent(order?.affected_to?.name, 1);
       }, []);
     
       // Initialize the form with the agent's existing data
@@ -147,7 +147,7 @@ import {
           client_name: order?.client_name || '',
           client_lastname: order?.client_lastname || '',
           phone: order?.phone || '',
-          affected_to: order?.affected_to.id?.toString() || '',
+          affected_to: order?.affected_to?.id?.toString() || '',
           product_url: order?.product_url || '',
         },
         validate: {
@@ -1352,7 +1352,7 @@ import {
     
           <Table.Td>
             <span style={{ border: 'black dashed 1px', padding: 5, borderRadius: 8, color: 'black', whiteSpace: 'nowrap' }}>
-              {row.affected_to.name}
+              {row.affected_to?.name || 'Non affecté'}
             </span>
           </Table.Td>
     
