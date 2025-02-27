@@ -29,14 +29,20 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
     {
         // If it's an Excel numeric timestamp
         if (is_numeric($date)) {
-            return Date::excelToDateTimeObject($date)->format('Y-m-d H:i:s');
+            try {
+                return Date::excelToDateTimeObject($date)->format('Y-m-d H:i:s');
+            } catch (\Exception $e) {
+                Log::error('Failed to convert Excel timestamp to DateTime:', ['date' => $date, 'error' => $e->getMessage()]);
+                return now()->format('Y-m-d H:i:s'); // Fallback to current time
+            }
         }
 
         // If it's a string, try to parse it
         try {
             return Carbon::parse($date)->format('Y-m-d H:i:s');
         } catch (\Exception $e) {
-            return now()->format('Y-m-d H:i:s'); // Default to current time if invalid
+            Log::error('Failed to parse date string:', ['date' => $date, 'error' => $e->getMessage()]);
+            return now()->format('Y-m-d H:i:s'); // Fallback to current time
         }
     }
 
@@ -53,8 +59,9 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
 
             Log::info('Processing row:', $row->toArray());
 
-            // Validate the row
-            $validator = Validator::make($row->toArray(), [
+            $cleanedRow = array_map(fn($value) => is_string($value) ? trim($value) : $value, $row->toArray());
+
+            $validator = Validator::make($cleanedRow, [
                 'tracking' => 'required|unique:orders,tracking',
                 'external_id' => 'nullable|string|max:255',
                 'client_name' => 'required|string|max:255',
@@ -63,10 +70,11 @@ class OrdersImport implements ToCollection, WithHeadingRow, WithMultipleSheets, 
                 'product_url' => 'nullable|url',
                 'status' => 'required|string|exists:status_orders,status',
                 'affected_to' => 'nullable|string|exists:agents,name',
-                'delivery_company' => 'nullable|string|exists:delivery_companies,name',
-                'archived' => 'nullable|boolean', // New validation
-                'created_at' => 'nullable',
+                'delivery_company' => 'string|exists:delivery_companies,name',
+                'archived' => 'nullable|boolean',
+                'created_at' => 'nullable|date',
             ]);
+
 
             if ($validator->fails()) {
                 $this->errors[] = [
