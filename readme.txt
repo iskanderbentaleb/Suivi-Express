@@ -1,5 +1,4 @@
 
-https://github.com/user-attachments/assets/46cd59f6-4ed6-4525-9ad8-f23c799aa0b8
 
 1) install laravel :
     composer create-project laravel/laravel example-app
