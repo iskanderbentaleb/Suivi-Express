@@ -1,4 +1,4 @@
-![0](https://raw.githubusercontent.com/iskanderbentaleb/e-commerce-call-center/refs/heads/main/0.png)
+![image alt](https://raw.githubusercontent.com/iskanderbentaleb/e-commerce-call-center/refs/heads/main/0.png)
 
 1) install laravel :
     composer create-project laravel/laravel example-app
