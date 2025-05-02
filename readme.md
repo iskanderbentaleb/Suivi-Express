@@ -38,49 +38,80 @@ Follow these steps to install and run the project on your local machine:
 
 1. Clone the Repository
 <pre> 
-Copy
-Edit
 git clone https://github.com/iskanderbentaleb/e-commerce-call-center.git
 cd e-commerce-call-center
-<pre>
+</pre>
 
-2. Install Backend Dependencies (Laravel)
-bash
-Copy
-Edit
+2. ---------------- Install Backend Dependencies (Laravel- sacntume) --------------------
+<pre>
+cd backend
 composer install
 cp .env.example .env
 php artisan key:generate
-3. Set Up Environment Variables
+</pre>
+
+3. Set Up Environment Variables (.env)
 Update your .env file with your database credentials.
+<pre>
+DB_CONNECTION=
+DB_HOST=
+DB_PORT=
+DB_DATABASE=e-commerce-call-center 
+DB_USERNAME=root
+DB_PASSWORD=
+</pre>
 
-Set up your Pusher credentials in .env:
 
-ini
-Copy
-Edit
-BROADCAST_DRIVER=pusher
-PUSHER_APP_ID=your_app_id
-PUSHER_APP_KEY=your_app_key
-PUSHER_APP_SECRET=your_app_secret
-PUSHER_APP_CLUSTER=your_cluster
-4. Run Migrations
-bash
-Copy
-Edit
+4. Set up your Pusher credentials in .env:
+<pre>
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_HOST="api-eu.pusher.com"
+PUSHER_APP_CLUSTER="eu"
+PUSHER_PORT=443
+PUSHER_SCHEME=https
+</pre>
+
+
+
+5. Run Migrations
+<pre>
 php artisan migrate
-5. Install Frontend Dependencies (React)
-bash
-Copy
-Edit
-npm install
-6. Build the Frontend
-bash
-Copy
-Edit
-npm run dev
-7. Run Laravel Server
-bash
-Copy
-Edit
+</pre>
+
+6. Run Laravel Server
+<pre>
 php artisan serve
+</pre>
+
+
+
+6. ----------- Install Frontend Dependencies (React JS) ---------------
+<pre>
+cd frontend
+npm install
+cp .env.example .env
+</pre>
+
+
+7. Set Up Environment Variables (.env)
+Set up your Pusher credentials in .env:
+<pre>
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_HOST=api-eu.pusher.com
+PUSHER_APP_CLUSTER=eu
+PUSHER_PORT=443
+PUSHER_SCHEME=https
+</pre>
+
+
+8. Run the Frontend
+<pre>
+npm run dev
+</pre>
+
+
+
