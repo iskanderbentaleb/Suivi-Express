@@ -1,4 +1,5 @@
-!["0"](./0.png)
+![0](./0.png)
+
 
 1) install laravel :
     composer create-project laravel/laravel example-app
