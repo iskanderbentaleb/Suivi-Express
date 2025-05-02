@@ -1,15 +1,3 @@
-![0](./screenshot/0.png)
-![1](./screenshot/1.png)
-![2](./screenshot/2.png)
-![3](./screenshot/3.png)
-![4](./screenshot/4.png)
-![5](./screenshot/5.png)
-![6](./screenshot/6.png)
-![7](./screenshot/7.png)
-![8](./screenshot/8.png)
-![9](./screenshot/9.png)
-
-
 📦 E-Commerce Call Center System
 This project is built with Laravel and MySQL for the backend, and React.js for the frontend. It’s designed to manage parcel tracking efficiently after handing over packages to delivery companies.
 
@@ -42,7 +30,7 @@ git clone https://github.com/iskanderbentaleb/e-commerce-call-center.git
 cd e-commerce-call-center
 </pre>
 
-2. ---------------- Install Backend Dependencies (Laravel- sacntume) --------------------
+2. ------------------ Install Backend Dependencies (Laravel- sacntume) ------------------
 <pre>
 cd backend
 composer install
@@ -50,8 +38,7 @@ cp .env.example .env
 php artisan key:generate
 </pre>
 
-3. Set Up Environment Variables (.env)
-Update your .env file with your database credentials.
+3. Set Up Environment Variables : Update your .env file with your database credentials.
 <pre>
 DB_CONNECTION=
 DB_HOST=
@@ -87,7 +74,7 @@ php artisan serve
 
 
 
-6. ----------- Install Frontend Dependencies (React JS) ---------------
+6. ------------------ Install Frontend Dependencies (React JS) ------------------
 <pre>
 cd frontend
 npm install
@@ -95,8 +82,7 @@ cp .env.example .env
 </pre>
 
 
-7. Set Up Environment Variables (.env)
-Set up your Pusher credentials in .env:
+7. Set Up Environment Variables : Set up your Pusher credentials in .env:
 <pre>
 PUSHER_APP_ID=
 PUSHER_APP_KEY=
@@ -112,6 +98,19 @@ PUSHER_SCHEME=https
 <pre>
 npm run dev
 </pre>
+
+
+![0](./screenshot/0.png)
+![1](./screenshot/1.png)
+![2](./screenshot/2.png)
+![3](./screenshot/3.png)
+![4](./screenshot/4.png)
+![5](./screenshot/5.png)
+![6](./screenshot/6.png)
+![7](./screenshot/7.png)
+![8](./screenshot/8.png)
+![9](./screenshot/9.png)
+
 
 
 
