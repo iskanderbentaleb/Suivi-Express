@@ -25,13 +25,12 @@ Centralize parcel tracking in one dashboard
 Follow these steps to install and run the project on your local machine:
 
 Clone the Repository :
-<pre> 
-git clone https://github.com/iskanderbentaleb/e-commerce-call-center.git
+<pre>git clone https://github.com/iskanderbentaleb/e-commerce-call-center.git
 cd e-commerce-call-center
 </pre>
 
 
------------------------------------------------------- Backend ------------------------------------------------------
+---------------------------------------------------- Backend ----------------------------------------------------
 
 1. Install Backend Dependencies (Laravel- sacntume)
 <pre>
@@ -76,9 +75,9 @@ php artisan serve
 </pre>
 
 
------------------------------------------------------- Frontend -----------------------------------------------------
+---------------------------------------------------- Frontend -----------------------------------------------------
 
-1. ------------------ Install Frontend Dependencies (React JS) ------------------
+1. Install Frontend Dependencies (React JS)
 <pre>
 cd frontend
 npm install
