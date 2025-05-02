@@ -24,13 +24,16 @@ Centralize parcel tracking in one dashboard
 ⚙️ Installation Instructions
 Follow these steps to install and run the project on your local machine:
 
-1. Clone the Repository
+Clone the Repository :
 <pre> 
 git clone https://github.com/iskanderbentaleb/e-commerce-call-center.git
 cd e-commerce-call-center
 </pre>
 
-2. ------------------ Install Backend Dependencies (Laravel- sacntume) ------------------
+
+------------------------------------------------------ Backend ------------------------------------------------------
+
+1. Install Backend Dependencies (Laravel- sacntume)
 <pre>
 cd backend
 composer install
@@ -38,7 +41,7 @@ cp .env.example .env
 php artisan key:generate
 </pre>
 
-3. Set Up Environment Variables : Update your .env file with your database credentials.
+2. Set Up Environment Variables : Update your .env file with your database credentials.
 <pre>
 DB_CONNECTION=
 DB_HOST=
@@ -49,7 +52,7 @@ DB_PASSWORD=
 </pre>
 
 
-4. Set up your Pusher credentials in .env:
+3. Set up your Pusher credentials in .env:
 <pre>
 PUSHER_APP_ID=
 PUSHER_APP_KEY=
@@ -62,19 +65,20 @@ PUSHER_SCHEME=https
 
 
 
-5. Run Migrations
+4. Run Migrations
 <pre>
 php artisan migrate
 </pre>
 
-6. Run Laravel Server
+5. Run Laravel Server
 <pre>
 php artisan serve
 </pre>
 
 
+------------------------------------------------------ Frontend -----------------------------------------------------
 
-6. ------------------ Install Frontend Dependencies (React JS) ------------------
+1. ------------------ Install Frontend Dependencies (React JS) ------------------
 <pre>
 cd frontend
 npm install
@@ -82,7 +86,7 @@ cp .env.example .env
 </pre>
 
 
-7. Set Up Environment Variables : Set up your Pusher credentials in .env:
+2. Set Up Environment Variables : Set up your Pusher credentials in .env:
 <pre>
 PUSHER_APP_ID=
 PUSHER_APP_KEY=
@@ -94,7 +98,7 @@ PUSHER_SCHEME=https
 </pre>
 
 
-8. Run the Frontend
+3. Run the Frontend
 <pre>
 npm run dev
 </pre>
