@@ -1,3 +1,16 @@
+<img width="2048" alt="Image" src="https://github.com/user-attachments/assets/46cd59f6-4ed6-4525-9ad8-f23c799aa0b8" />
+<img width="2044" alt="Image" src="https://github.com/user-attachments/assets/958e5467-0c49-4970-a494-7bfa74a26906" />
+<img width="2040" alt="Image" src="https://github.com/user-attachments/assets/a7f53064-a2d8-4778-b00f-a3749002adbc" />
+<img width="2048" alt="Image" src="https://github.com/user-attachments/assets/dee32b63-24ea-4bfc-a019-e63e29fcc23b" />
+<img width="2048" alt="Image" src="https://github.com/user-attachments/assets/d98e9885-5b46-490b-ad8b-66d3081985c5" />
+<img width="2048" alt="Image" src="https://github.com/user-attachments/assets/40aef0f2-1ce7-4b24-8493-bd81e9168311" />
+<img width="2048" alt="Image" src="https://github.com/user-attachments/assets/f571ffa9-65d7-4890-bc3b-41840ff726de" />
+<img width="2048" alt="Image" src="https://github.com/user-attachments/assets/8dfc6192-1846-4b72-b826-5e20ec13514c" />
+<img width="2048" alt="Image" src="https://github.com/user-attachments/assets/28a33451-e219-4a49-9aa4-79865acd4d21" />
+<img width="439" alt="Image" src="https://github.com/user-attachments/assets/1c41e8aa-acec-4498-add2-f2591239b0e4" />
+
+
+
 1) install laravel :
     composer create-project laravel/laravel example-app
 
