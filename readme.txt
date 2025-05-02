@@ -1,4 +1,4 @@
-![image alt](https://github.com/user-attachments/assets/1abfc898-4b8e-4f10-bc94-7f04da7bebf1)
+![image alt] (https://github.com/user-attachments/assets/1abfc898-4b8e-4f10-bc94-7f04da7bebf1)
 
 1) install laravel :
     composer create-project laravel/laravel example-app
