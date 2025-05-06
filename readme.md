@@ -1,4 +1,4 @@
-📦 E-Commerce Call Center System
+📦 E-Commerce Call Center Management System
 This project is built with Laravel and MySQL for the backend, and React.js for the frontend. It’s designed to manage parcel tracking efficiently after handing over packages to delivery companies.
 
 🔐 User Roles
